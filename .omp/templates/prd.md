@@ -1,4 +1,4 @@
-<!-- DENSITY: Target 500-700 lines. <300 = incomplete (missing sections, hand-wavy, no real technical context). No upper cap — be thorough. This is an AI handoff: another agent must be able to pick this up and implement correctly without guessing. Every section must have concrete evidence: file paths, API signatures, existing patterns, constraints. -->
+<!-- DENSITY: Minimum 600 lines. No upper bound — be thorough. <600 = incomplete (missing sections, hand-wavy, no real technical context). This is an AI handoff: another agent must be able to pick this up and implement correctly without guessing. Every section must have concrete evidence: file paths, API signatures, existing patterns, constraints. -->
 # PRD: {title}
 
 **Bead:** {bead-id} | **Type:** {feature|bugfix|chore|research|epic} | **Priority:** {P0|P1|P2|P3}

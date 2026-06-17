@@ -77,7 +77,7 @@ Create a PR in a single message. Do not send any other text or messages besides 
 
 ---
 
-🤖 Generated with [OMP](https://omp.sh) | Bead: `$BEAD_ID`
+🤖 Generated with [OMP](https://omp.sh) | Bead: `$BEAD_ID` | Worktree: `.worktree/!`git branch --show-current``
 ```
 
 ### PR Command

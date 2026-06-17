@@ -243,7 +243,7 @@ Before reporting success, verify the PRD passes these checks:
 - [ ] Success Criteria are observable behaviors — not "it should work"
 - [ ] Decisions.md has rejected alternatives — not just decisions
 - [ ] Assumptions have invalidation impact — not just "assume X is true"
-- [ ] PRD is 500-700 lines (wc -l prd.md) — <300 = incomplete, needs more investigation
+- [ ] PRD is ≥600 lines (`wc -l prd.md`) — <600 = incomplete, needs more investigation
 If any box is unchecked, go back to Phase 3 or 4 and fix it. Do not ship a low-quality PRD.
 
 ```bash

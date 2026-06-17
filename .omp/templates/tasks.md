@@ -1,3 +1,4 @@
+<!-- DENSITY: Minimum 600 lines. No upper bound. <600 = too thin — tasks lack detail, verification steps are vague, dependencies undefined. Every task needs a yaml block, concrete verification steps, and enough detail for parallel execution without reading the PRD or plan. -->
 # Tasks: {bead-id}
 
 ## 1. {Phase name}

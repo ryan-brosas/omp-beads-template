@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 type ExecResult = {
   stdout?: string;
@@ -43,6 +43,19 @@ async function getActiveBead(pi: { exec: (cmd: string, args: string[]) => Promis
     return typeof issues[0]?.id === "string" ? issues[0].id : null;
   } catch {
     return null;
+  }
+
+}
+
+const MIN_LINES = 600;
+
+function checkDensity(filePath: string): { ok: boolean; lines: number } {
+  try {
+    const content = readFileSync(filePath, "utf-8");
+    const lines = content.split("\n").length;
+    return { ok: lines >= MIN_LINES, lines };
+  } catch {
+    return { ok: false, lines: 0 };
   }
 }
 
@@ -108,6 +121,42 @@ export default function workflowGate(pi: {
         block: true,
         reason: `Workflow gate: active bead ${activeBead} has no plan. Run /plan first.`,
       };
+    }
+
+    // Density enforcement: artifacts must meet the 600-line minimum
+    const prdPath = `.beads/artifacts/${activeBead}/prd.md`;
+    const planPath = `.beads/artifacts/${activeBead}/plan.md`;
+    const tasksPath = `.beads/artifacts/${activeBead}/tasks.md`;
+
+    if (hasPrd) {
+      const density = checkDensity(prdPath);
+      if (!density.ok) {
+        return {
+          block: true,
+          reason: `Workflow gate: PRD for ${activeBead} is only ${density.lines} lines (minimum ${MIN_LINES}). Run /create to expand it — every section needs concrete evidence, file paths, API signatures, patterns, and constraints.`,
+        };
+      }
+    }
+
+    if (hasPlan) {
+      const density = checkDensity(planPath);
+      if (!density.ok) {
+        return {
+          block: true,
+          reason: `Workflow gate: plan for ${activeBead} is only ${density.lines} lines (minimum ${MIN_LINES}). Run /plan to expand it — add code outlines, wave structure, verification gates, and per-task detail.`,
+        };
+      }
+    }
+
+    // Tasks only checked if they exist (created during /plan)
+    if (existsSync(tasksPath)) {
+      const density = checkDensity(tasksPath);
+      if (!density.ok) {
+        return {
+          block: true,
+          reason: `Workflow gate: tasks for ${activeBead} is only ${density.lines} lines (minimum ${MIN_LINES}). Run /plan to expand it — every task needs yaml metadata, concrete steps, and verification checks.`,
+        };
+      }
     }
   });
 }

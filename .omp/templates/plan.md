@@ -1,4 +1,4 @@
-<!-- DENSITY: Target 500-700 lines. <300 = too thin (waves undefined, tasks lack code outlines, verification hand-wavy). Task outlines should show the shape of every file change — not full implementation, but enough that a different agent can execute without reading the PRD again. -->
+<!-- DENSITY: Minimum 600 lines. No upper bound. <600 = too thin (waves undefined, tasks lack code outlines, verification hand-wavy). Task outlines should show the shape of every file change — not full implementation, but enough that a different agent can execute without reading the PRD again. -->
 # Plan: {bead-id}
 
 **Goal:** {One sentence — what does "done" look like?}

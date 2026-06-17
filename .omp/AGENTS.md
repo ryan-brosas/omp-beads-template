@@ -28,6 +28,7 @@ Or load the **orchestrator** skill to chain phases automatically — the agent r
 | `/pr` | Create GitHub PR (single-turn executable) | `review-report.md`, `completion-evidence.json` | PR body | — |
 | `/close` | Close bead, suggest next | all artifacts | — | suggest, next, capacity |
 | `/init` | Bootstrap workspace + br init | — | `.beads/` | — |
+| `/git-clean` | Remove merged worktrees and local branches | — | — | — |
 
 ## Workflow Enforcement
 
