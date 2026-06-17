@@ -2,25 +2,25 @@
   "beadId": "br-omp-backbone-skill-fi9",
   "type": "chore",
   "priority": 2,
-  "estimate_minutes": 30,
+  "estimate_minutes": 45,
   "requirements": [
     {
       "id": 1,
-      "text": "The s2s bead's closeout artifacts must be committed to git, reconciling the bead-is-closed-in-DB-but-uncommitted-in-git mismatch",
+      "text": "The branch divergence must be reconciled via a merge of main into the feature branch, with all 5 content conflicts resolved",
       "priority": "MUST",
-      "acceptance": "git log --oneline -- '.beads/artifacts/br-omp-backbone-skill-s2s/review-report.md' returns a commit with close: prefix; git status --porcelain shows no untracked s2s files"
+      "acceptance": "git log --oneline --merges -1 shows a merge commit; git diff --name-only --diff-filter=U returns empty (no unresolved conflicts)"
     },
     {
       "id": 2,
-      "text": "Dead Python bytecode cache must be removed and prevented from recurring",
+      "text": "Conflict resolution must favor the feature side for all 5 files, per the investigation findings and user decision",
       "priority": "MUST",
-      "acceptance": ".omp/scripts/__pycache__/ directory does not exist on disk; grep '__pycache__' .gitignore returns a match; git status --porcelain shows no pycache files"
+      "acceptance": "conventions.md has 1-line UI Design pointer (not full content); project.md has stable status + close-memory-audit milestone + Success Criterion #4; tech-stack.md has true # bash blocks (not N/A); DESIGN.md has concrete content (not [FILL] placeholders); SKILL.md has ~127 lines (concrete version)"
     },
     {
       "id": 3,
-      "text": "The unpushed commit on main must be pushed to origin",
+      "text": "Dead Python bytecode cache must be removed and prevented from recurring",
       "priority": "MUST",
-      "acceptance": "git status --short --branch shows up to date with origin/main with no ahead/behind indicator"
+      "acceptance": ".omp/scripts/__pycache__/ directory does not exist on disk; grep '__pycache__' .gitignore returns a match; git status --porcelain shows no pycache files"
     },
     {
       "id": 4,
@@ -30,24 +30,41 @@
     },
     {
       "id": 5,
-      "text": "The closeout commit(s) must follow the repo's conventional commit style",
-      "priority": "SHOULD",
-      "acceptance": "Commit message matches pattern close: br-omp-backbone-skill-s2s or chore: for the hygiene items, per the conventions.md Git section"
+      "text": "The reconciled branch must be pushed to origin/main",
+      "priority": "MUST",
+      "acceptance": "git status --short --branch shows up to date with origin/main with no ahead/behind indicator"
     },
     {
       "id": 6,
       "text": "All bead sync state (.br_history, issues.jsonl) must be flushed and committed",
       "priority": "SHOULD",
       "acceptance": "br sync --flush-only exits 0; git status --porcelain .beads/ shows no untracked bead state files after commit"
+    },
+    {
+      "id": 7,
+      "text": "The merge commit message must be descriptive, naming both branches and the conflict resolution strategy",
+      "priority": "SHOULD",
+      "acceptance": "git log -1 --format='%s' references both main and feature branch or uses a clear merge message like 'Merge main into feat/... — resolve 5 conflicts favoring feature side'"
     }
   ],
   "success_criteria": [
-    "git log --oneline -- '.beads/artifacts/br-omp-backbone-skill-s2s/review-report.md' returns a close: commit",
-    "git status --porcelain | grep s2s returns empty",
+    "git log --oneline --merges -1 returns a merge commit",
+    "git diff --name-only --diff-filter=U returns empty",
+    "grep -rn '<<<<<<<|=======|>>>>>>>' .omp/memory/project/ .omp/skills/design-system/ returns no matches",
+    "grep -c 'load.*design-system/SKILL.md' .omp/memory/project/conventions.md returns >= 1",
+    "grep 'stable' .omp/memory/project/project.md returns a match",
+    "grep 'close-memory-audit' .omp/memory/project/project.md returns a match",
+    "grep 'Zero broken file references' .omp/memory/project/project.md returns a match",
+    "grep -c 'true  #' .omp/memory/project/tech-stack.md returns >= 5",
+    "grep -c 'N/A' .omp/memory/project/tech-stack.md returns 0",
+    "grep -c '[FILL]' .omp/skills/design-system/DESIGN.md returns 0",
     "test ! -d .omp/scripts/__pycache__ passes",
     "grep '__pycache__' .gitignore returns a match",
     "git status --porcelain README.md returns empty",
     "git status --short --branch shows no ahead/behind indicator",
-    "br sync --flush-only exits 0 with no pending changes"
+    "br sync --flush-only exits 0",
+    "test -f .omp/RULES.md passes and git diff .omp/RULES.md is empty",
+    "git diff .omp/commands/init.md is empty",
+    "git status --porcelain .omp/commands/npm-release.md shows ?? (untracked, out of scope)"
   ]
 }
