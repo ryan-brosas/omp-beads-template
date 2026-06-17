@@ -14,13 +14,14 @@ An OMP-native project template that provides br/bv-powered workflow infrastructu
 1. **Zero `<project-name>` or template placeholders in any `.omp/memory/project/` file** — `grep -r '<project-name>' .omp/memory/project/` returns no matches
 2. **Every memory file is valid markdown with filled tables** — read each file; no orphan rows, consistent column counts
 3. **An agent loading this context can answer "what is this project" within 3 seconds** — `project.md` heading + goal is self-contained and understandable
+4. **Zero broken file references in memory files** — `grep -oP '\.omp/[\w/.-]+\.\w+' .omp/memory/project/*.md | while read f; do test -f "$f" || echo "$f"; done` returns no output
 
 Keep to 3-5 criteria. Each must be verifiable — "good UX" is not verifiable. "Zero uncaught exceptions in prod for 30 days" is.
 
 ## Current Phase
 
 - **Status:** active
-- **Milestone:** Command–convention consistency audit (br-omp-backbone-skill-1da)
-- **Next:** Workflow verification — run a full /brainstorm → /create → /plan → /ship → /verify → /review → /pr → /close cycle to confirm all phases operate correctly after conventions.md fix
+- **Milestone:** Design asset audit and memory file cleanup (br-omp-backbone-skill-s2s)
+- **Next:** Workflow verification — run a full /brainstorm → /create → /plan → /ship → /verify → /review → /pr → /close cycle to confirm all phases operate correctly after conventions.md and tech-stack.md cleanup
 
 Update this section after every milestone. An agent reading this must understand, within 3 seconds, what the project is doing right now.

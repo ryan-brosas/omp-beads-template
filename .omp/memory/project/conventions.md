@@ -96,6 +96,8 @@ Memory files are the project's durable context — equivalent to CLAUDE.md. They
 
 ## UI Design
 
+> **Note:** This section is template content for downstream projects, not rules that apply to the omp-template repository itself. The template has no application runtime or UI code. When a project is bootstrapped from this template, the design-system skill (`.omp/skills/design-system/`) guides the agent in filling in these sections with project-specific values.
+
 ### Design System
 
 - **Brand contract:** `.omp/skills/design-system/DESIGN.md` — the 9-section source of truth for visual language.
@@ -110,12 +112,18 @@ Memory files are the project's durable context — equivalent to CLAUDE.md. They
 - **Micro-feedback:** 120ms for hover/focus transitions (the `--dur-quick` token).
 
 ### CSS Ownership
+
+CSS is a downstream project concern. The design-system skill (`.omp/skills/design-system/`) defines the brand contract format; downstream projects provide their own CSS implementation. Template memory files do not own or define CSS rules. The animation philosophy, component variants, theme, and icon guidelines in this section are template content — when a project is bootstrapped, the agent uses these as defaults that the project team customizes.
+
 ### Component Variants
 
 - **Buttons:** 5 variants — `default`, `primary`, `primary-ghost`, `ghost`, `subtle`. No new variants without a documented need.
 - **Focus rings:** Use `--selected` (blue) + `--selected-soft` ring on inputs/selects. Use `--accent` (terracotta) for button focus-visible outlines. This separation lets a focused input and a primary CTA coexist without competing.
 
 ### Craft Rules
+
+Craft rules are brand-agnostic design principles originally from Open Design's `craft/` directory (Apache 2.0). These rules cover typography, color, anti-AI-slop, animation discipline, state coverage, accessibility baseline, form validation, and typography hierarchy. Downstream projects may integrate these rules; the template itself does not enforce them. See `.omp/skills/design-system/DESIGN.md` for the brand contract format that anchors craft rules to a project's specific visual language. The upstream craft rules are available at the Open Design repository for projects that want the full reference.
+
 ### Theme
 
 - **Light default.** Dark via `[data-theme="dark"]` on `<html>`. System mode via `@media (prefers-color-scheme: dark)` when no explicit theme attribute.
