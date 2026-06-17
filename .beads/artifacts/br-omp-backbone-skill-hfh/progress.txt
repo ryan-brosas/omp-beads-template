@@ -1,0 +1,30 @@
+# Progress: br-omp-backbone-skill-hfh
+
+## Status: complete
+
+## Phase: prd (complete)
+
+- [x] prd.md written
+- [x] prd.json written
+- [x] decisions.md written
+
+## Phase: plan (complete)
+
+- [x] plan.md written
+- [x] tasks.md written
+- [x] context-capsule.md written
+
+## Phase: ship (complete)
+
+- [x] T1: Created .omp/skills/backbone/ directory
+- [x] T2: Wrote backbone SKILL.md (74 lines, ≤150)
+- [x] All sections included: backbone concept, phase routing table, artifact layout, tool decision rules, related skills, minimum checks
+
+## Phase: verify (complete)
+
+- [x] T3: Verified skill file exists and YAML frontmatter is valid
+- [x] T4: Verified no conflicts with existing skills
+- [x] completion-evidence.json written with 9 checks, all pass
+- [x] All acceptance criteria met
+
+## Last updated: 2026-06-17

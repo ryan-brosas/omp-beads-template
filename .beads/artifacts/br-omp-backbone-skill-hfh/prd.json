@@ -1,0 +1,44 @@
+{
+  "beadId": "br-omp-backbone-skill-hfh",
+  "title": "Add OMP backbone skill",
+  "owner": "ryan",
+  "status": "in_progress",
+  "type": "task",
+  "priority": 1,
+  "prd": {
+    "problem": "The OMP beads template has skills for individual tools (br, bv) and a comprehensive OMP reference skill, but lacks a single entry-point skill that explains how br and bv together form the template backbone.",
+    "outcome": "A new skill .omp/skills/backbone/SKILL.md that is the first skill agents should load, explains the br + bv backbone concept, maps every workflow phase to exact tool commands, and defines the complete artifact layout and conventions.",
+    "acceptanceCriteria": [
+      ".omp/skills/backbone/SKILL.md exists with valid YAML frontmatter",
+      "Explains the backbone concept: br owns state, bv informs decisions, OMP executes",
+      "Includes a phase routing table mapping each phase to tools and artifacts",
+      "Defines artifact directory layout with expected files per phase",
+      "References other skills without duplicating content",
+      "Includes minimum pre-flight checks per phase",
+      "Loads correctly in OMP",
+      "Does not conflict with existing skills, commands, or agents"
+    ],
+    "constraints": [
+      "Follow existing SKILL.md format",
+      "Do not duplicate content from br, bv, or omp skills",
+      "Stay under ~150 lines",
+      "Use consistent terminology",
+      "Place at .omp/skills/backbone/SKILL.md"
+    ],
+    "risks": [
+      {
+        "risk": "Overlap with orchestrator skill",
+        "mitigation": "Backbone is reference card; orchestrator is active routing agent"
+      },
+      {
+        "risk": "Staleness if workflow evolves",
+        "mitigation": "Keep concise, reference other skills, update with conventions"
+      }
+    ]
+  },
+  "targetFiles": [
+    ".omp/skills/backbone/SKILL.md"
+  ],
+  "relatedSkills": ["br", "bv", "omp", "orchestrator", "verification-before-completion"],
+  "relatedCommands": ["beads-brainstorm", "beads-create", "beads-plan", "beads-ship", "beads-verify", "beads-review", "beads-pr", "beads-close"]
+}

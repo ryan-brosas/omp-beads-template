@@ -1,0 +1,69 @@
+{
+  "bead_id": "br-omp-backbone-skill-hfh",
+  "verified_at": "2026-06-17",
+  "checks": [
+    {
+      "check": "skill file exists",
+      "command": "ls -d .omp/skills/backbone/ && test -f .omp/skills/backbone/SKILL.md",
+      "result": "pass",
+      "detail": "Directory and SKILL.md created"
+    },
+    {
+      "check": "YAML frontmatter valid",
+      "command": "python3 YAML parse of frontmatter",
+      "result": "pass",
+      "detail": "name: backbone, description present"
+    },
+    {
+      "check": "line count ≤150",
+      "command": "wc -l .omp/skills/backbone/SKILL.md",
+      "result": "pass",
+      "detail": "74 lines"
+    },
+    {
+      "check": "existing skills intact",
+      "command": "ls .omp/skills/br/SKILL.md .omp/skills/bv/SKILL.md .omp/skills/omp/SKILL.md .omp/skills/orchestrator/SKILL.md .omp/skills/verification-before-completion/SKILL.md",
+      "result": "pass",
+      "detail": "All 5 existing skills remain unchanged"
+    },
+    {
+      "check": "phase routing table complete",
+      "command": "grep phases in SKILL.md",
+      "result": "pass",
+      "detail": "All 8 phases covered (brainstorm, create, plan, ship, verify, review, pr, close)"
+    },
+    {
+      "check": "artifact layout defined",
+      "command": "grep artifact layout in SKILL.md",
+      "result": "pass",
+      "detail": "Full .beads/artifacts/<bead-id>/ layout documented"
+    },
+    {
+      "check": "related skills referenced",
+      "command": "grep references in SKILL.md",
+      "result": "pass",
+      "detail": "br, bv, omp, orchestrator, verification-before-completion all referenced"
+    },
+    {
+      "check": "tool decision rules included",
+      "command": "grep tool decision in SKILL.md",
+      "result": "pass",
+      "detail": "Tool decision rules table present"
+    },
+    {
+      "check": "no content duplication",
+      "command": "review against existing skills",
+      "result": "pass",
+      "detail": "References other skills by name/purpose; does not inline their full content"
+    }
+  ],
+  "requirements_met": [
+    ".omp/skills/backbone/SKILL.md exists with valid YAML frontmatter (name, description)",
+    "Skill explains the backbone concept: br owns state, bv informs decisions, OMP executes",
+    "Skill includes a phase routing table mapping each phase to tools and artifacts",
+    "Skill defines the artifact directory layout with expected files per phase",
+    "Skill references other skills without duplicating their full content",
+    "Skill includes minimum checks (pre-flight) an agent must perform before acting in each phase",
+    "Skill does not conflict with existing skills, commands, or agents"
+  ]
+}
