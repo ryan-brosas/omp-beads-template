@@ -1,0 +1,53 @@
+{
+  "beadId": "br-omp-backbone-skill-fi9",
+  "type": "chore",
+  "priority": 2,
+  "estimate_minutes": 30,
+  "requirements": [
+    {
+      "id": 1,
+      "text": "The s2s bead's closeout artifacts must be committed to git, reconciling the bead-is-closed-in-DB-but-uncommitted-in-git mismatch",
+      "priority": "MUST",
+      "acceptance": "git log --oneline -- '.beads/artifacts/br-omp-backbone-skill-s2s/review-report.md' returns a commit with close: prefix; git status --porcelain shows no untracked s2s files"
+    },
+    {
+      "id": 2,
+      "text": "Dead Python bytecode cache must be removed and prevented from recurring",
+      "priority": "MUST",
+      "acceptance": ".omp/scripts/__pycache__/ directory does not exist on disk; grep '__pycache__' .gitignore returns a match; git status --porcelain shows no pycache files"
+    },
+    {
+      "id": 3,
+      "text": "The unpushed commit on main must be pushed to origin",
+      "priority": "MUST",
+      "acceptance": "git status --short --branch shows up to date with origin/main with no ahead/behind indicator"
+    },
+    {
+      "id": 4,
+      "text": "The README.md change (npm-release row) must be committed, not left dirty",
+      "priority": "MUST",
+      "acceptance": "git status --porcelain README.md returns empty (clean); the change is in a commit"
+    },
+    {
+      "id": 5,
+      "text": "The closeout commit(s) must follow the repo's conventional commit style",
+      "priority": "SHOULD",
+      "acceptance": "Commit message matches pattern close: br-omp-backbone-skill-s2s or chore: for the hygiene items, per the conventions.md Git section"
+    },
+    {
+      "id": 6,
+      "text": "All bead sync state (.br_history, issues.jsonl) must be flushed and committed",
+      "priority": "SHOULD",
+      "acceptance": "br sync --flush-only exits 0; git status --porcelain .beads/ shows no untracked bead state files after commit"
+    }
+  ],
+  "success_criteria": [
+    "git log --oneline -- '.beads/artifacts/br-omp-backbone-skill-s2s/review-report.md' returns a close: commit",
+    "git status --porcelain | grep s2s returns empty",
+    "test ! -d .omp/scripts/__pycache__ passes",
+    "grep '__pycache__' .gitignore returns a match",
+    "git status --porcelain README.md returns empty",
+    "git status --short --branch shows no ahead/behind indicator",
+    "br sync --flush-only exits 0 with no pending changes"
+  ]
+}
