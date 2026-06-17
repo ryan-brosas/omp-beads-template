@@ -156,28 +156,37 @@ Capture the bead ID from output. This is `BEAD_ID` for all steps below.
 
 Create `.beads/artifacts/$BEAD_ID/`. Write from investigation, not from memory.
 
+**For each artifact below, follow this exact process:**
+1. **Read the template**: `read .omp/templates/<name>`
+2. **Fill in every `{placeholder}`** with concrete evidence from Phases 3-4. Delete no sections. Add no new top-level sections. Replace every `{placeholder}` — no `{placeholder}` left unfilled.
+3. **Write the filled file** to `.beads/artifacts/$BEAD_ID/<name>`
+
 ### prd.md
 
-Use `.omp/templates/prd.md` as the shape. Fill every section with evidence from Phase 3:
+Template: `.omp/templates/prd.md`
 
-- **Problem**: WHEN/THEN/BECAUSE from 3c. Include who is affected and why now.
-- **Scope**: In Scope from your design. Out of Scope from 4c — be explicit about what you won't touch.
-- **Requirements**: Numbered table. Each requirement MUST have a falsifiable acceptance criterion — a command you can run, a behavior you can observe. "The system should be fast" is not falsifiable. "API responds in <200ms p95" is.
-- **Technical Context**: Exact file paths from 3a. Existing patterns from 3a. Constraints from 3d. Prior art from 3e. Concrete, not hand-wavy.
-- **Approach**: The chosen alternative from 4b. Why the others were rejected (feed decisions.md).
+Fill from investigation (Phase 3) and design (Phase 4):
+- **Problem**: WHEN/THEN/BECAUSE from 3c. Who is affected, why now.
+- **Scope**: In Scope from design. Out of Scope from 4c — explicit boundaries.
+- **Requirements**: From 4b. Every requirement MUST have a falsifiable acceptance criterion — a command to run, a behavior to observe.
+- **Technical Context**: Exact file paths from 3a. Existing patterns from 3a. Constraints from 3d. Prior art from 3e.
+- **Approach**: Chosen alternative from 4b. Why others were rejected.
 - **Risks**: From 4d. Likelihood, Impact, Mitigation.
-- **Success Criteria**: Falsifiable outcomes. Each one must be checkable with a command or observable behavior. No vague statements.
+- **Success Criteria**: Falsifiable outcomes. Each checkable with a command.
 
 ### prd.json
 
-Use `.omp/templates/prd.json` as the shape. Machine-readable mirror of the PRD requirements. Must stay in sync with prd.md.
+Template: `.omp/templates/prd.json`
+
+Machine-readable mirror of the PRD. Must stay in sync — every requirement in prd.md must appear in prd.json with matching IDs.
 
 ### decisions.md
 
-Use `.omp/templates/decisions.md` as the shape:
-- **Decision Log**: every design choice from Phase 4 with rationale and confidence
-- **Rejected Alternatives**: from 4a — what you considered and why you rejected it. Include "Risk if Re-introduced" — if someone later tries the rejected approach, what breaks?
-- **Assumptions**: from 3d — what you assume to be true, how you validated it, what changes if the assumption is wrong
+Template: `.omp/templates/decisions.md`
+
+- **Decision Log**: Every design choice from Phase 4 with rationale and confidence.
+- **Rejected Alternatives**: From 4a — what you considered, why rejected, risk if re-introduced.
+- **Assumptions**: From 3d — what you assume true, how validated, what changes if wrong.
 
 ## Phase 6b: Worktree (if --worktree)
 

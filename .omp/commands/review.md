@@ -147,33 +147,15 @@ For history findings: verify the evidence supports the claim.
 
 Filter: keep only findings scored ≥80. If none survive: report "No high-confidence issues."
 
-Write `.beads/artifacts/$BEAD_ID/review-report.md` using `.omp/templates/review-report.md` as shape:
-
-```markdown
-# Review Report: $BEAD_ID
-
-## Verdict
-
-`approved` — all findings addressed or scored below threshold.
-
-## Review Summary
-
-- Agents run: 5 (spec-PRD, spec-plan, bug-scan, history, comments)
-- Total raw findings: <N>
-- High-confidence (≥80): <M>
-- False positives filtered: <N-M>
-
-## Findings
-
-### #1: <title> (confidence: <score>)
-**Agent:** <which agent>
-**Severity:** critical|high|medium
-**File:** <path>#L<line>
-**Issue:** <description>
-**Recommendation:** <concrete fix>
-
-### #2: ...
-```
+1. **Read the template**: `read .omp/templates/review-report.md`
+2. **Fill in every `{placeholder}`** with the filtered findings from Phases 4-5:
+   - **Verdict**: `approved` (0 high-confidence findings or all addressed), `changes-requested` (≥1 high-confidence, no criticals), `blocked` (≥1 critical)
+   - **Review Summary**: fill agent counts and finding stats from Phase 4-5 results
+   - **Findings**: each high-confidence (≥80) finding gets its own `### #N` block with title, agent, severity, file, issue, recommendation
+   - **Spec ↔ Code Adherence**: from Phase 2-3 reading of PRD + plan — what's covered, what's missing
+   - **Residual Risks**: risks from plan not covered by verification — accepted or deferred
+   - **Summary**: 2-3 sentence verdict — safe to merge or not
+3. **Write** to `.beads/artifacts/$BEAD_ID/review-report.md`
 
 ## Phase 7: Report
 

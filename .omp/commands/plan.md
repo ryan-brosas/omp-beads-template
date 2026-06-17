@@ -63,25 +63,40 @@ Within a wave, tasks that touch different files can run in parallel.
 
 ## Phase 4: Write Artifacts
 
-**plan.md** — Use `.omp/templates/plan.md` as the shape:
-- Graph Context: blast radius (N files, M new/O edits/P deletes), unblocks, blocked by, critical path, forecast, hotspots
-- Observable Truths: falsifiable statements — what "done" looks like
-- Required Artifacts table: what files, what they provide, path, status
-- Wave Structure table: wave #, tasks, parallel?, preconditions, verification gate
-- Tasks per wave with code outlines (NOT implementation, just the shape)
-- Full Verification section with exact bash commands
+**For each artifact below, follow this exact process:**
+1. **Read the template**: `read .omp/templates/<name>`
+2. **Fill in every `{placeholder}`** with concrete evidence from Phases 1-3. Delete no sections. Add no new top-level sections. Replace every `{placeholder}` — no `{placeholder}` left unfilled.
+3. **Write the filled file** to `.beads/artifacts/$BEAD_ID/<name>`
 
-**tasks.md** — Use `.omp/templates/tasks.md` as the shape:
+### plan.md
+
+Template: `.omp/templates/plan.md`
+
+Fill from graph context (Phase 1) and decomposition (Phases 2-3):
+- **Graph Context**: blast radius (N files, M new/O edits/P deletes), unblocks, blocked by, critical path, forecast, hotspots
+- **Observable Truths**: falsifiable statements — what "done" looks like
+- **Required Artifacts table**: what files, what they provide, path, status
+- **Wave Structure table**: wave #, tasks, parallel?, preconditions, verification gate
+- **Tasks per wave** with code outlines (NOT implementation, just the shape — function signatures, types, key logic flow)
+- **Full Verification** section with exact bash commands and expected output
+
+### tasks.md
+
+Template: `.omp/templates/tasks.md`
+
 - YAML metadata per task: depends_on, parallel, conflicts_with, files, estimated_minutes
-- Concrete checkboxes per task step
-- Verification check per task
+- Concrete checkboxes per task step — no vague "implement X"
+- Verification check per task — a command that proves the task is done
 
-**context-capsule.md** — Use `.omp/templates/context-capsule.md` as the shape:
-- Objective (one paragraph)
-- Key patterns with file references
-- Constraints (MUST/SHOULD lists)
-- File ownership table
-- Graph context summary
+### context-capsule.md
+
+Template: `.omp/templates/context-capsule.md`
+
+- Objective (one paragraph — what are we building and why)
+- Key patterns with file references (what to copy, preserve, or avoid)
+- Constraints (MUST/SHOULD lists — hard boundaries for implementation)
+- File ownership table (allowed vs forbidden per task)
+- Graph context summary (blast radius, related beads, file history, hotspots)
 
 ## Phase 5: Verify
 

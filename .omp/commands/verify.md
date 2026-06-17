@@ -60,21 +60,15 @@ bv --robot-suggest --format json             # Hygiene check
 
 ## Phase 4: Write Completion Evidence
 
-Write `.beads/artifacts/$BEAD_ID/completion-evidence.json` using `.omp/templates/completion-evidence.json` as the shape:
+1. **Read the template**: `read .omp/templates/completion-evidence.json`
+2. **Fill in every `{placeholder}`** with the actual results from Phase 3. Separate passed, failed, and unchecked. Be honest — a failed check recorded as "passed" is worse than no evidence at all.
+3. **Write** to `.beads/artifacts/$BEAD_ID/completion-evidence.json`
 
-```json
-{
-  "beadId": "$BEAD_ID",
-  "status": "verified",
-  "summary": "<one-line verdict>",
-  "passedChecks": [{"command": "<cmd>", "expected": "<expected>", "result": "<actual>"}],
-  "failedChecks": [{"command": "<cmd>", "expected": "<expected>", "result": "<actual>"}],
-  "uncheckedRisks": ["<risk from plan not covered>"],
-  "artifacts": [{"path": "<path>", "purpose": "<why>"}]
-}
-```
+Every check in `passedChecks` and `failedChecks` must include the exact command run, what was expected, and what actually happened. No vague "tests passed" — show the command and output.
 
-Separate passed, failed, and unchecked. Be honest.
+`uncheckedRisks` must list every risk from the plan's Risks table that wasn't covered by verification, with a reason why.
+
+`followUps` captures work discovered during verification that should become its own bead.
 
 ## Phase 5: Report
 

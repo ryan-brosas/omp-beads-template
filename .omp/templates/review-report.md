@@ -2,25 +2,38 @@
 
 ## Verdict
 
-- **status**: {approved | changes-requested | blocked}
-- **ready_for_close**: {true | false}
+`{approved | changes-requested | blocked}` — {one-line justification}
+
+## Review Summary
+
+- Agents run: {N} ({which agents})
+- Total raw findings: {N}
+- High-confidence (≥80): {N}
+- False positives filtered: {N}
 
 ## Findings
 
-| # | Severity | File | Issue | Recommendation |
-|---|----------|------|-------|----------------|
-| 1 | {critical|high|medium|low} | `{path}` | {What's wrong} | {How to fix} |
+### #{N}: {title} (confidence: {0-100})
+
+- **Agent:** {which review agent found this}
+- **Severity:** {critical | high | medium | low}
+- **File:** `{path}`#{line}
+- **Issue:** {what's wrong — concrete, specific}
+- **Recommendation:** {how to fix — actionable}
+
+### #{N}: {title} (confidence: {0-100})
+
+...
 
 ## Spec ↔ Code Adherence
 
-- PRD requirement coverage: {N/M requirements implemented}
-- Plan task coverage: {N/M tasks completed}
-- Drift from plan: {None | description of deviations}
+- PRD requirement coverage: {N}/{M} requirements implemented
+- Plan task coverage: {N}/{M} tasks completed
+- Drift from plan: {None | description of deviations and why}
 
 ## Residual Risks
 
-- {Risk not covered by verification}
-- {Risk not covered by verification}
+- {Risk not covered by verification — and why it's accepted or deferred}
 
 ## Summary
 
