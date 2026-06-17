@@ -1,6 +1,6 @@
 ---
 name: security-and-hardening
-description: Use when auditing for vulnerabilities, implementing auth, handling secrets, or hardening against OWASP Top 10 — covers validation, auth, dependency auditing, and secure defaults.
+description: Use when auditing for vulnerabilities, implementing auth, handling secrets, or hardening against OWASP Top 10 — covers validation, auth, dependency auditing, and secure defaults. Includes concrete sink catalog across JS/TS, Python, Go, and CI config.
 ---
 
 # Security & Hardening
@@ -8,6 +8,16 @@ description: Use when auditing for vulnerabilities, implementing auth, handling 
 Security is a constraint, not a feature. It should be present by default and requires explicit justification to relax.
 
 **Core principle:** Validate all input. Authenticate all access. Encrypt all secrets. Audit all dependencies. Trust nothing from outside your process boundary.
+
+## Three-Layer Defense
+
+| Layer | Trigger | Scope |
+|-------|---------|-------|
+| 1. Pattern warnings | On `Edit`/`Write` | Instant regex match against known-dangerous patterns. Prevents commit of obvious sinks. |
+| 2. Diff review | On `Stop` (response complete) | LLM reviews the diff for multi-line vulnerabilities. Catches what patterns miss. |
+| 3. Commit review | On `git commit`/`push` | Agentic reviewer traces data flow across files. Catches cross-file vulns (IDOR, auth bypass, SSRF chains). |
+
+This skill covers layer-1 knowledge (the sink catalog). Install the `security-guidance` plugin for automated layer-2/3 enforcement in the edit loop.
 
 ## When to Use
 
@@ -40,7 +50,7 @@ Security is a constraint, not a feature. It should be present by default and req
 - Trust client-side validation as the only validation
 - Log sensitive data (passwords, tokens, PII)
 
-## OWASP Top 10 Patterns
+## OWASP Top 5 Patterns
 
 ### 1. Injection (SQL, NoSQL, Command)
 
@@ -216,6 +226,306 @@ const authLimiter = rateLimit({
 app.use("/api/auth/", authLimiter);
 ```
 
+---
+
+## Concrete Security Sink Catalog
+
+Every entry: sink name, language, unsafe example, safe example, vulnerability class. These are the patterns a security review must catch.
+
+### JavaScript / TypeScript
+
+#### 1. `child_process.exec()` — Command Injection
+```ts
+// ❌ Shell string + user input = command injection
+exec(`convert ${filename} output.png`);
+
+// ✅ Argument array, no shell
+import { execFile } from "node:child_process";
+execFile("convert", [filename, "output.png"]);
+```
+Only use `exec()` if you absolutely need shell features AND input is guaranteed safe.
+
+#### 2. `new Function()` — Code Injection
+```ts
+// ❌ String interpolation into function body
+const fn = new Function("x", `return ${userExpr}`);
+
+// ✅ Safe alternatives
+const value = obj[key];                              // Property access
+const result = path.split(".").reduce((o, k) => o[k], root); // Path traversal
+```
+Never interpolate untrusted strings into `new Function()` bodies.
+
+#### 3. `eval()` — Arbitrary Code Execution
+```ts
+// ❌ eval with any user input
+const result = eval(userInput);
+
+// ✅ JSON.parse for data, safe expression parser for computation
+const data = JSON.parse(jsonString);
+```
+`eval()` is a code execution backdoor. There is always a safer alternative.
+
+#### 4. `dangerouslySetInnerHTML` — XSS
+```tsx
+// ❌ Raw HTML from untrusted source
+<div dangerouslySetInnerHTML={{ __html: userContent }} />
+
+// ✅ Sanitize with DOMPurify
+import DOMPurify from "dompurify";
+<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(userContent) }} />
+```
+
+#### 5. `.innerHTML =` — XSS
+```ts
+// ❌ innerHTML with untrusted content
+element.innerHTML = userComment;
+
+// ✅ textContent for plain text
+element.textContent = userComment;
+
+// ✅ Or sanitize
+element.innerHTML = DOMPurify.sanitize(userComment);
+```
+
+#### 6. `.outerHTML =` — XSS
+```ts
+// ❌ Same risk surface as innerHTML
+element.outerHTML = userHtml;
+
+// ✅ textContent or DOMPurify
+element.textContent = userText;
+```
+
+#### 7. `.insertAdjacentHTML()` — XSS
+```ts
+// ❌ Another XSS sink
+element.insertAdjacentHTML("beforeend", userHtml);
+
+// ✅ insertAdjacentText for plain text
+element.insertAdjacentText("beforeend", userText);
+```
+
+#### 8. `document.write()` — XSS + Performance
+```ts
+// ❌ Blocks parsing, XSS vector
+document.write(userContent);
+
+// ✅ DOM manipulation
+const el = document.createElement("div");
+el.textContent = userContent;
+document.body.appendChild(el);
+```
+
+#### 9. `crypto.createCipher()` — Weak Crypto
+```ts
+// ❌ Deprecated in Node 22. No IV, MD5-based KDF.
+const cipher = crypto.createCipher("aes-256-cbc", key);
+
+// ✅ Use createCipheriv with proper IV
+const iv = crypto.randomBytes(16);
+const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+```
+
+#### 10. `rejectUnauthorized: false` — TLS Disabled
+```ts
+// ❌ Accepts any certificate. MITM trivial.
+const agent = new https.Agent({ rejectUnauthorized: false });
+
+// ✅ Proper CA trust (default)
+const agent = new https.Agent(); // rejectUnauthorized: true by default
+```
+For self-signed dev certs: add the CA to your trust store. Never disable globally.
+
+### Python
+
+#### 11. `pickle.load()` — Arbitrary Code Execution
+```py
+# ❌ pickle from untrusted source = RCE
+data = pickle.load(untrusted_file)
+
+# ✅ JSON for simple data
+data = json.load(file)
+
+# ✅ Schema-validated deserializer for typed objects
+data = msgspec.json.decode(file.read(), type=MyStruct)
+```
+Also covers: `cPickle`, `cloudpickle`, `dill`, `marshal.load()`, `shelve.open()`, `joblib.load()`, `pandas.read_pickle()`.
+
+#### 12. `numpy.load(allow_pickle=True)` — RCE
+```py
+# ❌ Pickle-enabled numpy load = RCE
+data = np.load(file, allow_pickle=True)
+
+# ✅ Default since numpy 1.16.3 is allow_pickle=False
+data = np.load(file)
+```
+
+#### 13. `torch.load()` — RCE
+```py
+# ❌ Defaults to weights_only=False = pickle RCE
+model = torch.load("model.pt")
+
+# ✅ Explicitly safe
+model = torch.load("model.pt", weights_only=True)
+```
+
+#### 14. `yaml.load()` — RCE via `!!python/object`
+```py
+# ❌ Full YAML = arbitrary Python objects
+data = yaml.load(file)
+
+# ✅ Safe load only handles basic types
+data = yaml.safe_load(file)
+```
+Also covers: `yaml.unsafe_load()` variants.
+
+#### 15. `xml.etree.ElementTree.parse()` — XXE / Billion Laughs
+```py
+# ❌ stdlib XML parsers are XXE-vulnerable by default
+tree = ET.parse(untrusted_xml)
+
+# ✅ defusedxml
+from defusedxml import ElementTree as SafeET
+tree = SafeET.parse(untrusted_xml)
+```
+Also: `minidom.parse()`, `xml.sax.parse()`. All stdlib XML = vulnerable.
+
+#### 16. `os.system()` — Command Injection
+```py
+# ❌ Shell execution with user input
+os.system(f"ping {host}")
+
+# ✅ Argument list, no shell
+subprocess.run(["ping", host])
+```
+
+#### 17. `subprocess.run(shell=True)` — Command Injection
+```py
+# ❌ shell=True + user input
+subprocess.run(f"ls {path}", shell=True)
+
+# ✅ Argument list
+subprocess.run(["ls", path])
+```
+When arguments are a list without `shell=True`, metacharacters are inert.
+
+#### 18. `AES.MODE_ECB` — Weak Encryption
+```py
+# ❌ ECB mode leaks plaintext structure
+cipher = AES.new(key, AES.MODE_ECB)
+
+# ✅ GCM (authenticated) or CBC + HMAC
+cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+```
+Identical plaintext blocks → identical ciphertext blocks in ECB. Visible structure = broken.
+
+### Go
+
+#### 19. `exec.Command("sh", "-c", ...)` — Command Injection
+```go
+// ❌ Shell interpreter + user input = injection
+cmd := exec.Command("sh", "-c", "ping -c 1 "+host)
+
+// ✅ Direct argument passing, no shell
+cmd := exec.Command("ping", "-c", "1", host)
+```
+Validate: IPs via `net.ParseIP()`, paths via `filepath.Clean()`, numerics via `strconv`.
+
+#### 20. `tls.Config{InsecureSkipVerify: true}` — TLS Disabled
+```go
+// ❌ MITM trivial
+client := &http.Client{
+    Transport: &http.Transport{
+        TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+    },
+}
+
+// ✅ Default verification
+client := &http.Client{} // InsecureSkipVerify defaults to false
+```
+
+### Configuration / CI
+
+#### 21. GitHub Actions Workflow Injection
+```yaml
+# ❌ Untrusted input in run: — command injection
+run: echo "${{ github.event.issue.title }}"
+
+# ✅ Environment variable + quoting
+env:
+  TITLE: ${{ github.event.issue.title }}
+run: echo "$TITLE"
+```
+Risky inputs: `issue.title`, `issue.body`, `pr.title`, `pr.body`, `comment.body`, `commits.*.message`, `head_ref`, `client_payload.*`.
+
+#### 22. GitHub Actions Ref Injection
+```yaml
+# ❌ Untrusted input in ref: = checkout arbitrary branches
+- uses: actions/checkout@v4
+  with:
+    ref: ${{ github.event.client_payload.branch }}
+
+# ✅ Validate before use
+- run: |
+    if [[ ! "${{ github.event.client_payload.branch }}" =~ ^[a-zA-Z0-9._/-]+$ ]]; then
+      echo "Invalid branch name" && exit 1
+    fi
+```
+
+### Cross-Language
+
+#### 23. Hardcoded Secrets
+```ts
+// ❌ In source
+const API_KEY = "sk-live-abc123...";
+
+// ✅ Environment variable
+const API_KEY = process.env.API_KEY;
+```
+Also: `.env` files in `.gitignore`, secrets manager for production, rotation on exposure.
+
+#### 24. TLS Verification Disabled
+```py
+# ❌ Python
+requests.get(url, verify=False)
+# ❌ Node
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+# ❌ Python
+ssl._create_unverified_context()
+# ❌ Python
+check_hostname = False
+```
+Any form of TLS disable = MITM possible. Fix: install proper certificates.
+
+#### 25. Script Tag Without Subresource Integrity
+```html
+<!-- ❌ No integrity check — CDN compromise = XSS -->
+<script src="https://cdn.example.com/lib@1.2.3/bundle.js"></script>
+
+<!-- ✅ SRI pins the exact content -->
+<script src="https://cdn.example.com/lib@1.2.3/bundle.js"
+        integrity="sha384-hash"
+        crossorigin="anonymous"></script>
+```
+
+---
+
+## Project-Specific Security Policy
+
+For org-specific rules the generic catalog can't cover, create `.omp/security-policy.md`:
+
+```markdown
+# <Project> Security Rules
+
+- All SELECTs against the `customers` table MUST go through `db.replica`, never `db.primary`.
+- Background jobs must not use user-context auth tokens.
+- Calls to `fetch(url)` with user-controlled `url` need the SSRF-allowlist wrapper.
+- <org-specific crypto rules, data handling policies, etc.>
+```
+
+Loaded by the `security-guidance` plugin's LLM reviewer as supplementary context (concatenated with any `~/.omp/security-policy.md` user-wide rules). Keep under 8KB total. Local overrides go in `.omp/security-policy.local.md` (gitignored).
+
 ## Common Rationalizations
 
 | Excuse | Rebuttal |
@@ -225,6 +535,7 @@ app.use("/api/auth/", authLimiter);
 | "Nobody will find this endpoint" | Security through obscurity isn't security. |
 | "The framework handles it" | Frameworks have defaults, not guarantees. Verify your config. |
 | "This is just a prototype" | Prototypes become production. Build secure habits from day one. |
+| "The input is from a trusted source" | Trust boundaries shift. Validate at every boundary regardless. |
 
 ## Red Flags — STOP
 
@@ -233,9 +544,13 @@ app.use("/api/auth/", authLimiter);
 - API keys or secrets in source code
 - CORS set to `*` in production
 - No rate limiting on authentication endpoints
-- User input passed directly to `exec()`, `eval()`, or file system operations
+- User input passed directly to `exec()`, `eval()`, `new Function()`, `os.system()`, or `subprocess(shell=True)`
+- `pickle.load()` / `yaml.load()` / `torch.load()` / `marshal.load()` on untrusted data
+- `rejectUnauthorized: false` / `InsecureSkipVerify: true` / `verify=False`
 - Dependencies with known critical CVEs
 - No input validation at API boundaries
+- GitHub Actions workflows interpolating `github.event.*` directly into `run:`
+- `dangerouslySetInnerHTML` / `innerHTML` / `outerHTML` without sanitization
 
 ## Verification
 
@@ -247,3 +562,5 @@ app.use("/api/auth/", authLimiter);
 - [ ] `npm audit` shows no critical/high vulnerabilities
 - [ ] Rate limiting on authentication and sensitive endpoints
 - [ ] Authorization checks on all protected resources
+- [ ] No dangerous sinks from the catalog above in changed files
+- [ ] `.omp/security-policy.md` created if project has org-specific rules

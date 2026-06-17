@@ -1,6 +1,8 @@
 ---
-description: "Prepare a pull-request summary from bead artifacts, verification evidence, and review findings."
+description: "Create a pull request from bead artifacts, verification evidence, and review findings."
 argument-hint: "<bead-id>"
+allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git branch:*), Bash(gh pr create:*), Bash(gh pr view:*), Read, Glob
+disable-model-invocation: false
 ---
 
 ## Bead ID Resolution
@@ -12,55 +14,88 @@ argument-hint: "<bead-id>"
 3. If exactly one match → use it. If multiple → list them and ask the user. If none → STOP: "No bead found matching $ARGUMENTS."
 
 Use the resolved ID as `BEAD_ID` for all steps below.
+
 ## Prerequisites (CHECK FIRST)
 
 Before doing ANYTHING, verify:
-1. `.beads/artifacts/$BEAD_ID/review-report.md` exists with verdict `approved`.
-2. All verification checks pass (no `failedChecks` without resolution).
-3. `git diff` shows changes to propose.
 
-If no review: STOP. Tell the user: "Run /review first — no review report for $BEAD_ID."
-If review has `changes-requested` or `blocked`: STOP. Tell the user: "Review found issues — address before PR."
+1. `.beads/artifacts/$BEAD_ID/review-report.md` exists with verdict `approved`.
+2. `.beads/artifacts/$BEAD_ID/completion-evidence.json` exists — no `failedChecks` without resolution.
+3. Current branch has unmerged commits (not on main/master).
+
+If no review: STOP. "Run /review first — no review report for $BEAD_ID."
+If review has `changes-requested` or `blocked`: STOP. "Review found issues — address before PR."
+If on main/master: STOP. "Create a feature branch for $BEAD_ID first."
 Do NOT proceed. Do NOT "helpfully" skip ahead.
 
-Prepare the PR package for the active bead.
+## Context
 
-## Phase 1: Gather Context
+- Current branch: !`git branch --show-current`
+- Unmerged commits: !`git log origin/main..HEAD --oneline || git log main..HEAD --oneline`
+- Changed files: !`git diff --stat origin/main...HEAD || git diff --stat main...HEAD`
+- Bead: !`br show "$BEAD_ID" --json 2>/dev/null || echo '{"id":"$BEAD_ID"}'`
 
-```bash
-br show "$BEAD_ID" --json                    # Bead details
-git diff --stat                              # Changed files summary
+## Artifacts to Read
+
+Read these in parallel:
+- `.beads/artifacts/$BEAD_ID/prd.md` — problem and requirements
+- `.beads/artifacts/$BEAD_ID/plan.md` — implementation plan
+- `.beads/artifacts/$BEAD_ID/completion-evidence.json` — verification results
+- `.beads/artifacts/$BEAD_ID/review-report.md` — review findings and verdict
+
+## Your Task
+
+Create a PR in a single message. Do not send any other text or messages besides the tool calls.
+
+### PR Title
+
+```
+<bead-id>: <one-line summary of the change>
 ```
 
-Read all artifacts: `prd.md`, `plan.md`, `completion-evidence.json`, `review-report.md`.
+### PR Body
 
-## Phase 2: Summarize
+```markdown
+## What
 
-Produce concise reviewer-facing output:
+<2-4 bullet points from prd.md problem statement and plan.md implementation>
 
-1. **What changed** — files + high-level description (2-3 sentences)
-2. **Why** — link to PRD problem statement
-3. **How verified** — key checks from evidence (list passing checks)
-4. **Residual risks** — from review findings
+## Why
 
-## Phase 3: Create PR
+<1-2 sentences linking to the PRD motivation>
 
-Use `gh pr create` with the summary:
+## Verification
+
+- <N>/<N> checks passed (from completion-evidence.json)
+- <list key passing checks>
+
+## Review
+
+- Verdict: <approved>
+- Findings: <N> (<M critical, O high, P medium, Q low>)
+- Residual risks: <list from review report>
+
+---
+
+🤖 Generated with [OMP](https://omp.sh) | Bead: `$BEAD_ID`
+```
+
+### PR Command
 
 ```bash
 gh pr create \
-  --title "<bead-id>: <short description>" \
-  --body "<summary from Phase 2>" \
+  --title "$BEAD_ID: <summary>" \
+  --body "<body from above>" \
   --base main
 ```
 
-## Phase 4: Report
+### After Success
 
+Report:
 ```
 PR: <url>
 Bead: $BEAD_ID
-Verification: <N>/<N> checks passed
-Review: <verdict> (<N> findings)
-Residual risks: <N>
+Verification: <N>/<N> passed
+Review: approved
 Next: /close $BEAD_ID (after merge)
 ```
