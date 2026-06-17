@@ -1,0 +1,80 @@
+{
+  "beadId": "br-omp-backbone-skill-l3d",
+  "type": "chore",
+  "priority": 2,
+  "estimate_minutes": 45,
+  "requirements": [
+    {
+      "id": 1,
+      "text": "project.md has real project identity — no <project-name>, no TODO markers, all 8 placeholder fields filled",
+      "priority": "MUST",
+      "acceptance": "grep '<project-name>' .omp/memory/project/project.md returns nothing. grep '<!-- TODO' .omp/memory/project/project.md returns nothing."
+    },
+    {
+      "id": 2,
+      "text": "conventions.md has filled language table — no <TypeScript | Go | Rust | Python> placeholders, Backend/Frontend say N/A",
+      "priority": "MUST",
+      "acceptance": "Languages by Purpose table has no placeholder options. Backend and Frontend rows say 'N/A'."
+    },
+    {
+      "id": 3,
+      "text": "tech-stack.md craft table is structurally valid — 8 contiguous rows, one header, attribution after table",
+      "priority": "MUST",
+      "acceptance": "grep -c 'design/craft/' .omp/memory/project/tech-stack.md returns 8. No orphan rows. Attribution paragraph follows the table."
+    },
+    {
+      "id": 4,
+      "text": "tech-stack.md verification commands are real, not placeholders",
+      "priority": "MUST",
+      "acceptance": "No <tsc | mypy | cargo check> pattern. Typecheck/Lint/Test/Build/Security say N/A. Graph state commands preserved."
+    },
+    {
+      "id": 5,
+      "text": "decisions.md has 5 decisions in Decision Log with sequential numbering, no Example section",
+      "priority": "MUST",
+      "acceptance": "grep -c '^| [1-5] |' .omp/memory/project/decisions.md returns 5. No '## Example' heading."
+    },
+    {
+      "id": 6,
+      "text": "gotchas.md separates template from project gotchas with blockquote note",
+      "priority": "MUST",
+      "acceptance": "Active Warnings has 1 project-specific gotcha. Template Bootstrap Gotchas has 12 entries with blockquote note."
+    },
+    {
+      "id": 7,
+      "text": "No <project-name> in any memory file",
+      "priority": "MUST",
+      "acceptance": "grep -r '<project-name>' .omp/memory/project/ returns no matches."
+    },
+    {
+      "id": 8,
+      "text": "All memory files remain valid markdown — consistent table columns, no orphan rows",
+      "priority": "MUST",
+      "acceptance": "Read each file — tables have consistent column counts, headers present."
+    },
+    {
+      "id": 9,
+      "text": "No content loss from existing decisions — all 5 decisions preserved verbatim",
+      "priority": "SHOULD",
+      "acceptance": "Each decision's rationale and confidence matches the original."
+    },
+    {
+      "id": 10,
+      "text": "No content loss from existing gotchas — all 13 gotchas preserved",
+      "priority": "SHOULD",
+      "acceptance": "All 13 gotcha entries remain, only categorization changed."
+    }
+  ],
+  "success_criteria": [
+    "project.md has real content in all 8 placeholder fields — grep for <project-name> and <!-- TODO returns nothing",
+    "conventions.md has filled language table with N/A for inapplicable rows",
+    "tech-stack.md craft table has 8 contiguous rows with one header, attribution after table",
+    "tech-stack.md verification commands are N/A for code checks",
+    "decisions.md has 5 decisions in Decision Log, no Example section",
+    "gotchas.md has separated template/project gotchas with blockquote note",
+    "No <project-name> anywhere in memory files — grep returns no matches",
+    "All memory files are valid markdown with consistent tables",
+    "No content loss from existing decisions — all 5 preserved verbatim",
+    "br and bv still function — br list --status open --json and bv --robot-triage --format json succeed"
+  ]
+}

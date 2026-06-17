@@ -1,30 +1,26 @@
-# br-omp-backbone-skill-nvf — Implementation Progress
+# br-omp-backbone-skill-nvf — COMPLETE
 
-## Phase: /ship — IMPLEMENTED
+## Phase Timeline
 
-### Wave 1: Source anchoring
-- [x] 1.1 Read Phase 2.5 edit ranges (lines 168-176, 300-319)
-- [x] 1.2 Snapshot non-target invariants (backend_notes, verification dicts, security_audit, replace_exact — all unchanged)
+- /create: ✅ PRD written
+- /plan: ✅ Plan with 4-wave sequence
+- /ship: ✅ Implemented (commit c0fb82e)
+- /verify: ✅ 10/10 behavioral, 0 br lint, 0 cycles
+- /review: ✅ 13/13 review checks passed
+- /close: ✅ Closed 2026-06-17T16:02 UTC
 
-### Wave 2: Project identity and goal
-- [x] 2.1 Reorder project_name fallback: git_remote_name() → package_name → first_heading_from_readme() → root.name → "Untitled Project"
-- [x] 2.2 project_desc made static TODO marker: "<!-- TODO: fill in your project goal -->"
+## Completion Evidence
 
-### Wave 3: Conventions evidence gates
-- [x] 3.1 Added has_package_dependency() helper (checks dependencies, devDependencies, peerDependencies)
-- [x] 3.2 Frontend gated on framework deps (react, svelte, vue, next, nuxt, astro, angular, solid); TODO markers when absent
-- [x] 3.3 Scripts gated on tsx/ts-node deps; Bash fallback when absent
+- commit: c0fb82e (pushed to origin/main)
+- file: .omp/commands/init.md
+- changes: +19/-13 lines
+- all 7 acceptance criteria met
+- idempotency preserved
+- no regressions
 
-### Wave 4: Verification
-- [x] 4.1 Syntax check: PYTHON_BLOCK_SYNTAX_OK
-- [x] 4.2 Behavioral harness: 19/19 PASS
-- [x] 4.3 Diff scope: only Phase 2.5 regions changed; no template/memory/design changes from this bead
+## Artifacts
 
-### Acceptance Criteria
-- [x] AC1: project_name fallback chain is git_remote→package→readme→root→Untitled
-- [x] AC2: project_desc always TODO marker (no README auto-fill)
-- [x] AC3: Frontend row only hydrates when framework deps detected
-- [x] AC4: Scripts TypeScript only when tsx/ts-node deps detected; else Bash
-- [x] AC5: TODO markers when evidence absent
-- [x] AC6: Existing hydration unchanged (backend, tech-stack, gotchas, decisions)
-- [x] AC7: Idempotency preserved (replace_exact calls unchanged)
+- prd.md, prd.json
+- plan.md, tasks.md, context-capsule.md
+- completion-evidence.json
+- review-report.md
