@@ -1,5 +1,5 @@
 ---
-description: "Formalize work into a br bead + PRD. Graph-informed — uses bv for dedup, classification, and placement."
+description: "Formalize work into a br bead + quality PRD. Investigates the codebase before writing — no speculative PRDs."
 argument-hint: "<description of work>"
 ---
 
@@ -11,7 +11,7 @@ Before doing ANYTHING, verify:
 If no input: STOP. Ask the user: "What are we building? Provide a description or run /brainstorm first."
 Do NOT proceed. Do NOT "helpfully" skip ahead.
 
-You are formalizing work into a tracked br bead. The bead is the backbone.
+You are formalizing work into a tracked br bead. The bead is the backbone. **A low-quality PRD collapses the entire workflow** — plan, ship, verify, and review all depend on it. Invest in this phase.
 
 ## Phase 1: Graph Context
 
@@ -38,7 +38,94 @@ Priority: P0=critical | P1=high | P2=default | P3=low | P4=backlog
 
 Check `bv --robot-priority --format json` — if this unblocks mispriorized work, adjust priority accordingly.
 
-## Phase 3: Create
+## Phase 3: Investigate
+
+**Do not write the PRD yet.** First, understand the problem deeply. A PRD written without investigation is speculative — it will produce a bad plan, bad implementation, and wasted work.
+
+### 3a. Read the Affected Code
+
+Identify the files this work will touch. Don't guess — search:
+
+```bash
+# Find relevant files by keyword, import, or pattern
+grep -rl "<keyword>" --include="*.ts" --include="*.py" --include="*.rs" .
+```
+
+Read 3-5 of the most relevant files. Understand:
+- What patterns exist (follow them, don't invent new ones)
+- What constraints exist (APIs, types, interfaces, conventions)
+- What's the current behavior and why
+- What's coupled to the code you'll change
+
+### 3b. Check File History
+
+```bash
+bv --robot-file-beads <file> --format json   # What beads touched this file?
+bv --robot-file-relations <file> --format json # What co-changes with this file?
+```
+
+Hot files (>3 beads) are fragile — touch carefully. Co-changing files are blast radius — include them in scope.
+
+### 3c. Understand the Problem Root Cause
+
+Answer these before writing the PRD:
+- **WHEN** does the problem occur? (trigger, scenario, user action)
+- **THEN** what happens? (symptom, observable behavior)
+- **BECAUSE** what's the root cause? (why does it happen — not just "X is missing," but why is X missing? what constraint or decision led to this?)
+
+If you can't answer all three, you don't understand the problem yet. Read more code.
+
+### 3d. Identify Constraints
+
+List everything that constrains the solution:
+- **API contracts**: what interfaces must be preserved?
+- **Existing patterns**: what conventions must be followed?
+- **Dependencies**: what other code depends on the changed files?
+- **Performance**: any latency/throughput requirements?
+- **Tooling**: what tools/scripts/CI depends on the current behavior?
+
+### 3e. Check for Prior Art
+
+```bash
+br search "<keyword>" --json                  # Has this been attempted before?
+git log --all --oneline --grep="<keyword>" -10 # Any reverted commits on this topic?
+```
+
+If this was attempted and abandoned, understand why before repeating the same mistake.
+
+## Phase 4: Design
+
+Before writing artifacts, deliberate on the approach.
+
+### 4a. Generate Alternatives
+
+List 2-3 ways to solve the problem. For each:
+- What changes (files, APIs, behaviors)
+- What stays the same
+- Why it works
+- Why it might fail
+
+### 4b. Pick an Approach
+
+Choose the simplest approach that addresses the root cause. Criteria:
+- **Minimal change**: fewest files, least new code
+- **Follows existing patterns**: no new conventions
+- **Reversible**: easy to undo if wrong
+- **Testable**: can verify with concrete checks
+
+### 4c. Define Boundaries
+
+What is explicitly OUT of scope? List files, subsystems, or behaviors you will NOT touch. This is as important as what's in scope — it prevents scope creep during /ship.
+
+### 4d. Identify Risks
+
+For each risk, state:
+- What could go wrong
+- How likely (Low/Medium/High)
+- What's the impact if it does
+- How you'll mitigate it (design choice, verification step, rollback plan)
+
+## Phase 5: Create the Bead
 
 ```bash
 ACTOR="${BR_ACTOR:-assistant}"
@@ -48,43 +135,72 @@ br create --actor "$ACTOR" "$ARGUMENTS" \
   --json
 ```
 
-Capture the bead ID from output.
+Capture the bead ID from output. This is `BEAD_ID` for all steps below.
 
-## Phase 4: Artifacts
+## Phase 6: Write Artifacts
 
-Create `.beads/artifacts/<bead-id>/`:
+Create `.beads/artifacts/$BEAD_ID/`. Write from investigation, not from memory.
 
-**prd.md** — Use `.omp/templates/prd.md` as the shape:
-- Problem: WHEN {actor} THEN {outcome} BECAUSE {root cause}
-- Scope: In Scope / Out of Scope lists
-- Requirements table: #, Requirement, Priority (MUST/SHOULD), Acceptance
-- Technical Context: key files, APIs, existing patterns
-- Approach: how we'll solve it
-- Risks table: risk, likelihood, impact, mitigation
-- Success Criteria: observable outcomes
+### prd.md
 
-**prd.json** — Use `.omp/templates/prd.json` as the shape. Machine-readable requirements + success criteria.
+Use `.omp/templates/prd.md` as the shape. Fill every section with evidence from Phase 3:
 
-**decisions.md** — Use `.omp/templates/decisions.md` as the shape:
-- Decision Log: #, Decision, Rationale, Confidence
-- Rejected Alternatives: #, Alternative, Why Rejected, Risk if Re-introduced
-- Assumptions: #, Assumption, Validation, Invalidation Impact
+- **Problem**: WHEN/THEN/BECAUSE from 3c. Include who is affected and why now.
+- **Scope**: In Scope from your design. Out of Scope from 4c — be explicit about what you won't touch.
+- **Requirements**: Numbered table. Each requirement MUST have a falsifiable acceptance criterion — a command you can run, a behavior you can observe. "The system should be fast" is not falsifiable. "API responds in <200ms p95" is.
+- **Technical Context**: Exact file paths from 3a. Existing patterns from 3a. Constraints from 3d. Prior art from 3e. Concrete, not hand-wavy.
+- **Approach**: The chosen alternative from 4b. Why the others were rejected (feed decisions.md).
+- **Risks**: From 4d. Likelihood, Impact, Mitigation.
+- **Success Criteria**: Falsifiable outcomes. Each one must be checkable with a command or observable behavior. No vague statements.
 
-## Phase 5: Verify
+### prd.json
+
+Use `.omp/templates/prd.json` as the shape. Machine-readable mirror of the PRD requirements. Must stay in sync with prd.md.
+
+### decisions.md
+
+Use `.omp/templates/decisions.md` as the shape:
+- **Decision Log**: every design choice from Phase 4 with rationale and confidence
+- **Rejected Alternatives**: from 4a — what you considered and why you rejected it. Include "Risk if Re-introduced" — if someone later tries the rejected approach, what breaks?
+- **Assumptions**: from 3d — what you assume to be true, how you validated it, what changes if the assumption is wrong
+
+## Phase 7: Verify
 
 ```bash
-br show <bead-id> --json              # Confirm creation
-br dep cycles --json                  # Must be empty
-ls .beads/artifacts/<bead-id>/        # Confirm artifacts
+br show "$BEAD_ID" --json                    # Confirm creation
+br dep cycles --json                         # Must be empty
+ls .beads/artifacts/"$BEAD_ID"/              # Confirm all 3 artifacts exist
+```
+
+### PRD Quality Self-Check
+
+Before reporting success, verify the PRD passes these checks:
+
+- [ ] Problem section has WHEN/THEN/BECAUSE — not just "we need X"
+- [ ] Scope has explicit Out of Scope — not just In Scope
+- [ ] Every requirement has a falsifiable acceptance criterion
+- [ ] Technical Context references actual file paths — not "various files"
+- [ ] Risks table has Likelihood + Impact + Mitigation — not just "might break"
+- [ ] Success Criteria are observable behaviors — not "it should work"
+- [ ] Decisions.md has rejected alternatives — not just decisions
+- [ ] Assumptions have invalidation impact — not just "assume X is true"
+
+If any box is unchecked, go back to Phase 3 or 4 and fix it. Do not ship a low-quality PRD.
+
+```bash
 br sync --flush-only
 ```
 
-## Phase 6: Report
+## Phase 8: Report
 
 ```
-Bead: <bead-id> | Type: <type> | Priority: P<n>
+Bead: $BEAD_ID | Type: <type> | Priority: P<n>
 Graph fit: <where this sits in execution tracks>
 Impact: <what this unblocks per robot-plan>
-Artifacts: .beads/artifacts/<bead-id>/ (prd.md, prd.json, decisions.md)
-Next: /plan <bead-id>
+Files investigated: <N files read>
+Alternatives considered: <N>
+Risks identified: <N>
+Artifacts: .beads/artifacts/$BEAD_ID/ (prd.md, prd.json, decisions.md)
+PRD quality: <N/8 self-checks passed>
+Next: /plan $BEAD_ID
 ```
