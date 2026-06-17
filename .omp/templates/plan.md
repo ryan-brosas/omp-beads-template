@@ -15,7 +15,7 @@
 
 {Numbered list of concrete, verifiable statements. Each one must be falsifiable — you can look at the result and say "yes this is true" or "no it isn't."}
 
-1. {Observable truth — e.g. "resolve-bead.sh 0ks returns pi-feat-workflow-gate-0ks"}
+1. {Observable truth — e.g. "prd.md has all sections filled with no placeholders"}
 2. {Observable truth}
 
 ## Required Artifacts

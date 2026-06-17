@@ -3,21 +3,13 @@ description: "Lean code review. Graph-informed single-pass review for normal wor
 argument-hint: "<bead-id or defaults to uncommitted changes>"
 ---
 
-## Resolve Bead ID
-
-```bash
-BEAD_ID=$(bash .omp/scripts/resolve-bead.sh "$ARGUMENTS") || exit 1
-```
-
-Use `$BEAD_ID` (not `$ARGUMENTS`) in all commands below.
-
 ## Prerequisites (CHECK FIRST)
 
 Before doing ANYTHING, verify:
-1. `.beads/artifacts/$BEAD_ID/completion-evidence.json` exists and has verification results.
+1. `.beads/artifacts/$ARGUMENTS/completion-evidence.json` exists and has verification results.
 2. `git diff HEAD~1` (or appropriate base) shows changes to review.
 
-If no evidence: STOP. Tell the user: "Run /verify first — no verification evidence for $BEAD_ID."
+If no evidence: STOP. Tell the user: "Run /verify first — no verification evidence for $ARGUMENTS."
 If no changes: STOP. Tell the user: "No changes to review. Run /ship first."
 Do NOT proceed. Do NOT "helpfully" skip ahead.
 
@@ -27,7 +19,7 @@ You are reviewing code in the default lean workflow. Use the graph to understand
 
 ```bash
 bv --robot-file-hotspots --format json       # Files with most bead activity
-br show "$BEAD_ID" --json                    # Bead details
+br show "$ARGUMENTS" --json                    # Bead details
 ```
 
 Use heavier graph commands only when the lightweight context reveals unusual risk:
@@ -47,7 +39,7 @@ bv --robot-file-relations <file> --format json # What files co-change with this?
 
 ## Phase 3: Read the Evidence
 
-Read `.beads/artifacts/$BEAD_ID/completion-evidence.json`. Check:
+Read `.beads/artifacts/$ARGUMENTS/completion-evidence.json`. Check:
 - Are all verification commands listed with results?
 - Do any `failedChecks` remain unresolved?
 - Are `uncheckedRisks` documented and acknowledged?
@@ -61,7 +53,7 @@ Read the PRD requirements and plan tasks. For each:
 
 ## Phase 5: Write Review Report
 
-Write `.beads/artifacts/$BEAD_ID/review-report.md` using `.omp/templates/review-report.md` as the shape:
+Write `.beads/artifacts/$ARGUMENTS/review-report.md` using `.omp/templates/review-report.md` as the shape:
 
 - **verdict**: `approved` | `changes-requested` | `blocked`
 - **ready_for_close**: `true` | `false`
@@ -73,8 +65,8 @@ Write `.beads/artifacts/$BEAD_ID/review-report.md` using `.omp/templates/review-
 ## Phase 6: Report
 
 ```
-Bead: $BEAD_ID | Verdict: <approved/changes-requested/blocked>
+Bead: $ARGUMENTS | Verdict: <approved/changes-requested/blocked>
 Findings: <N> (<M critical, O high, P medium, Q low)
 Ready for close: <true/false>
-Next: /pr $BEAD_ID (if approved) or address findings
+Next: /pr $ARGUMENTS (if approved) or address findings
 ```

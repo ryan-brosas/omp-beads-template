@@ -3,22 +3,14 @@ description: "Prepare a pull-request summary from bead artifacts, verification e
 argument-hint: "<bead-id>"
 ---
 
-## Resolve Bead ID
-
-```bash
-BEAD_ID=$(bash .omp/scripts/resolve-bead.sh "$ARGUMENTS") || exit 1
-```
-
-Use `$BEAD_ID` (not `$ARGUMENTS`) in all commands below.
-
 ## Prerequisites (CHECK FIRST)
 
 Before doing ANYTHING, verify:
-1. `.beads/artifacts/$BEAD_ID/review-report.md` exists with verdict `approved`.
+1. `.beads/artifacts/$ARGUMENTS/review-report.md` exists with verdict `approved`.
 2. All verification checks pass (no `failedChecks` without resolution).
 3. `git diff` shows changes to propose.
 
-If no review: STOP. Tell the user: "Run /review first — no review report for $BEAD_ID."
+If no review: STOP. Tell the user: "Run /review first — no review report for $ARGUMENTS."
 If review has `changes-requested` or `blocked`: STOP. Tell the user: "Review found issues — address before PR."
 Do NOT proceed. Do NOT "helpfully" skip ahead.
 
@@ -27,7 +19,7 @@ Prepare the PR package for the active bead.
 ## Phase 1: Gather Context
 
 ```bash
-br show "$BEAD_ID" --json                    # Bead details
+br show "$ARGUMENTS" --json                    # Bead details
 git diff --stat                              # Changed files summary
 ```
 
@@ -57,9 +49,9 @@ gh pr create \
 
 ```
 PR: <url>
-Bead: $BEAD_ID
+Bead: $ARGUMENTS
 Verification: <N>/<N> checks passed
 Review: <verdict> (<N> findings)
 Residual risks: <N>
-Next: /close $BEAD_ID (after merge)
+Next: /close $ARGUMENTS (after merge)
 ```

@@ -31,7 +31,6 @@ Check that these directories exist:
 - `.omp/commands/`, `.omp/skills/`, `.omp/templates/`, `.omp/agents/`, `.omp/extensions/`
 - `.beads/artifacts/` (create with `.gitkeep` if missing)
 
-Confirm `.omp/scripts/resolve-bead.sh` is executable.
 
 ## Phase 4: Check Agent Files
 

@@ -3,34 +3,26 @@ description: "Implement. Graph-informed — checks file history, impact, and rel
 argument-hint: "<bead-id>"
 ---
 
-## Resolve Bead ID
-
-```bash
-BEAD_ID=$(bash .omp/scripts/resolve-bead.sh "$ARGUMENTS") || exit 1
-```
-
-Use `$BEAD_ID` (not `$ARGUMENTS`) in all commands below.
-
 ## Prerequisites (CHECK FIRST)
 
 Before doing ANYTHING, verify:
-1. `.beads/artifacts/$BEAD_ID/plan.md` exists
-2. `.beads/artifacts/$BEAD_ID/tasks.md` exists
-3. `.beads/artifacts/$BEAD_ID/context-capsule.md` exists
+1. `.beads/artifacts/$ARGUMENTS/plan.md` exists
+2. `.beads/artifacts/$ARGUMENTS/tasks.md` exists
+3. `.beads/artifacts/$ARGUMENTS/context-capsule.md` exists
 
-If plan missing: STOP. Tell the user: "Run /plan first — no plan found for $BEAD_ID."
-If tasks missing: STOP. Tell the user: "Run /plan first — no tasks found for $BEAD_ID."
+If plan missing: STOP. Tell the user: "Run /plan first — no plan found for $ARGUMENTS."
+If tasks missing: STOP. Tell the user: "Run /plan first — no tasks found for $ARGUMENTS."
 Do NOT proceed. Do NOT "helpfully" skip ahead.
 
-You are implementing bead $BEAD_ID. Check the graph before coding.
+You are implementing bead $ARGUMENTS. Check the graph before coding.
 
 ## Phase 1: Graph Check
 
 ```bash
 bv --robot-triage --format json              # Have priorities shifted?
 bv --robot-alerts --format json              # Any new blockers or stale issues?
-br show "$BEAD_ID" --json                    # Bead details
-br dep tree "$BEAD_ID" --json                # Dependencies
+br show "$ARGUMENTS" --json                    # Bead details
+br dep tree "$ARGUMENTS" --json                # Dependencies
 ```
 
 If priorities shifted or new blockers appeared, report before proceeding.
@@ -55,24 +47,24 @@ This prevents:
 
 ```bash
 ACTOR="${BR_ACTOR:-assistant}"
-br update --actor "$ACTOR" "$BEAD_ID" --status in_progress --claim --json
+br update --actor "$ACTOR" "$ARGUMENTS" --status in_progress --claim --json
 ```
 
 ## Phase 4: Implement
 
-Follow the plan in `.beads/artifacts/$BEAD_ID/plan.md`.
+Follow the plan in `.beads/artifacts/$ARGUMENTS/plan.md`.
 
 For each task:
-1. Read context capsule (`.beads/artifacts/$BEAD_ID/context-capsule.md`)
+1. Read context capsule (`.beads/artifacts/$ARGUMENTS/context-capsule.md`)
 2. Check file history (Phase 2)
 3. Implement the change
-4. Update `.beads/artifacts/$BEAD_ID/progress.txt` — mark task done
+4. Update `.beads/artifacts/$ARGUMENTS/progress.txt` — mark task done
 5. Run the wave's verification gate before starting next wave
 
 ## Phase 5: Verify
 
 ```bash
-br lint "$BEAD_ID" --json                    # Lint changed files
+br lint "$ARGUMENTS" --json                    # Lint changed files
 br dep cycles --json                         # Must still be empty
 ```
 
@@ -81,10 +73,10 @@ Run project-specific verification (tests, build, typecheck) before proceeding.
 ## Phase 6: Report
 
 ```
-Bead: $BEAD_ID | Status: IMPLEMENTED
+Bead: $ARGUMENTS | Status: IMPLEMENTED
 Files changed: <N> (<+additions> <-deletions>)
 Verification gates passed: <N>/<N>
-Next: /verify $BEAD_ID
+Next: /verify $ARGUMENTS
 ```
 
 ## Guardrails
