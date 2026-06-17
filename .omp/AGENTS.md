@@ -116,53 +116,9 @@ Keep each focused and concise. Target ≤1KB for project.md (vision + current ph
 - **No secrets** — never write credentials, API keys, or tokens to memory files
 - **Stale memory is worse than no memory** — audit periodically, delete obsolete entries
 
-## Honcho Operating Protocol
+## Honcho Memory
 
-Honcho is the persistent memory and reasoning layer. It complements br/bv and memory files; it never replaces repository artifacts as the source of truth.
-
-### Use Honcho For
-
-- Durable user preferences and standing instructions
-- Cross-session project decisions, constraints, and implementation style
-- Recurring gotchas that help future agents choose better defaults
-- Synthesizing prior context when a task may depend on user history
-
-### Do Not Use Honcho For
-
-- Temporary todos, current command output, or active scratch state
-- Facts already available in repository files, bead artifacts, or tool output
-- Secrets, credentials, tokens, or private keys
-- Speculation or unverified claims
-
-### Tool Selection
-
-| Need | Tool |
-|------|------|
-| Find prior durable context | `honcho_search` |
-| Synthesize user/project preferences | `honcho_chat` |
-| Persist an atomic durable fact | `honcho_remember` |
-
-Use specific queries. Prefer "What durable implementation constraints has the user stated?" over "What do you know?".
-
-### Reasoning Levels
-
-- `minimal` — quick factual lookup
-- `low` — default preference/context synthesis
-- `medium` or `high` — multi-session synthesis that can affect implementation
-- `max` — rare deep memory research only
-
-### Per-Task Flow
-
-1. Before planning or coding, query Honcho only when prior user or project context could change the decision.
-2. Use the smallest reasoning level that can answer the question.
-3. Keep repository files, bead artifacts, and observed tool output authoritative.
-4. After completion, remember only new durable facts that should survive future sessions.
-5. Never store secrets or transient implementation state.
-
-### SDK/MCP Defaults
-
-If wiring Honcho directly later: use one shared workspace when agents should share memory, one stable peer ID per real user, sessions scoped to repo/conversation/task/import, and `observe_me: false` for deterministic assistant/tool peers when configurable. Avoid many tiny sessions for trickle data because Honcho reasoning batches around roughly 1,000 tokens per peer/session.
-
+Honcho is the persistent memory layer. Full protocol in `conventions.md` → Honcho Memory section. Summary: `honcho_search` for prior context, `honcho_chat` for synthesis, `honcho_remember` for durable facts. Never store secrets or scratch state.
 
 ## Skills Map
 
@@ -202,6 +158,7 @@ omp-template/
 │           ├── tasks.md               # Ordered task list with dependencies
 │           ├── decisions.md           # Architecture and design decisions
 │           ├── context-capsule.md     # Handoff for the next agent
+│           ├── progress.txt           # Phase checklist and change log
 │           ├── completion-evidence.json  # Verification commands and results
 │           └── review-report.md       # Parallel review findings and verdict
 ├── .omp/                              # OMP harness configuration
@@ -227,12 +184,18 @@ omp-template/
 │   │   └── <cognitive-tool>/SKILL.md   # decision-tree pattern
 │   ├── extensions/                    # OMP tool extensions
 │   │   └── workflow-gate.ts           # edit/write gating based on bead state
+│   ├── scripts/                       # Standalone utility scripts
+│   │   └── hydrate-memory.py          # /init memory file hydration
 │   ├── templates/                     # Artifact templates
 │   │   ├── prd.md
+│   │   ├── prd.json
 │   │   ├── plan.md
 │   │   ├── tasks.md
 │   │   ├── context-capsule.md
-│   │   └── review-report.md
+│   │   ├── progress.txt
+│   │   ├── completion-evidence.json
+│   │   ├── review-report.md
+│   │   └── decisions.md
 │   └── memory/project/                # Durable project knowledge
 │       ├── project.md                 # Vision, goals, current phase
 │       ├── conventions.md             # Naming, workflow, agent rules
@@ -241,7 +204,6 @@ omp-template/
 │       └── tech-stack.md              # Versions, verification commands, constraints
 ├── .gitignore
 └── README.md
-```
 
 ## Philosophy
 
