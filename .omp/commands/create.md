@@ -250,6 +250,23 @@ If any box is unchecked, go back to Phase 3 or 4 and fix it. Do not ship a low-q
 br sync --flush-only
 ```
 
+## Phase 7b: Auto-Commit
+
+Create a scoped commit for the `/create` output before reporting success. This preserves the PRD baseline that `/plan`, `/ship`, and `/review` depend on.
+
+```bash
+br sync --flush-only
+git status --short
+git add .beads/
+git add .beads/artifacts/"$BEAD_ID"/prd.md \
+        .beads/artifacts/"$BEAD_ID"/prd.json \
+        .beads/artifacts/"$BEAD_ID"/decisions.md
+git commit -m "docs: create PRD for $BEAD_ID"
+```
+
+Stage only `/create` artifacts and bead sync state. Do not stage unrelated user changes. If there is nothing to commit, record that observed status in the report instead of fabricating a commit.
+
+
 ## Phase 8: Report
 
 ```

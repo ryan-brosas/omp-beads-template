@@ -158,6 +158,20 @@ Filter: keep only findings scored ≥80. If none survive: report "No high-confid
    - **Summary**: 2-3 sentence verdict — safe to merge or not
 3. **Write** to `.beads/artifacts/$BEAD_ID/review-report.md`
 
+## Phase 6b: Auto-Commit
+
+Create a scoped commit for the `/review` output before reporting success.
+
+```bash
+br sync --flush-only
+git status --short
+git add .beads/
+git add .beads/artifacts/"$BEAD_ID"/review-report.md
+git commit -m "docs: review $BEAD_ID"
+```
+
+Stage only review artifacts and bead sync state. Do not stage unrelated user changes. If there is nothing to commit, record that observed status in the report instead of fabricating a commit.
+
 ## Phase 7: Report
 
 ```

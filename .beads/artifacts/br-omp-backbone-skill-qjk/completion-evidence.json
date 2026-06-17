@@ -1,0 +1,18 @@
+{
+  "bead_id": "br-omp-backbone-skill-qjk",
+  "verified_at": "2026-06-17T14:46:00Z",
+  "checks": [
+    {
+      "name": "auto_commit_sections_present",
+      "tool": "search",
+      "target": [
+        ".omp/commands/create.md",
+        ".omp/commands/ship.md",
+        ".omp/commands/review.md"
+      ],
+      "pattern": "Phase [0-9]+b: Auto-Commit|br sync --flush-only|git commit -m|Do not stage unrelated user changes|Stage only",
+      "result": "pass",
+      "evidence": "Search found Auto-Commit sections in create, ship, and review with br sync, git commit, and scoped staging warnings."
+    }
+  ]
+}

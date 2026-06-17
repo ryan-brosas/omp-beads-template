@@ -103,6 +103,20 @@ br dep cycles --json                         # Must still be empty
 
 Run project-specific verification (tests, build, typecheck) before proceeding.
 
+## Phase 5b: Auto-Commit
+
+Create a scoped commit for the `/ship` implementation before reporting success.
+
+```bash
+br sync --flush-only
+git status --short
+git add <files changed by this bead>
+git add .beads/
+git commit -m "feat: implement $BEAD_ID"
+```
+
+Stage only implementation files changed for this bead plus bead sync/progress artifacts. Do not stage unrelated user changes. If the correct conventional prefix is not `feat`, use `fix`, `refactor`, `docs`, or `test` to match the actual change. If there is nothing to commit, record that observed status in the report instead of fabricating a commit.
+
 ## Phase 6: Report
 
 ```
