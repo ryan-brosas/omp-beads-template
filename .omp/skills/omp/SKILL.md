@@ -824,7 +824,7 @@ Task rules:
 - Shared `context` appears once.
 - Each assignment must be self-contained.
 - Every spawn should have a role.
-- Read-only agents (`explore`, `scout`, reviewers) must not be asked to edit.
+- Read-only agents (`explore`, reviewers) must not be asked to edit.
 - Subagents skip project-wide verification; parent verifies the union.
 - Agents coordinate over IRC instead of round-tripping every decision through parent.
 
@@ -832,11 +832,10 @@ Built-in agents:
 
 | Agent | Use |
 | --- | --- |
-| `explore` | Read-only codebase reconnaissance. |
-| `scout` | Fast read-only beads/bv/context reconnaissance. |
+| `explore` | Read-only codebase reconnaissance and bv/bead context. |
 | `plan` | Complex multi-file architecture planning. |
 | `designer` | UI/UX implementation or review. |
-| `reviewer`, `reviewer-*` | Review, correctness, performance, security. |
+| `reviewer` | Code review — correctness, performance, security. |
 | `librarian` | External library/API source reading. |
 | `oracle` | Senior implementation/debugging delegate. |
 | `task` | General full-capability worker. |

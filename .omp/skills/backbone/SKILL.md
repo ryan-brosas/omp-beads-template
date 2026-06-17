@@ -54,7 +54,7 @@ Together they form the backbone: **bv → br → OMP → repeat.**
 | File searching | `find` or `search` | shell find/grep |
 | Edits or new files | `edit` or `write` | sed or shell redirects |
 | Builds, tests, git | `bash` | - |
-| Parallel reconnaissance | `task` with scout/explore | sequential one-by-one reads |
+| Parallel reconnaissance | `task` with `explore` | sequential one-by-one reads |
 | Phase routing decisions | `orchestrator` skill | guessing the next phase |
 
 ## Related skills
