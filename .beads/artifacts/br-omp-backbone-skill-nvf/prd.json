@@ -1,8 +1,98 @@
 {
   "beadId": "br-omp-backbone-skill-nvf",
+  "title": "Fix /init hydration: project name precedence, goal auto-fill, conventions over-inference",
   "type": "feature",
   "priority": 1,
   "estimate_minutes": 60,
+  "owner": "makora1",
+  "status": "in_progress",
+  "parent": "br-omp-backbone-skill-9tl",
+  "problem": {
+    "summary": "The /init Phase 2.5 hydration script has three review findings that deviate from the original PRD intent.",
+    "findings": [
+      {
+        "id": 1,
+        "title": "Project name precedence is wrong",
+        "current_behavior": "project_name fallback chain is README heading, package.json name, git remote name, directory name.",
+        "expected_behavior": "project_name fallback chain is git remote name, package.json name, README heading, directory name.",
+        "because": "The git remote is the canonical repository identifier, while README headings are prose and may not match project identity."
+      },
+      {
+        "id": 2,
+        "title": "Goal field should not be auto-filled from README",
+        "current_behavior": "project_desc is auto-filled from the first README paragraph and written into the project goal slot.",
+        "expected_behavior": "project_desc remains <!-- TODO: fill in your project goal -->.",
+        "because": "The project goal is a human-authored slot; README first paragraphs often contain badges, install text, or marketing prose."
+      },
+      {
+        "id": 3,
+        "title": "Conventions hydration over-infers for Frontend and Scripts rows",
+        "current_behavior": "Frontend and Scripts language/notes are inferred aggressively from the detected backend language.",
+        "expected_behavior": "Frontend is populated only with frontend framework evidence; Scripts infers TypeScript only from tsx or ts-node and otherwise defaults conservatively.",
+        "because": "Conventions require evidence. False precision is worse than a human-facing TODO marker."
+      }
+    ]
+  },
+  "scope": {
+    "in_scope": [
+      ".omp/commands/init.md Phase 2.5 Python block: fix project name precedence, goal auto-fill, and conventions over-inference.",
+      "br-omp-backbone-skill-nvf bead artifacts only."
+    ],
+    "out_of_scope": [
+      "Other init.md phases: Phase 1, Phase 2, Phase 3, and Phase 4.",
+      "Memory file templates under .omp/templates/.",
+      "br/bv commands, workflow gate, and extensions.",
+      "New dependencies."
+    ]
+  },
+  "technical_context": {
+    "key_files": [
+      {
+        "path": ".omp/commands/init.md",
+        "access": "EDIT",
+        "notes": "Phase 2.5 Python block; relevant regions around lines 169-176 and 307-320."
+      },
+      {
+        "path": ".beads/artifacts/br-omp-backbone-skill-nvf/prd.md",
+        "access": "READ",
+        "notes": "Authoritative PRD source mirrored by this JSON file."
+      }
+    ],
+    "systems_touched": [
+      "/init command hydration script embedded Python.",
+      "Memory file template substitution for project.md and conventions.md."
+    ],
+    "existing_code_not_to_modify": [
+      "Phases 1, 2, 3, and 4 of init.md.",
+      "Memory file templates under .omp/templates/.",
+      "Backend, tech-stack, gotchas, and decisions hydration logic except where directly coupled to the listed fixes."
+    ]
+  },
+  "approach": [
+    {
+      "id": 1,
+      "title": "Project name precedence",
+      "change": "Reorder the project_name fallback chain to git_remote_name(), package_json.name, first_heading_from_readme(), root.name, then \"Untitled Project\".",
+      "rationale": "A simple order change fixes the behavior without adding functions or state."
+    },
+    {
+      "id": 2,
+      "title": "Goal/description auto-fill",
+      "change": "Set project_desc directly to <!-- TODO: fill in your project goal --> and remove README paragraph auto-fill from that slot.",
+      "rationale": "The project goal is intentionally human-authored."
+    },
+    {
+      "id": 3,
+      "title": "Conservative conventions hydration",
+      "change": "Detect frontend framework dependencies before populating Frontend; infer TypeScript scripts only from tsx or ts-node; otherwise keep conservative placeholders/defaults.",
+      "rationale": "Evidence-based hydration prevents false conventions from being written into durable project memory."
+    }
+  ],
+  "outcome": [
+    "Project name derivation uses git-remote-first precedence.",
+    "The goal/description field is a human-only TODO marker and is never auto-filled.",
+    "Conventions Frontend/Scripts rows are populated only when concrete evidence exists; otherwise they remain placeholder-marked for human review."
+  ],
   "requirements": [
     {
       "id": 1,
@@ -45,6 +135,24 @@
       "text": "The script remains idempotent: re-running /init on an already-hydrated repo does not overwrite user edits.",
       "priority": "MUST",
       "acceptance": "Run /init or the Phase 2.5 hydration path on already-populated memory files and confirm user-populated fields are not overwritten."
+    }
+  ],
+  "constraints": [
+    "Changes are scoped to the Python embedded block in .omp/commands/init.md, Phase 2.5.",
+    "No changes to the init command structure, other phases, or memory file templates.",
+    "Must preserve idempotency: only replace exact template placeholders, never overwrite user-populated fields.",
+    "Must not introduce new dependencies."
+  ],
+  "risks": [
+    {
+      "likelihood": "Low",
+      "impact": "Changing project name precedence could change the heading on already-initialized repos if /init is re-run.",
+      "mitigation": "The existing already-populated guard means previously hydrated files are left alone."
+    },
+    {
+      "likelihood": "Low",
+      "impact": "Conservative conventions hydration means more TODO markers for humans to fill.",
+      "mitigation": "This is intentional; false precision is worse than a TODO marker."
     }
   ],
   "success_criteria": [
