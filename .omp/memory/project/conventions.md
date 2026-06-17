@@ -24,7 +24,6 @@ updated: 2026-06-17
 | Frontend | N/A | Template repo — provides design system assets only |
 | Scripts | Python | `/init` hydration script |
 
-Fill in the actual languages for your project. Agents use this to pick the right tool for the job.
 
 ## Skill Structure
 
@@ -88,43 +87,8 @@ Memory files are the project's durable context — equivalent to CLAUDE.md. They
 | `gotchas.md` | Pitfalls, warnings, workarounds | When a gotcha is discovered |
 | `tech-stack.md` | Versions, verification commands, constraints | When dependencies change |
 
-**Update workflow:**
-1. After a session that reveals missing context: write the target file, show the diff, get approval, apply.
-2. Every `/close`: agent checks if any conventions/decisions/gotchas were discovered during the bead and proposes updates.
-3. Audit periodically: are conventions current? Architecture clear? Gotchas captured?
-4. Never let memory drift — stale memory is worse than no memory because it teaches wrong patterns.
+**Update workflow:** Every `/close` checks if conventions/decisions/gotchas changed and proposes updates. Audit periodically. Never let memory drift — stale memory teaches wrong patterns.
 
 ## UI Design
 
-### Design System
-
-- **Brand contract:** `.omp/skills/design-system/DESIGN.md` — the 9-section source of truth for visual language.
-
-### Animation Philosophy
-
-- **Easing:** `cubic-bezier(0.23, 1, 0.32, 1)` is the single canonical curve for all UI transitions. Built-in `ease` is too weak; `ease-in` is forbidden for UI elements (feels sluggish).
-- **Asymmetric durations:** enter ~200ms, exit ~140ms. Exit reads as decisive because the user has already chosen to dismiss.
-- **Accordion expand/collapse:** `grid-template-rows: 0fr → 1fr` (modern auto-height pattern). Pair with opacity fade and the canonical easing. Reuse `.accordion-collapsible` + `.accordion-collapsible-inner`.
-- **Scale floor:** Never animate from `transform: scale(0)`. Start from `scale(0.9)` or higher with `opacity: 0`.
-- **Mount strategy:** Keep conditionally-visible elements mounted; toggle a CSS class. React unmounts skip the exit transition entirely.
-- **Micro-feedback:** 120ms for hover/focus transitions (the `--dur-quick` token).
-
-### CSS Ownership
-### Component Variants
-
-- **Buttons:** 5 variants — `default`, `primary`, `primary-ghost`, `ghost`, `subtle`. No new variants without a documented need.
-- **Focus rings:** Use `--selected` (blue) + `--selected-soft` ring on inputs/selects. Use `--accent` (terracotta) for button focus-visible outlines. This separation lets a focused input and a primary CTA coexist without competing.
-
-### Craft Rules
-### Theme
-
-- **Light default.** Dark via `[data-theme="dark"]` on `<html>`. System mode via `@media (prefers-color-scheme: dark)` when no explicit theme attribute.
-- **Every token has a dark counterpart.** Never approximate dark values — each is chosen for perceptual equivalence.
-
-### Icons
-
-- **Icon set:** Use a single consistent icon library. Prefer 1.6–1.8px-stroke monoline SVG with `currentColor` so icons inherit text color.
-- **Icon-only buttons:** Always include an `aria-label`. Pair with `.sr-only` text when the icon's meaning isn't universally obvious.
-- **Never use emoji as UI icons.** Emoji render differently across platforms, lack `currentColor` inheritance, and read as unpolished. Reserve emoji for user-generated content only.
-- **Icon sizing:** 16px for inline with body text, 20px for standalone UI (toolbar buttons, nav items), 24px for large controls.
-- **Decorative icons:** `aria-hidden="true" focusable="false"` on SVGs that repeat adjacent text labels.
+UI design rules (animation, components, theme, icons, craft) live in the design-system skill (`.omp/skills/design-system/SKILL.md`). Load that skill when working on UI. This file does not duplicate those rules.

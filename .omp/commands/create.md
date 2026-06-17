@@ -63,7 +63,7 @@ Identify the files this work will touch. Don't guess — search:
 
 ```bash
 # Find relevant files by keyword, import, or pattern
-grep -rl "<keyword>" --include="*.ts" --include="*.py" --include="*.rs" .
+grep -rl "<keyword>" --include="*.ts" --include="*.py" --include="*.rs" --include="*.go" --include="*.md" --include="*.json" --include="*.yml" --include="*.yaml" --include="*.css" --include="*.html" .
 ```
 
 Read 3-5 of the most relevant files. Understand:
