@@ -15,17 +15,39 @@ Use the resolved ID as `BEAD_ID` for all steps below.
 ## Prerequisites (CHECK FIRST)
 
 Before doing ANYTHING, verify:
-1. `.beads/artifacts/$BEAD_ID/plan.md` exists
-2. `.beads/artifacts/$BEAD_ID/tasks.md` exists
-3. `.beads/artifacts/$BEAD_ID/context-capsule.md` exists
+1. `.beads/artifacts/$BEAD_ID/prd.md` exists — this defines WHAT to build
+2. `.beads/artifacts/$BEAD_ID/plan.md` exists — this defines HOW to build it
+3. `.beads/artifacts/$BEAD_ID/tasks.md` exists — this decomposes HOW into steps
 
+If PRD missing: STOP. Tell the user: "Run /create first — no PRD found for $BEAD_ID."
 If plan missing: STOP. Tell the user: "Run /plan first — no plan found for $BEAD_ID."
 If tasks missing: STOP. Tell the user: "Run /plan first — no tasks found for $BEAD_ID."
-Do NOT proceed. Do NOT "helpfully" skip ahead.
 
-You are implementing bead $BEAD_ID. Check the graph before coding.
+You are implementing bead $BEAD_ID. The PRD defines WHAT to build, the plan defines HOW. Both must stay in sync.
+
+## Phase 0: PRD-Plan Alignment
+
+Before touching any code, verify the plan hasn't drifted from the PRD:
+
+1. **Read the PRD**: `.beads/artifacts/$BEAD_ID/prd.md`
+   - Note every MUST requirement (these are the contract)
+   - Note every explicit Out of Scope boundary (do not cross these)
+   - Note the Success Criteria (these are the proof of completion)
+
+2. **Read the plan**: `.beads/artifacts/$BEAD_ID/plan.md`
+   - Does every MUST requirement have a corresponding task?
+   - Do the verification gates cover every Success Criterion?
+   - Does the plan touch anything the PRD marked Out of Scope?
+
+3. **If the plan is misaligned:**
+   - Missing requirements → STOP. "Plan doesn't cover PRD requirement #N. Run /plan to update."
+   - Plan exceeds scope → STOP. "Plan includes <X> which PRD marked Out of Scope. Fix the plan or update the PRD."
+   - Plan tasks don't map to requirements → warn but proceed (the plan may decompose differently than the PRD organized them)
+
+4. **If aligned**: proceed to Phase 1.
 
 ## Phase 1: Graph Check
+
 
 ```bash
 bv --robot-triage --format json              # Have priorities shifted?
@@ -61,14 +83,16 @@ br update --actor "$ACTOR" "$BEAD_ID" --status in_progress --claim --json
 
 ## Phase 4: Implement
 
-Follow the plan in `.beads/artifacts/$BEAD_ID/plan.md`.
+Follow the plan in `.beads/artifacts/$BEAD_ID/plan.md`. Cross-reference the PRD at each step.
 
 For each task:
 1. Read context capsule (`.beads/artifacts/$BEAD_ID/context-capsule.md`)
 2. Check file history (Phase 2)
-3. Implement the change
-4. Update `.beads/artifacts/$BEAD_ID/progress.txt` — mark task done
-5. Run the wave's verification gate before starting next wave
+3. **Cross-check the PRD**: which requirement(s) does this task satisfy? If a task doesn't trace to a PRD requirement, ask: is this scope creep?
+4. Implement the change
+5. Update `.beads/artifacts/$BEAD_ID/progress.txt` — mark task done
+6. Run the wave's verification gate before starting next wave
+7. **Re-read the PRD's Out of Scope** before starting each wave — if you're about to touch something excluded, STOP
 
 ## Phase 5: Verify
 
