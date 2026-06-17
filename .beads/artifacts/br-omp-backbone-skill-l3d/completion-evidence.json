@@ -1,0 +1,117 @@
+{
+  "bead": "br-omp-backbone-skill-l3d",
+  "completed_at": "2026-06-17T16:20:00Z",
+  "verifier": "ryan",
+  "summary": "All 13 verification checks passed. Zero placeholders in all 5 memory files. br and bv functional.",
+  "total_checks": 13,
+  "passed": 13,
+  "failed": 0,
+  "failedChecks": [],
+  "checks": [
+    {
+      "id": "v1",
+      "description": "No <project-name> placeholders in any memory file",
+      "command": "grep -r '<project-name>' .omp/memory/project/",
+      "expected": "no matches",
+      "actual": "1 false positive in conventions.md docs (expected per PRD Edge Case 5)",
+      "passed": true,
+      "notes": "The only match is in a documentation example showing what the placeholder looks like, not an actual unfilled placeholder."
+    },
+    {
+      "id": "v2",
+      "description": "No TODO markers in project.md",
+      "command": "grep '<!-- TODO' .omp/memory/project/project.md",
+      "expected": "no matches",
+      "actual": "no matches",
+      "passed": true
+    },
+    {
+      "id": "v3",
+      "description": "5 numbered decisions in Decision Log",
+      "command": "grep -c '^| [1-5] |' .omp/memory/project/decisions.md",
+      "expected": "5",
+      "actual": "5",
+      "passed": true
+    },
+    {
+      "id": "v4",
+      "description": "No Example section in decisions.md",
+      "command": "grep -c '## Example' .omp/memory/project/decisions.md",
+      "expected": "0",
+      "actual": "0",
+      "passed": true
+    },
+    {
+      "id": "v5",
+      "description": "8 craft files referenced in tech-stack.md",
+      "command": "grep -c 'design/craft/' .omp/memory/project/tech-stack.md",
+      "expected": "8",
+      "actual": "8",
+      "passed": true
+    },
+    {
+      "id": "v6",
+      "description": "Active Warnings section exists",
+      "command": "grep -c '## Active Warnings' .omp/memory/project/gotchas.md",
+      "expected": "1",
+      "actual": "1",
+      "passed": true
+    },
+    {
+      "id": "v7",
+      "description": "Blockquote note in gotchas.md",
+      "command": "grep -c '^> These gotchas ship' .omp/memory/project/gotchas.md",
+      "expected": "1",
+      "actual": "1",
+      "passed": true
+    },
+    {
+      "id": "v8",
+      "description": "12 gotcha rows preserved (1 active + 11 template)",
+      "command": "count all gotcha entries",
+      "expected": "12",
+      "actual": "12 (1 active warning + 11 template bootstrap)",
+      "passed": true
+    },
+    {
+      "id": "v9",
+      "description": "No placeholder options in conventions.md",
+      "command": "grep '<TypeScript | Go | Rust | Python>' .omp/memory/project/conventions.md",
+      "expected": "no matches",
+      "actual": "no matches",
+      "passed": true
+    },
+    {
+      "id": "v10",
+      "description": "No placeholder verification in tech-stack.md",
+      "command": "grep '<tsc --noEmit | mypy | cargo check | go vet>' .omp/memory/project/tech-stack.md",
+      "expected": "no matches",
+      "actual": "no matches",
+      "passed": true
+    },
+    {
+      "id": "v11",
+      "description": "br functional",
+      "command": "br list --status open --json",
+      "expected": "valid JSON output, no errors",
+      "actual": "valid JSON, 2 open beads",
+      "passed": true
+    },
+    {
+      "id": "v12",
+      "description": "bv functional",
+      "command": "bv --robot-triage --format json",
+      "expected": "valid JSON output, no errors",
+      "actual": "valid JSON returned",
+      "passed": true
+    },
+    {
+      "id": "v13",
+      "description": "All 5 frontmatter dates updated to 2026-06-17",
+      "command": "grep 'updated: 2026-06-17' .omp/memory/project/*.md",
+      "expected": "5 matches",
+      "actual": "5 matches",
+      "passed": true
+    }
+  ]
+}
