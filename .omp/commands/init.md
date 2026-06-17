@@ -166,14 +166,24 @@ def git_remote_name() -> str | None:
 
 package_json = parse_package_json()
 package_name = package_json.get("name") if isinstance(package_json.get("name"), str) else None
+
+
+def has_package_dependency(name: str) -> bool:
+    for section in ("dependencies", "devDependencies", "peerDependencies"):
+        deps = package_json.get(section)
+        if isinstance(deps, dict) and name in deps:
+            return True
+    return False
+
+
 project_name = (
-    first_heading_from_readme()
+    git_remote_name()
     or package_name
-    or git_remote_name()
+    or first_heading_from_readme()
     or root.name
     or "Untitled Project"
 )
-project_desc = first_paragraph_from_readme() or "<!-- TODO: fill in your project goal -->"
+project_desc = "<!-- TODO: fill in your project goal -->"
 
 has_package = (root / "package.json").exists()
 has_tsconfig = (root / "tsconfig.json").exists()
@@ -304,20 +314,21 @@ backend_notes = {
     "Go": "document module boundaries and interface conventions",
     "Rust": "document edition, async runtime, and unsafe policy",
 }.get(language, "<!-- TODO: fill in -->")
-frontend_language = "TypeScript" if language == "TypeScript" else ("JavaScript" if language == "JavaScript" else "<!-- TODO: fill in -->")
-frontend_notes = "reuse existing frontend framework conventions" if frontend_language in {"TypeScript", "JavaScript"} else "<!-- TODO: fill in -->"
-scripts_language = {
-    "TypeScript": "TypeScript",
-    "JavaScript": "TypeScript",
-    "Python": "Python",
-}.get(language, "Bash")
-scripts_notes = {
-    "TypeScript": "package scripts and repo automation",
-    "JavaScript": "package scripts and repo automation",
-    "Python": "automation and one-off tooling",
-    "Go": "shell wrappers around go tooling",
-    "Rust": "shell wrappers around cargo tasks",
-}.get(language, "repo automation and one-offs")
+frontend_frameworks = ("react", "svelte", "vue", "next", "nuxt", "astro", "angular", "solid")
+has_frontend_framework = any(has_package_dependency(name) for name in frontend_frameworks)
+if has_frontend_framework:
+    frontend_language = "TypeScript" if language == "TypeScript" else "JavaScript"
+    frontend_notes = "detected frontend framework; document actual framework conventions"
+else:
+    frontend_language = "<!-- TODO: fill in -->"
+    frontend_notes = "<!-- TODO: fill in -->"
+has_typescript_script_runner = has_package_dependency("tsx") or has_package_dependency("ts-node")
+if has_typescript_script_runner:
+    scripts_language = "TypeScript"
+    scripts_notes = "package scripts and repo automation"
+else:
+    scripts_language = "Bash"
+    scripts_notes = "<!-- TODO: fill in -->"
 
 verification_typecheck = {
     "TypeScript": package_script("typecheck", "npx tsc --noEmit"),
