@@ -11,3 +11,4 @@
 
 # Local Honcho/OMP environment overrides
 .env
+.worktree/
