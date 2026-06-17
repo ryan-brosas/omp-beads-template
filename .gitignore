@@ -8,3 +8,6 @@
 .beads/.write.lock
 .beads/last-touched
 .beads/issues.jsonl
+
+# Local Honcho/OMP environment overrides
+.env

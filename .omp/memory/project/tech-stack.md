@@ -13,7 +13,7 @@ updated: 2026-06-17
 | Runtime | <Node.js \| Bun \| Deno \| Python 3.x \| Go 1.x> | <version> | <LTS? latest?> |
 | Package manager | <npm \| pnpm \| yarn \| pip \| cargo \| go mod> | <version> | |
 | Task tracking | br (beads_rust) | latest | `which br` — CLI task tracker |
-| Graph intelligence | bv (beads_viewer) | latest | `which bv` — 22 robot commands |
+| Graph intelligence | bv (beads_viewer) | latest | `which bv` — robot commands for graph analysis |
 
 ## Key Dependencies
 
