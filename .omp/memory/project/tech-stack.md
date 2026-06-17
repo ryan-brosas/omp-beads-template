@@ -3,15 +3,15 @@ purpose: Tech stack, versions, verification commands, and constraints
 updated: 2026-06-17
 ---
 
-# Tech Stack: <project-name>
+# Tech Stack: OMP Beads Template
 
 ## Runtime
 
 | Layer | Tool | Version | Notes |
 |-------|------|---------|-------|
-| Language | <TypeScript \| Python \| Go \| Rust> | <version> | <strict mode? async? experimental flags?> |
-| Runtime | <Node.js \| Bun \| Deno \| Python 3.x \| Go 1.x> | <version> | <LTS? latest?> |
-| Package manager | <npm \| pnpm \| yarn \| pip \| cargo \| go mod> | <version> | |
+| Language | N/A | — | Template repo — no application language |
+| Runtime | N/A | — | Template repo — no application runtime |
+| Package manager | N/A | — | Template repo — no dependencies |
 | Task tracking | br (beads_rust) | latest | `which br` — CLI task tracker |
 | Graph intelligence | bv (beads_viewer) | latest | `which bv` — robot commands for graph analysis |
 
@@ -19,7 +19,7 @@ updated: 2026-06-17
 
 | Dependency | Purpose | Version |
 |------------|---------|---------|
-| <name> | <what it does> | <version> |
+| N/A | Template repo — no dependencies | — |
 
 Keep to the dependencies that shape architecture decisions. Don't list every transitive dep.
 
@@ -27,16 +27,16 @@ Keep to the dependencies that shape architecture decisions. Don't list every tra
 
 ```bash
 # Typecheck
-<tsc --noEmit | mypy | cargo check | go vet>
+N/A — template repo, no application code
 
 # Lint
-<eslint | ruff | clippy | golangci-lint>
+N/A — template repo, no application code
 
 # Test
-<vitest run | pytest | cargo test | go test ./...>
+N/A — template repo, no application code
 
 # Build
-<tsup | pip install -e . | cargo build --release | go build>
+N/A — template repo, no application code
 
 # Graph state (always available)
 bv --robot-triage
@@ -49,10 +49,10 @@ Replace placeholders with your project's actual commands. These are what `/verif
 
 ```bash
 # Dependency audit
-<npm audit | pip-audit | cargo audit | govulncheck>
+N/A — template repo, no dependencies
 
 # Secrets scan (if configured)
-<gitleaks detect | trufflehog filesystem .>
+N/A — no secrets scan configured
 ```
 
 ## Constraints
@@ -66,20 +66,24 @@ Replace placeholders with your project's actual commands. These are what `/verif
 
 | Asset | Path | Purpose |
 |-------|------|---------|
-| Brand contract | `DESIGN.md` | 9-section visual language spec |
-| Design tokens | `design/tokens.css` | CSS custom properties (light + dark + system) |
-| CSS base | `design/base.css` | Minimal reset + body defaults |
-| CSS primitives | `design/primitives.css` | Base element styles (buttons, inputs, selects, tooltips) |
+| Brand contract | `.omp/skills/design-system/DESIGN.md` | 9-section visual language spec |
+| Design tokens | `.omp/design/tokens.css` | CSS custom properties (light + dark + system) |
+| CSS base | `.omp/design/base.css` | Minimal reset + body defaults |
+| CSS primitives | `.omp/design/primitives.css` | Base element styles (buttons, inputs, selects, tooltips) |
 
 ## Craft References
 
-Brand-agnostic universal design rules that apply on top of any `DESIGN.md`:
+Brand-agnostic universal design rules that apply on top of any `.omp/skills/design-system/DESIGN.md`:
 
 | File | Purpose |
 |------|---------|
-| `design/craft/typography.md` | Type scale, line-height, letter-spacing, font pairing, line length, weight discipline |
-| `design/craft/color.md` | Palette structure, accent discipline, contrast minimums, dark themes, semantic naming |
-| `design/craft/anti-ai-slop.md` | Seven cardinal sins, soft tells, polish tells, soul-injection rules |
-| `design/craft/animation-discipline.md` | When motion earns its place, duration thresholds, curve vs spring, reduced motion, flashing limits |
+| `.omp/design/craft/typography.md` | Type scale, line-height, letter-spacing, font pairing, line length, weight discipline |
+| `.omp/design/craft/color.md` | Palette structure, accent discipline, contrast minimums, dark themes, semantic naming |
+| `.omp/design/craft/anti-ai-slop.md` | Seven cardinal sins, soft tells, polish tells, soul-injection rules |
+| `.omp/design/craft/animation-discipline.md` | When motion earns its place, duration thresholds, curve vs spring, reduced motion, flashing limits |
+| `.omp/design/craft/state-coverage.md` | Loading, empty, error, edge-case states; which states must exist and what they must contain |
+| `.omp/design/craft/accessibility-baseline.md` | WCAG 2.2 AA floor, contrast, touch targets, focus, labels, keyboard, ARIA discipline |
+| `.omp/design/craft/form-validation.md` | Input state machine, validation timing, Constraint Validation API, error wiring, submit hygiene |
+| `.omp/design/craft/typography-hierarchy.md` | Entry points, hierarchy vectors, rhythm failure modes, controlled violations |
 
 Adapted from Open Design's `craft/` directory (Apache 2.0) and [refero_skill](https://github.com/referodesign/refero_skill) (MIT).
