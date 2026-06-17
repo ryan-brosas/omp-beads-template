@@ -1,0 +1,62 @@
+{
+  "bead_id": "br-omp-backbone-skill-nvf",
+  "phase": "verify",
+  "timestamp": "2026-06-17T16:00:00Z",
+  "actor": "makora1",
+  "status": "passed",
+  "checks": {
+    "static": {
+      "syntax": "PYTHON_BLOCK_SYNTAX_OK",
+      "project_name_order": "git_remote_first — confirmed",
+      "project_desc_static": "TODO marker only — confirmed",
+      "project_desc_no_readme": "no first_paragraph_from_readme() call — confirmed",
+      "frontend_frameworks": "all 8 framework names present — confirmed",
+      "script_runners": "tsx and ts-node both referenced — confirmed",
+      "bash_fallback": "scripts_language = Bash for no-runner case — confirmed",
+      "unchanged_anchors": "backend_notes, verification dicts, replace_exact calls — all present",
+      "imports": "no new imports — confirmed"
+    },
+    "behavioral": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "cases": [
+        {"name": "git_remote_first", "result": "PASS"},
+        {"name": "project_desc_static", "result": "PASS"},
+        {"name": "project_desc_no_readme", "result": "PASS"},
+        {"name": "has_package_dependency_helper", "result": "PASS"},
+        {"name": "frontend_frameworks_list", "result": "PASS"},
+        {"name": "frontend_todo_fallback", "result": "PASS"},
+        {"name": "tsx_present", "result": "PASS"},
+        {"name": "ts-node_present", "result": "PASS"},
+        {"name": "bash_fallback", "result": "PASS"},
+        {"name": "imports", "result": "PASS"}
+      ]
+    },
+    "diff_scope": {
+      "init_md_changed": true,
+      "only_phase_2_5_regions": true,
+      "templates_unchanged": false,
+      "memory_unchanged": false,
+      "note": "Template and memory changes are from prior beads (br-omp-backbone-skill-9tl, etc), not from this bead"
+    },
+    "br_lint": {
+      "total": 0,
+      "issues": 0
+    },
+    "cycles": {
+      "count": 0,
+      "active_count": 0
+    }
+  },
+  "acceptance_criteria": {
+    "AC1_project_name_fallback": "PASS — git_remote_name() → package_name → first_heading_from_readme() → root.name → Untitled Project",
+    "AC2_project_desc_todo": "PASS — always <!-- TODO: fill in your project goal -->",
+    "AC3_frontend_evidence_gate": "PASS — only hydrates when framework deps detected; TODO markers when absent",
+    "AC4_scripts_typescript_gate": "PASS — TypeScript only when tsx/ts-node deps; Bash fallback with TODO notes otherwise",
+    "AC5_todo_markers_absent": "PASS — Frontend and Scripts leave TODO markers when evidence absent",
+    "AC6_existing_unchanged": "PASS — backend_notes, tech-stack, gotchas, decisions hydration unchanged",
+    "AC7_idempotency": "PASS — replace_exact calls unchanged; only exact template placeholders replaced"
+  },
+  "verdict": "ALL CHECKS PASSED — ready for /review"
+}
