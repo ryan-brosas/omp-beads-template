@@ -1,0 +1,23 @@
+# Progress: br-omp-backbone-skill-iej
+
+## Phase Checklist
+
+- [x] /brainstorm — Ideas explored
+- [x] /create — PRD + decisions formalized
+- [x] /plan — Scope, blast radius, steps, verification
+- [x] /ship — Implementation complete
+- [ ] /verify — Run checks, record evidence
+- [ ] /review — 5-agent parallel review
+- [ ] /pr — Create GitHub PR
+- [ ] /close — Close bead, suggest next
+
+## Ship Details
+
+All 4 acceptance criteria met:
+1. ✅ Honcho guidance sections present: Use Honcho For, Do Not Use Honcho For, Tool Selection, Reasoning Levels, Per-Task Flow, SDK/MCP Defaults
+2. ✅ Honcho guidance discoverable from .omp/AGENTS.md (central agent doc)
+3. ✅ Br/bv workflow preserved — Honcho explicitly complements, never replaces
+4. ✅ honcho-memory skill added to Skills Map
+
+Files changed: 1 (.omp/AGENTS.md, +65 lines)
+Verification: All 6 required sections present, no secrets, honcho-memory skill registered

@@ -116,12 +116,61 @@ Keep each under 1KB.
 - **No secrets** — never write credentials, API keys, or tokens to memory files
 - **Stale memory is worse than no memory** — audit periodically, delete obsolete entries
 
+## Honcho Operating Protocol
+
+Honcho is the persistent memory and reasoning layer. It complements br/bv and memory files; it never replaces repository artifacts as the source of truth.
+
+### Use Honcho For
+
+- Durable user preferences and standing instructions
+- Cross-session project decisions, constraints, and implementation style
+- Recurring gotchas that help future agents choose better defaults
+- Synthesizing prior context when a task may depend on user history
+
+### Do Not Use Honcho For
+
+- Temporary todos, current command output, or active scratch state
+- Facts already available in repository files, bead artifacts, or tool output
+- Secrets, credentials, tokens, or private keys
+- Speculation or unverified claims
+
+### Tool Selection
+
+| Need | Tool |
+|------|------|
+| Find prior durable context | `honcho_search` |
+| Synthesize user/project preferences | `honcho_chat` |
+| Persist an atomic durable fact | `honcho_remember` |
+
+Use specific queries. Prefer "What durable implementation constraints has the user stated?" over "What do you know?".
+
+### Reasoning Levels
+
+- `minimal` — quick factual lookup
+- `low` — default preference/context synthesis
+- `medium` or `high` — multi-session synthesis that can affect implementation
+- `max` — rare deep memory research only
+
+### Per-Task Flow
+
+1. Before planning or coding, query Honcho only when prior user or project context could change the decision.
+2. Use the smallest reasoning level that can answer the question.
+3. Keep repository files, bead artifacts, and observed tool output authoritative.
+4. After completion, remember only new durable facts that should survive future sessions.
+5. Never store secrets or transient implementation state.
+
+### SDK/MCP Defaults
+
+If wiring Honcho directly later: use one shared workspace when agents should share memory, one stable peer ID per real user, sessions scoped to repo/conversation/task/import, and `observe_me: false` for deterministic assistant/tool peers when configurable. Avoid many tiny sessions for trickle data because Honcho reasoning batches around roughly 1,000 tokens per peer/session.
+
+
 ## Skills Map
 
 | Skill | Load When |
 |-------|-----------|
 | `br` | Before any br mutation or bead state query |
 | `bv` | Before any bv query or graph analysis |
+| `honcho-memory` | When using Honcho search/chat/remember or designing Honcho-backed memory |
 | `backbone` | First load — workflow reference card |
 | `orchestrator` | User intent unclear or workflow stalls |
 | `verification-before-completion` | Before /verify, /review, /pr, /close |

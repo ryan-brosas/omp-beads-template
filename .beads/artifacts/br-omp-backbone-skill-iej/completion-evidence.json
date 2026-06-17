@@ -1,0 +1,30 @@
+{
+  "bead_id": "br-omp-backbone-skill-iej",
+  "verified_at": "2026-06-17T14:35:00Z",
+  "checks": [
+    {
+      "name": "required_honcho_guidance_sections",
+      "tool": "search",
+      "target": [
+        ".omp/AGENTS.md",
+        ".omp/memory/project/conventions.md",
+        ".omp/skills/honcho-memory/SKILL.md"
+      ],
+      "pattern": "Honcho Operating Protocol|Use Honcho For|Tool Selection|Reasoning Levels|Per-Task Flow|SDK/MCP Defaults|Honcho Memory|honcho-memory",
+      "result": "pass",
+      "evidence": "Search found Honcho Operating Protocol, Use Honcho For, Tool Selection, Reasoning Levels, Per-Task Flow, SDK/MCP Defaults, Honcho Memory, and honcho-memory skill references."
+    },
+    {
+      "name": "no_honcho_secret_patterns",
+      "tool": "search",
+      "target": [
+        ".omp/AGENTS.md",
+        ".omp/memory/project/conventions.md",
+        ".omp/skills/honcho-memory/SKILL.md"
+      ],
+      "pattern": "hch-[A-Za-z0-9_-]+|Bearer [A-Za-z0-9._-]+|api[_-]?key\\s*[:=]\\s*['\\\"][^'\\\"]+",
+      "result": "pass",
+      "evidence": "Search returned no matches."
+    }
+  ]
+}

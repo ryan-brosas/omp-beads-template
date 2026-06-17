@@ -65,6 +65,16 @@ Every skill SKILL.md follows this pattern:
 - Always `--json` with br/bv commands — parseable output, no screen scraping
 - Resolve actor: `ACTOR="${BR_ACTOR:-assistant}"` on all br mutations
 
+
+## Honcho Memory
+
+- Use Honcho as persistent memory/reasoning, not as scratch state.
+- Query Honcho only when prior user or project context can change the answer.
+- `honcho_search` finds prior durable context; `honcho_chat` synthesizes preferences or decisions; `honcho_remember` stores one verified durable fact.
+- Keep repository files, bead artifacts, and observed tool output authoritative.
+- Never store secrets, credentials, command output, temporary todos, or speculation in Honcho.
+- Use the smallest sufficient reasoning level: `minimal` for factual lookup, `low` by default, `medium`/`high` for multi-session synthesis, `max` rarely.
+
 ## Memory File Maintenance
 
 Memory files are the project's durable context — equivalent to CLAUDE.md. They MUST stay current.
