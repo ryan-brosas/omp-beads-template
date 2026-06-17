@@ -13,7 +13,7 @@ This repository uses br and bv as the backbone of planning, execution, verificat
 The workflow-gate extension (`.omp/extensions/workflow-gate.ts`) enforces the workflow. It blocks `edit`/`write` tools until required artifacts exist.
 
 **You MUST follow the workflow:**
-1. `/create` → `/plan` → `/ship` → `/verify` → `/review` → `/pr` → (human merges) → `/close`
+1. `/create` → `/plan` → `/ship` → `/verify` → `/review` → `/pr` → `/close`
 2. `/brainstorm` when you need new ideas — it's the entry point, not a required phase
 3. Each command checks its prerequisites. If it says "run X first," do it.
 4. The human always gets the last call — agent proposes, human decides
@@ -37,8 +37,8 @@ The workflow-gate extension (`.omp/extensions/workflow-gate.ts`) enforces the wo
 Use the slash commands directly — no `beads-` prefix needed in OMP:
 
 - `/brainstorm` — generate ideas (entry point, run when you need new work)
-- `/create` → `/plan` → `/ship` → `/verify` → `/review` → `/pr` — core loop
-- (human merges) → `/close` — human gets the last call
+- `/create` → `/plan` → `/ship` → `/verify` → `/review` → `/pr` → `/close` — core loop
+- (human merges PR at their convenience)
 
 (A `/init` command bootstraps the workspace.)
 

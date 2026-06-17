@@ -24,4 +24,4 @@ KISS — Keep It Simple, Stupid. Prefer the simplest approach that satisfies the
 
 ## RULE #6
 
-Follow the workflow as-is. The core loop is: `/create` → `/plan` → `/ship` → `/verify` → `/review` → `/pr` → (human merges) → `/close` → `/brainstorm` for the next idea. `/brainstorm` is the entry point when you don't know what to build — use it to generate ideas, then enter the loop. Never skip a phase. Never merge phases. Never "helpfully" proceed when a prerequisite check says STOP. The human always gets the last call — the agent proposes, the human decides.
+Follow the workflow as-is. The core loop is: `/create` → `/plan` → `/ship` → `/verify` → `/review` → `/pr` → `/close` → loop. `/brainstorm` is the entry point when you don't know what to build. `/pr` creates the PR and `/close` marks the bead complete — the human merges the PR at their convenience. Never skip a phase. Never merge phases. Never "helpfully" proceed when a prerequisite check says STOP. The human always gets the last call on merges — the agent proposes, the human decides.

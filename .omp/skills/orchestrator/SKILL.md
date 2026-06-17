@@ -7,9 +7,11 @@ description: Strict workflow recipe. Run each prompt in sequence. No skipping. N
 
 ## The Core Loop
 
-The core loop: `/create` → `/plan` → `/ship` → `/verify` → `/review` → `/pr` → (human merges) → `/close` → loop.
+The core loop: `/create` → `/plan` → `/ship` → `/verify` → `/review` → `/pr` → `/close` → loop.
 
 `/brainstorm` is the entry point — use it when you don't know what to build. Once you have an idea, enter the loop.
+
+`/pr` creates the PR and `/close` marks the bead complete. The human merges the PR at their convenience — don't block on merge.
 
 ## The Sequence
 
@@ -21,20 +23,19 @@ The core loop: `/create` → `/plan` → `/ship` → `/verify` → `/review` →
 | 3 | `/ship <bead-id>` | Working code, `progress.txt` | Plan verification gates pass per wave |
 | 4 | `/verify <bead-id>` | `completion-evidence.json` | All checks pass |
 | 5 | `/review <bead-id>` | `review-report.md` | Verdict: approved |
-| 6 | `/pr <bead-id>` | PR summary | — |
-| — | **Human merges** | Merged code | Human gets the last call |
+| 6 | `/pr <bead-id>` | PR URL | — |
 | 7 | `/close <bead-id>` | Closed bead, synced JSONL | Evidence + review exist |
 | → | Back to `/brainstorm` | Next idea | Loop |
 
-`/brainstorm` is starred (*) because it's not always needed — only when you're looking for new ideas. The numbered steps (1-7) are the required sequence for every bead.
+`/brainstorm` is starred (*) — it's not always needed. The numbered steps (1-7) are the required sequence for every bead.
 
 ## Rules
 
 - **Run each prompt in FULL.** Every section, every step. Do not abbreviate.
 - **Do not skip phases.** Create before plan, plan before ship, ship before verify.
 - **Do not "helpfully" proceed if the prompt says STOP.** If blocked, run the prerequisite prompt.
-- **The human merges.** `/pr` creates the PR. The human reviews and merges. `/close` happens after merge.
-- **The human always gets the last call.** The agent proposes, the human decides.
+- **`/pr` creates the PR, `/close` marks the bead done.** The human merges at their convenience. Don't block on merge.
+- **The human always gets the last call on merges.** The agent proposes, the human decides.
 - **The workflow-gate extension enforces this.** It blocks `edit`/`write` until PRD and plan exist. Don't fight it.
 - **If the user says "just do X"**, route them to the right phase. "That's a /ship step — let's /plan first."
 - **If a phase fails verification**, stay in that phase. Do not advance until the gate clears.
@@ -48,7 +49,7 @@ The core loop: `/create` → `/plan` → `/ship` → `/verify` → `/review` →
 - Code changed and behavior must be proven → `/verify`
 - Verification complete and risk must be assessed → `/review`
 - Review approved and change must be proposed upstream → `/pr`
-- PR merged by human and bead must be finalized → `/close`
+- PR created and bead must be finalized → `/close`
 - Bead closed, looking for next thing → `/brainstorm`
 
 ## Artifacts Per Phase
