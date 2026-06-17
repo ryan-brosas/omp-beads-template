@@ -27,16 +27,16 @@ Keep to the dependencies that shape architecture decisions. Don't list every tra
 
 ```bash
 # Typecheck
-N/A — template repo, no application code
+true  # template repo — no application code
 
 # Lint
-N/A — template repo, no application code
+true  # template repo — no application code
 
 # Test
-N/A — template repo, no application code
+true  # template repo — no application code
 
 # Build
-N/A — template repo, no application code
+true  # template repo — no application code
 
 # Graph state (always available)
 bv --robot-triage
@@ -49,10 +49,10 @@ Replace placeholders with your project's actual commands. These are what `/verif
 
 ```bash
 # Dependency audit
-N/A — template repo, no dependencies
+true  # template repo — no dependencies
 
 # Secrets scan (if configured)
-N/A — no secrets scan configured
+true  # no secrets scan configured
 ```
 
 ## Constraints

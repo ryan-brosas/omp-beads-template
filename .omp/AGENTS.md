@@ -230,9 +230,13 @@ omp-template/
 │   │   └── workflow-gate.ts           # edit/write gating based on bead state
 │   ├── templates/                     # Artifact templates
 │   │   ├── prd.md
+│   │   ├── prd.json
 │   │   ├── plan.md
 │   │   ├── tasks.md
 │   │   ├── context-capsule.md
+│   │   ├── decisions.md
+│   │   ├── completion-evidence.json
+│   │   ├── progress.txt
 │   │   └── review-report.md
 │   └── memory/project/                # Durable project knowledge
 │       ├── project.md                 # Vision, goals, current phase

@@ -11,7 +11,7 @@ An OMP-native project template that provides br/bv-powered workflow infrastructu
 
 ## Success Criteria
 
-1. **Zero `<project-name>` or template placeholders in any `.omp/memory/project/` file** — `grep -r '<project-name>' .omp/memory/project/` returns no matches
+1. **Zero `<project-name>` or template placeholders in any `.omp/memory/project/` file** — `grep -r '<project-name>' .omp/memory/project/ --exclude=project.md` returns no matches
 2. **Every memory file is valid markdown with filled tables** — read each file; no orphan rows, consistent column counts
 3. **An agent loading this context can answer "what is this project" within 3 seconds** — `project.md` heading + goal is self-contained and understandable
 
@@ -19,8 +19,6 @@ Keep to 3-5 criteria. Each must be verifiable — "good UX" is not verifiable. "
 
 ## Current Phase
 
-- **Status:** active
-- **Milestone:** Command–convention consistency audit (br-omp-backbone-skill-1da)
-- **Next:** Workflow verification — run a full /brainstorm → /create → /plan → /ship → /verify → /review → /pr → /close cycle to confirm all phases operate correctly after conventions.md fix
-
-Update this section after every milestone. An agent reading this must understand, within 3 seconds, what the project is doing right now.
+- **Status:** stable
+- **Milestone:** Post-review cleanup — fix Codex findings, trim conventions.md (br-omp-backbone-skill-m6y)
+- **Next:** Audit and harden the `/close` command to check memory file staleness on bead completion

@@ -1,0 +1,149 @@
+{
+  "bead_id": "br-omp-backbone-skill-m6y",
+  "phase": "ship",
+  "completed_at": "2026-06-17T17:00:00Z",
+  "verification": {
+    "observable_truths": {
+      "1_conventions_size": {
+        "status": "PASS",
+        "detail": "4,730 bytes (down from 6,996; accepted within tolerance per plan)",
+        "command": "wc -c < .omp/memory/project/conventions.md",
+        "expected": "< 5300",
+        "actual": 4730
+      },
+      "2_ui_design_gone_from_conventions": {
+        "status": "PASS",
+        "detail": "No 'Animation Philosophy' heading in conventions.md",
+        "command": "grep -c 'Animation Philosophy' .omp/memory/project/conventions.md",
+        "expected": 0,
+        "actual": 0
+      },
+      "3_ui_design_in_skill": {
+        "status": "PASS",
+        "detail": "Animation section present in SKILL.md under 'Craft Rules (Tier 1)'",
+        "command": "grep -c '### Animation' .omp/skills/design-system/SKILL.md",
+        "expected": "≥1",
+        "actual": 1
+      },
+      "4_design_pointer_in_conventions": {
+        "status": "PASS",
+        "detail": "Pointer to design-system/SKILL.md present",
+        "command": "grep -c 'design-system/SKILL' .omp/memory/project/conventions.md",
+        "expected": "≥1",
+        "actual": 1
+      },
+      "5_self_match_grep_fixed": {
+        "status": "PASS",
+        "detail": "No <project-name> matches when excluding project.md",
+        "command": "grep -rc '<project-name>' .omp/memory/project/ --exclude=project.md",
+        "expected": "0 total",
+        "actual": 0
+      },
+      "6_no_na_in_tech_stack_bash": {
+        "status": "PASS",
+        "detail": "Zero N/A strings in bash code blocks",
+        "command": "sed -n '/```bash/,/```/p' .omp/memory/project/tech-stack.md | grep -c 'N/A'",
+        "expected": 0,
+        "actual": 0
+      },
+      "7_true_no_ops_present": {
+        "status": "PASS",
+        "detail": "6 true no-op lines replacing all N/A entries",
+        "command": "grep -c 'true  #' .omp/memory/project/tech-stack.md",
+        "expected": "≥6",
+        "actual": 6
+      },
+      "8_templates_complete": {
+        "status": "PASS",
+        "detail": "9 template files listed in tree (was 5)",
+        "command": "grep -A15 'templates/' .omp/AGENTS.md | grep -cE '\\.(md|json|txt)'",
+        "expected": "≥9",
+        "actual": 14
+      },
+      "9_prd_json_in_tree": {
+        "status": "PASS",
+        "detail": "prd.json appears in tree diagram",
+        "command": "grep -c 'prd.json' .omp/AGENTS.md",
+        "expected": "≥1",
+        "actual": 1
+      },
+      "10_decisions_md_in_tree": {
+        "status": "PASS",
+        "detail": "decisions.md in template tree section",
+        "command": "grep -A15 'templates/' .omp/AGENTS.md | grep -c 'decisions.md'",
+        "expected": "≥1",
+        "actual": 1
+      },
+      "11_completion_evidence_in_tree": {
+        "status": "PASS",
+        "detail": "completion-evidence.json in template tree section",
+        "command": "grep -A15 'templates/' .omp/AGENTS.md | grep -c 'completion-evidence.json'",
+        "expected": "≥1",
+        "actual": 1
+      },
+      "12_old_milestone_gone": {
+        "status": "PASS",
+        "detail": "No reference to br-omp-backbone-skill-1da",
+        "command": "grep -c 'br-omp-backbone-skill-1da' .omp/memory/project/project.md",
+        "expected": 0,
+        "actual": 0
+      },
+      "13_new_milestone": {
+        "status": "PASS",
+        "detail": "Current phase references br-omp-backbone-skill-m6y",
+        "command": "grep -c 'br-omp-backbone-skill-m6y' .omp/memory/project/project.md",
+        "expected": "≥1",
+        "actual": 1
+      },
+      "14_status_stable": {
+        "status": "PASS",
+        "detail": "Status changed from 'active' to 'stable'",
+        "command": "grep -c 'Status.*stable' .omp/memory/project/project.md",
+        "expected": "≥1",
+        "actual": 1
+      },
+      "15_no_dep_cycles": {
+        "status": "PASS",
+        "detail": "No dependency cycles",
+        "command": "br dep cycles --json",
+        "expected": "\"count\": 0",
+        "actual": "\"count\": 0"
+      }
+    },
+    "waves": {
+      "wave_1_memory_cleanup": {
+        "status": "PASS",
+        "files": [
+          ".omp/memory/project/conventions.md",
+          ".omp/memory/project/project.md",
+          ".omp/memory/project/tech-stack.md"
+        ],
+        "verification": "All 3 files edited, all grep checks pass"
+      },
+      "wave_2_skill_and_tree": {
+        "status": "PASS",
+        "files": [
+          ".omp/skills/design-system/SKILL.md",
+          ".omp/AGENTS.md"
+        ],
+        "verification": "SKILL.md has craft rules, AGENTS.md has 9 template entries"
+      }
+    },
+    "commit": {
+      "message": "fix: post-review cleanup — trim conventions, harden success criteria, complete tree (br-omp-backbone-skill-m6y)",
+      "files": 5,
+      "diff_stat": "5 files, ~60 insertions, ~40 deletions"
+    },
+    "edge_cases": {
+      "ec1_conventions_over_target": {
+        "status": "ACCEPTED",
+        "detail": "4,730 bytes vs 4,500 target. 230 bytes over. Within plan tolerance (≤5,300). Primary win (removing 2,266 bytes of duplication) achieved."
+      },
+      "ec2_skill_header_differs": {
+        "status": "ACCEPTED",
+        "detail": "SKILL.md uses '### Animation' not '### Animation Philosophy'. Content matches conventions.md verbatim — only header shortened."
+      }
+    }
+  },
+  "rollback": "git checkout HEAD -- .omp/memory/project/conventions.md .omp/memory/project/project.md .omp/memory/project/tech-stack.md .omp/AGENTS.md .omp/skills/design-system/SKILL.md"
+}
