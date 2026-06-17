@@ -7,7 +7,7 @@ An OMP-native project template with br as the task tracking backbone and bv for 
 
 ## The Workflow
 
-Every piece of work flows through br beads. bv's 22 robot commands drive decisions at every phase. Commands + skills only — no scripts, no machinery.
+Every piece of work flows through br beads. bv's robot commands drive decisions at every phase. Commands + skills only — no scripts, no machinery.
 
 ```
 /brainstorm → /create → /plan → /ship → /verify → /review → /pr → /close
@@ -53,22 +53,30 @@ The workflow-gate extension (`.omp/extensions/workflow-gate.ts`) blocks `edit`/`
 
 **Bypass:** `OMP_SKIP_BEADS_WORKFLOW=1` (emergencies only).
 
-## bv Capabilities (22 robot commands)
+## bv Capabilities
 
 | Category | Commands | Use When |
 |----------|----------|----------|
-| **Triage** | triage, next, alerts, triage-by-label, triage-by-track | Entering any phase — what needs attention? |
-| **Planning** | plan, priority, recipes | Before /plan — what's the right sequence? |
-| **Impact** | impact, impact-network, causality, blocker-chain | Before /ship — what breaks if I change this? |
-| **Files** | file-hotspots, file-beads, file-relations | During /ship — what else touches these files? |
-| **Related** | related, search | During /review — what beads are connected? |
-| **History** | diff, history, drift | During /review — how did this file evolve? |
-| **Forecast** | forecast, capacity | Before /close — what's the next bottleneck? |
+| **Triage & Planning** | triage, next, plan, priority | Entering any phase — what needs attention? |
+| **Graph Analysis** | insights, alerts, suggest, forecast | Before /plan — graph metrics, cycles, staleness |
 | **Labels** | label-health, label-flow, label-attention | During /brainstorm — where's the friction? |
-| **Hygiene** | suggest, orphans | During /brainstorm — what's stale? |
-| **Schema** | capabilities, schema, docs, metrics, help | When exploring — what can bv do? |
+| **History & Change** | history, diff | During /review — how did this file evolve? |
+| **Sprint & Files** | burndown, file-hotspots, file-beads, file-relations | During /ship and /review — what else touches these files? |
+| **Graph Export** | graph (json, dot, mermaid, html) | Visualizing dependencies or embedding in docs |
 
-Full reference in the `bv` skill. Always `--robot-*` for machine-readable output. Always `--format json` for parseable results.
+Always `--robot-*` for machine-readable output. Always `--format json` for parseable results. Prefer `--robot-triage` as the single entry point.
+
+### Per-Phase Quick Reference
+
+| Phase | Smallest Useful Query |
+|-------|----------------------|
+| `/brainstorm` | `bv --robot-triage --format json` |
+| `/plan` | `bv --robot-plan --format json` |
+| `/ship` | `bv --robot-file-beads <path> --format json` |
+| `/review` | `bv --robot-file-hotspots --format json` + `bv --robot-file-relations --format json` |
+| `/verify` | `bv --robot-alerts --format json` |
+| `/close` | `bv --robot-suggest --format json` |
+
 
 ## br Conventions
 
@@ -86,12 +94,11 @@ Full reference in the `br` skill. Short ID resolution: suffix match via `br list
 
 ## Memory Protocol
 
-### Tier 1 — Always Load (via @memory/ references above)
+### Tier 1 — Always In Context
 
-- `project.md` — What are we building? Current phase?
-- `conventions.md` — How do we build? Naming, workflow, agent rules.
+`@memory/project/project.md` and `@memory/project/conventions.md` are inlined into this file via OMP `@` imports before injection. They are always present in the agent's context — no separate load needed.
 
-These load automatically every session. Keep them under 1KB each.
+Keep each under 1KB.
 
 ### Tier 2 — On-Demand (load when relevant)
 
@@ -111,27 +118,26 @@ These load automatically every session. Keep them under 1KB each.
 
 ## Skills Map
 
-| Skill | Load When | Lines |
-|-------|-----------|-------|
-| `br` | Before any br mutation or bead state query | 433 |
-| `bv` | Before any bv query or graph analysis | 228 |
-| `backbone` | First load — workflow reference card | 74 |
-| `orchestrator` | User intent unclear or workflow stalls | — |
-| `verification-before-completion` | Before /verify, /review, /pr, /close | 228 |
-| `code-simplification` | Refactoring or complexity reduction | 165 |
-| `root-cause-tracing` | Debugging — symptom → source | 125 |
-| `defense-in-depth` | Adding validation layers | 126 |
-| `incremental-implementation` | During /ship — slice strategy | 179 |
-| `test-driven-development` | Writing tests before implementation | 212 |
-| `testing-anti-patterns` | Reviewing or writing tests | 210 |
-| `api-and-interface-design` | Designing contracts, endpoints, or types | — |
-| `reflection-checkpoints` | During /ship — scope drift detection | — |
-| `security-and-hardening` | Auditing for vulnerabilities, handling secrets | 566 |
-| `deprecation-and-migration` | Removing old APIs or migrating data | — |
+
+| Skill | Load When |
+|-------|-----------|
+| `br` | Before any br mutation or bead state query |
+| `bv` | Before any bv query or graph analysis |
+| `backbone` | First load — workflow reference card |
+| `orchestrator` | User intent unclear or workflow stalls |
+| `verification-before-completion` | Before /verify, /review, /pr, /close |
+| `code-simplification` | Refactoring or complexity reduction |
+| `root-cause-tracing` | Debugging — symptom → source |
+| `defense-in-depth` | Adding validation layers |
+| `incremental-implementation` | During /ship — slice strategy |
+| `test-driven-development` | Writing tests before implementation |
+| `testing-anti-patterns` | Reviewing or writing tests |
+| `api-and-interface-design` | Designing contracts, endpoints, or types |
+| `reflection-checkpoints` | During /ship — scope drift detection |
+| `security-and-hardening` | Auditing for vulnerabilities, handling secrets |
+| `deprecation-and-migration` | Removing old APIs or migrating data |
 
 Skills are decision trees, not reference manuals. They tell the agent *what to do* and *in what order*, not *everything about the topic*.
-
-## Project Structure
 
 ```
 omp-template/
@@ -179,11 +185,10 @@ omp-template/
 - **Cognitive tools** — skills are decision trees that tell the agent *what to do next*, not reference manuals that describe *everything about a topic*.
 - **Progressive disclosure** — lean core + references for deep content. AGENTS.md is the map; skills are the territory.
 - **br is the backbone** — all work is tracked, all state is in beads, all evidence is in artifacts.
-- **bv is the brain** — 22 robot commands for graph analysis. Query before you act.
+- **bv is the brain** — robot commands for graph analysis. Query before you act.
 - **Agent-native** — designed for AI coding agents from day one. Every artifact is a complete handoff.
 
 ## Guardrails
-
 - **Ask before destructive** — confirm before deleting user code, force-pushing, or dropping beads
 - **Never fabricate output** — no claim without observed evidence. If you didn't run it, don't report it.
 - **Never expose secrets** — no credentials, API keys, or tokens in any artifact or memory file
