@@ -7,6 +7,17 @@ description: Official skill for beads_rust (`br`), a local-first, dependency-awa
 
 > **Non-invasive:** br NEVER runs git commands. Sync and commit are YOUR responsibility.
 
+## Before You Start
+
+Verify the tools are available:
+
+```bash
+which br      # Must be installed. If missing: cargo install beads_rust or brew install br
+which bv      # Must be installed. If missing: see beads_viewer README for install
+which python3 # Used for JSON parsing in resolution. Available on all modern systems.
+```
+
+**jq note:** Some commands use `jq` for quick field extraction. If `jq` is not installed, use `python3 -c "import json,sys; ..."` instead. Both work — prefer `jq` when available for readability.
 ## Critical Rules for Agents
 
 | Rule | Why |
@@ -19,6 +30,30 @@ description: Official skill for beads_rust (`br`), a local-first, dependency-awa
 | **No cycles allowed** | `br dep cycles --json` must return empty |
 | **Resolve actor at runtime** | `ACTOR="${BR_ACTOR:-assistant}"` then pass `--actor "$ACTOR"` on all mutating commands |
 
+## Resolving Short Bead IDs
+
+Users often type short suffixes (`0ks`, `ag5`) instead of full bead IDs (`pi-feat-workflow-gate-0ks`). Resolve them:
+
+```bash
+# Step 1: Try br show first — works if it's already a full ID
+FULL=$(br show "$SHORT" --json 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin)[0]['id'])" 2>/dev/null)
+
+# Step 2: If Step 1 failed, suffix-match against all beads
+if [ -z "$FULL" ]; then
+  FULL=$(br list --status open --status in_progress --status closed --json 2>/dev/null | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+issues = d if isinstance(d, list) else d.get('issues',[])
+matches=[i['id'] for i in issues if i.get('id','').endswith('$SHORT')]
+if len(matches)==1: print(matches[0])
+elif len(matches)>1: print('AMBIGUOUS:'+','.join(matches))
+")
+fi
+
+# If FULL is empty or starts with AMBIGUOUS, ask the user for the full ID
+```
+
+**Never guess.** If resolution is ambiguous, list the candidates and ask the user.
 ## Quick Workflow
 
 ```bash

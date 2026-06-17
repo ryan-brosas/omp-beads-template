@@ -3,13 +3,22 @@ description: "Lean code review. Graph-informed single-pass review for normal wor
 argument-hint: "<bead-id or defaults to uncommitted changes>"
 ---
 
+## Bead ID Resolution
+
+`$ARGUMENTS` may be a short suffix (3-6 chars, e.g. `0ks`) or a full ID. Resolve it:
+
+1. Try `br show "$ARGUMENTS" --json` — if it returns the bead, use that ID.
+2. If it fails, suffix-match: `br list --status open --status in_progress --status closed --json`, filter IDs ending with `$ARGUMENTS`.
+3. If exactly one match → use it. If multiple → list them and ask the user. If none → STOP: "No bead found matching $ARGUMENTS."
+
+Use the resolved ID as `BEAD_ID` for all steps below.
 ## Prerequisites (CHECK FIRST)
 
 Before doing ANYTHING, verify:
-1. `.beads/artifacts/$ARGUMENTS/completion-evidence.json` exists and has verification results.
+1. `.beads/artifacts/$BEAD_ID/completion-evidence.json` exists and has verification results.
 2. `git diff HEAD~1` (or appropriate base) shows changes to review.
 
-If no evidence: STOP. Tell the user: "Run /verify first — no verification evidence for $ARGUMENTS."
+If no evidence: STOP. Tell the user: "Run /verify first — no verification evidence for $BEAD_ID."
 If no changes: STOP. Tell the user: "No changes to review. Run /ship first."
 Do NOT proceed. Do NOT "helpfully" skip ahead.
 
@@ -19,7 +28,7 @@ You are reviewing code in the default lean workflow. Use the graph to understand
 
 ```bash
 bv --robot-file-hotspots --format json       # Files with most bead activity
-br show "$ARGUMENTS" --json                    # Bead details
+br show "$BEAD_ID" --json                    # Bead details
 ```
 
 Use heavier graph commands only when the lightweight context reveals unusual risk:
@@ -39,7 +48,7 @@ bv --robot-file-relations <file> --format json # What files co-change with this?
 
 ## Phase 3: Read the Evidence
 
-Read `.beads/artifacts/$ARGUMENTS/completion-evidence.json`. Check:
+Read `.beads/artifacts/$BEAD_ID/completion-evidence.json`. Check:
 - Are all verification commands listed with results?
 - Do any `failedChecks` remain unresolved?
 - Are `uncheckedRisks` documented and acknowledged?
@@ -53,7 +62,7 @@ Read the PRD requirements and plan tasks. For each:
 
 ## Phase 5: Write Review Report
 
-Write `.beads/artifacts/$ARGUMENTS/review-report.md` using `.omp/templates/review-report.md` as the shape:
+Write `.beads/artifacts/$BEAD_ID/review-report.md` using `.omp/templates/review-report.md` as the shape:
 
 - **verdict**: `approved` | `changes-requested` | `blocked`
 - **ready_for_close**: `true` | `false`
@@ -65,8 +74,8 @@ Write `.beads/artifacts/$ARGUMENTS/review-report.md` using `.omp/templates/revie
 ## Phase 6: Report
 
 ```
-Bead: $ARGUMENTS | Verdict: <approved/changes-requested/blocked>
+Bead: $BEAD_ID | Verdict: <approved/changes-requested/blocked>
 Findings: <N> (<M critical, O high, P medium, Q low)
 Ready for close: <true/false>
-Next: /pr $ARGUMENTS (if approved) or address findings
+Next: /pr $BEAD_ID (if approved) or address findings
 ```

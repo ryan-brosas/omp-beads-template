@@ -3,16 +3,25 @@ description: "Wave-sequence into implementation plan. Graph-informed — uses bv
 argument-hint: "<bead-id>"
 ---
 
+## Bead ID Resolution
+
+`$ARGUMENTS` may be a short suffix (3-6 chars, e.g. `0ks`) or a full ID. Resolve it:
+
+1. Try `br show "$ARGUMENTS" --json` — if it returns the bead, use that ID.
+2. If it fails, suffix-match: `br list --status open --status in_progress --status closed --json`, filter IDs ending with `$ARGUMENTS`.
+3. If exactly one match → use it. If multiple → list them and ask the user. If none → STOP: "No bead found matching $ARGUMENTS."
+
+Use the resolved ID as `BEAD_ID` for all steps below.
 Before doing ANYTHING, verify:
-1. `.beads/artifacts/$ARGUMENTS/prd.md` exists
-2. `.beads/artifacts/$ARGUMENTS/prd.json` exists
+1. `.beads/artifacts/$BEAD_ID/prd.md` exists
+2. `.beads/artifacts/$BEAD_ID/prd.json` exists
 3. PRD has all sections filled (Problem, Scope, Requirements, Approach, Success Criteria) — no placeholders
 
-If PRD missing: STOP. Tell the user: "Run /create first — no PRD found for $ARGUMENTS."
+If PRD missing: STOP. Tell the user: "Run /create first — no PRD found for $BEAD_ID."
 If PRD has placeholders: STOP. Tell the user: "PRD incomplete — run /create to fill all sections."
 Do NOT proceed. Do NOT "helpfully" skip ahead.
 
-You are planning implementation for bead $ARGUMENTS. Use the graph to inform sequencing.
+You are planning implementation for bead $BEAD_ID. Use the graph to inform sequencing.
 
 ## Phase 1: Graph Context
 
@@ -20,9 +29,9 @@ You are planning implementation for bead $ARGUMENTS. Use the graph to inform seq
 bv --robot-plan --format json                # Execution tracks — parallel-safe waves
 bv --robot-insights --format json            # Graph metrics — PageRank, critical path
 bv --robot-file-hotspots --format json       # Riskiest files — touch with care
-bv --robot-forecast "$ARGUMENTS" --format json # ETA prediction
-br show "$ARGUMENTS" --json                    # Bead details
-br dep tree "$ARGUMENTS" --json                # Full dependency tree
+bv --robot-forecast "$BEAD_ID" --format json # ETA prediction
+br show "$BEAD_ID" --json                    # Bead details
+br dep tree "$BEAD_ID" --json                # Full dependency tree
 ```
 
 From the graph:
@@ -77,20 +86,20 @@ Within a wave, tasks that touch different files can run in parallel.
 ## Phase 5: Verify
 
 ```bash
-br lint "$ARGUMENTS" --json
+br lint "$BEAD_ID" --json
 bv --robot-suggest --format json
 br dep cycles --json                         # Must be empty
-ls .beads/artifacts/"$ARGUMENTS"/plan.md .beads/artifacts/"$ARGUMENTS"/tasks.md .beads/artifacts/"$ARGUMENTS"/context-capsule.md
+ls .beads/artifacts/"$BEAD_ID"/plan.md .beads/artifacts/"$BEAD_ID"/tasks.md .beads/artifacts/"$BEAD_ID"/context-capsule.md
 br sync --flush-only
 ```
 
 ## Phase 6: Report
 
 ```
-Plan: $ARGUMENTS
+Plan: $BEAD_ID
 Waves: <N> | Tasks: <N> total, <N> parallel
 Blast radius: <N files> (<M new, O edits, P deletes)
 Forecast: <N minutes>
 Verification gates: <N>
-Next: /ship $ARGUMENTS
+Next: /ship $BEAD_ID
 ```

@@ -3,24 +3,33 @@ description: "Test + evidence. Graph-informed — checks completeness against im
 argument-hint: "<bead-id>"
 ---
 
+## Bead ID Resolution
+
+`$ARGUMENTS` may be a short suffix (3-6 chars, e.g. `0ks`) or a full ID. Resolve it:
+
+1. Try `br show "$ARGUMENTS" --json` — if it returns the bead, use that ID.
+2. If it fails, suffix-match: `br list --status open --status in_progress --status closed --json`, filter IDs ending with `$ARGUMENTS`.
+3. If exactly one match → use it. If multiple → list them and ask the user. If none → STOP: "No bead found matching $ARGUMENTS."
+
+Use the resolved ID as `BEAD_ID` for all steps below.
 ## Prerequisites (CHECK FIRST)
 
 Before doing ANYTHING, verify:
-1. Bead $ARGUMENTS is claimed or in_progress: `br show "$ARGUMENTS" --json` — status must be `in_progress` or have changes to verify.
-2. `.beads/artifacts/$ARGUMENTS/plan.md` exists — the verification section specifies what to check.
+1. Bead $BEAD_ID is claimed or in_progress: `br show "$BEAD_ID" --json` — status must be `in_progress` or have changes to verify.
+2. `.beads/artifacts/$BEAD_ID/plan.md` exists — the verification section specifies what to check.
 
 If bead not started: STOP. Tell the user: "Run /ship first — bead not in progress."
 If plan missing: STOP. Tell the user: "Run /plan first — no verification plan exists."
 Do NOT proceed. Do NOT "helpfully" skip ahead.
 
-You are verifying bead $ARGUMENTS. Use the graph to check completeness.
+You are verifying bead $BEAD_ID. Use the graph to check completeness.
 
 ## Phase 1: Graph Context
 
 ```bash
 bv --robot-triage --format json              # Is this bead still relevant?
 bv --robot-alerts --format json              # Any alerts on this bead?
-br show "$ARGUMENTS" --json                    # Bead details
+br show "$BEAD_ID" --json                    # Bead details
 ```
 
 ## Phase 2: File Coverage
@@ -35,7 +44,7 @@ Compare against the plan's blast radius. If blast radius includes files not chan
 
 ## Phase 3: Run Verification
 
-Read the plan's verification section: `.beads/artifacts/$ARGUMENTS/plan.md` → Full Verification.
+Read the plan's verification section: `.beads/artifacts/$BEAD_ID/plan.md` → Full Verification.
 
 Run only the checks that prove the changed behavior:
 - Feature: run the project's test suite (`npm test`, `cargo test`, `pytest`)
@@ -45,17 +54,17 @@ Run only the checks that prove the changed behavior:
 Run the actual commands. Do not claim pass without output.
 
 ```bash
-br lint "$ARGUMENTS" --json                    # Lint the bead
+br lint "$BEAD_ID" --json                    # Lint the bead
 bv --robot-suggest --format json             # Hygiene check
 ```
 
 ## Phase 4: Write Completion Evidence
 
-Write `.beads/artifacts/$ARGUMENTS/completion-evidence.json` using `.omp/templates/completion-evidence.json` as the shape:
+Write `.beads/artifacts/$BEAD_ID/completion-evidence.json` using `.omp/templates/completion-evidence.json` as the shape:
 
 ```json
 {
-  "beadId": "$ARGUMENTS",
+  "beadId": "$BEAD_ID",
   "status": "verified",
   "summary": "<one-line verdict>",
   "passedChecks": [{"command": "<cmd>", "expected": "<expected>", "result": "<actual>"}],
@@ -70,8 +79,8 @@ Separate passed, failed, and unchecked. Be honest.
 ## Phase 5: Report
 
 ```
-Bead: $ARGUMENTS | Status: VERIFIED/FAILED
+Bead: $BEAD_ID | Status: VERIFIED/FAILED
 Checks passed: <N>/<N> | Failed: <N>
-Evidence: .beads/artifacts/$ARGUMENTS/completion-evidence.json
-Next: /review $ARGUMENTS (if verified) or fix issues (if failed)
+Evidence: .beads/artifacts/$BEAD_ID/completion-evidence.json
+Next: /review $BEAD_ID (if verified) or fix issues (if failed)
 ```
