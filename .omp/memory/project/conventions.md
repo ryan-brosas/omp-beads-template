@@ -1,70 +1,84 @@
-# Conventions
+---
+purpose: How we build — naming, code style, workflow, agent conventions, memory system
+updated: 2026-06-17
+---
+
+# Conventions: <project-name>
 
 ## Naming
 
-- Commands: `/brainstorm`, `/create`, `/plan`, `/ship`, `/verify`, `/review`, `/pr`, `/close`, `/init`
-- Skills: short noun names such as `br` and `bv`
-- Artifact files: `kebab-case`
-- Bead slugs: `kebab-case`
+- **Files:** `kebab-case.md`, `kebab-case.json`, `kebab-case.ts`
+- **Functions:** `camelCase` (TypeScript), `snake_case` (Python), `camelCase` (Go)
+- **Classes/Components:** `PascalCase`
+- **Constants:** `UPPER_SNAKE_CASE`
+- **Bead slugs:** `kebab-case` (e.g. `feat-auth-login`, `fix-null-check`)
+
+## Languages by Purpose
+
+| Purpose | Language | Notes |
+|---------|----------|-------|
+| Agent instructions | Markdown | Skills, commands, memory files |
+| Configuration | JSON / YAML | settings, manifests |
+| Backend | <TypeScript | Go | Rust | Python> | <strict? Bun? Deno?> |
+| Frontend | <TypeScript | JavaScript> | <React? Svelte? plain?> |
+| Scripts | <Bash | Python | TypeScript> | <CI, dev tooling, one-offs> |
+
+Fill in the actual languages for your project. Agents use this to pick the right tool for the job.
+
+## Skill Structure
+
+Every skill SKILL.md follows this pattern:
+- **When to use** — trigger conditions the agent matches against
+- **When NOT to use** — anti-patterns to avoid
+- **Process** — step-by-step instructions, not prose
+
+## Command Structure
+
+- **Executable commands** (`/pr`): `allowed-tools` frontmatter, `!` backtick injection, single-turn execution
+- **Descriptive commands** (`/plan`, `/ship`): multi-phase recipe with exact CLI commands, STOP conditions
+- Every bead-ID-taking command starts with the same Bead ID Resolution block
+
+## Git
+
+- **Branch:** `<type>/<bead-id>-<slug>` (e.g. `feat/a1b2-add-login`)
+- **Commit:** conventional commits — `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`
+- **PR title:** `<bead-id>: <one-line summary>`
 
 ## Workflow
 
-1. Triage with bv before mutating state.
-2. Inspect bead state before changing it.
-3. Create `prd.md` before `plan.md`.
-4. Create `plan.md` before implementation edits.
-5. Verify with targeted checks before review or close.
-6. Record evidence in the bead artifact directory.
+1. **Triage** — `bv --robot-triage` before any action
+2. **Create** — `/create` produces PRD + plan + tasks
+3. **Implement** — `/ship` follows plan, no scope creep
+4. **Verify** — `/verify` runs checks, records evidence
+5. **Review** — `/review` runs parallel agents, confidence filter
+6. **PR** — `/pr` opens PR, single-turn execution
+7. **Close** — `/close` after merge, suggests next bead
 
-## Agent behavior
+## Agent Conventions
 
-- Evidence before claims.
-- Read before edit.
-- Scope changes to the active bead.
-- Prefer OMP built-ins: `task`, `todo`, `read`, `search`, `find`, `lsp`.
-- Use subagents for bounded review or reconnaissance, not for blind delegation.
-- Always `br --json`, always `bv --robot-*`.
-- Resolve actor: `ACTOR="${BR_ACTOR:-assistant}"` on all br mutations.
+- Evidence before claims — no assertion without observed output
+- Read before edit — never guess file content
+- Ask before destructive — confirm before deleting user code
+- One bead per session — stay focused, don't multitask
+- Never implement without a bead and plan — workflow gate enforces this structurally
+- Scope changes to the active bead — don't "clean up while you're in here"
+- Always `--json` with br/bv commands — parseable output, no screen scraping
+- Resolve actor: `ACTOR="${BR_ACTOR:-assistant}"` on all br mutations
 
-## Artifact layout
+## Memory File Maintenance
 
-- `.beads/artifacts/<bead-id>/prd.md`
-- `.beads/artifacts/<bead-id>/prd.json`
-- `.beads/artifacts/<bead-id>/decisions.md`
-- `.beads/artifacts/<bead-id>/plan.md`
-- `.beads/artifacts/<bead-id>/tasks.md`
-- `.beads/artifacts/<bead-id>/context-capsule.md`
-- `.beads/artifacts/<bead-id>/progress.txt`
-- `.beads/artifacts/<bead-id>/completion-evidence.json`
-- `.beads/artifacts/<bead-id>/review-report.md`
+Memory files are the project's durable context — equivalent to CLAUDE.md. They MUST stay current.
 
-## Slash command authoring
+| File | What goes there | When to update |
+|------|----------------|----------------|
+| `project.md` | Vision, goals, current phase | After milestones, scope changes |
+| `conventions.md` | Naming, workflow, agent rules | When conventions change |
+| `decisions.md` | Architecture decisions | When a new decision is made |
+| `gotchas.md` | Pitfalls, warnings, workarounds | When a gotcha is discovered |
+| `tech-stack.md` | Versions, verification commands, constraints | When dependencies change |
 
-Executable commands (those that perform git/PR operations) use strict constraints:
-
-- `allowed-tools` frontmatter scopes capabilities to the minimum needed (e.g. `Bash(git:*), Bash(gh pr create:*), Read`).
-- `!` backtick syntax injects live state into the prompt: `!`git diff --stat``, `!`br show "$BEAD_ID" --json``.
-- Single-turn execution: "do all in one message, no text." No conversation — just the tool calls.
-- Descriptive commands (those that guide agent behavior) use the multi-phase recipe pattern without `allowed-tools`.
-
-## Security policy layering
-
-Three levels of security rules, concatenated in order:
-
-1. **Built-in** — this skill's 25-pattern sink catalog (always loaded)
-2. **Project** — `.omp/security-policy.md` (committed, team-shared, org-specific rules, max 8KB)
-3. **Local** — `.omp/security-policy.local.md` (gitignored, personal overrides)
-
-Rules are loaded: built-in → project → local. Later layers override earlier ones for the same rule.
-
-## Memory file maintenance
-
-- `.omp/memory/project/` files are the project's durable context (equivalent to CLAUDE.md).
-- After each session that reveals missing context, capture learnings into the right file:
-  - `conventions.md` — code style, naming, workflow rules
-  - `decisions.md` — architecture decisions with rationale
-  - `gotchas.md` — non-obvious quirks discovered during work
-  - `tech-stack.md` — runtime, framework, tooling versions
-  - `project.md` — purpose, goals, success criteria
-- Audit quality periodically: are commands current? Architecture clear? Gotchas captured?
-- Before writing, show proposed diff, get approval, then apply.
+**Update workflow:**
+1. After a session that reveals missing context: write the target file, show the diff, get approval, apply.
+2. Every `/close`: agent checks if any conventions/decisions/gotchas were discovered during the bead and proposes updates.
+3. Audit periodically: are conventions current? Architecture clear? Gotchas captured?
+4. Never let memory drift — stale memory is worse than no memory because it teaches wrong patterns.

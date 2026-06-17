@@ -61,7 +61,6 @@ Together they form the backbone: **bv → br → OMP → repeat.**
 
 - **`br`** — Bead state, ownership, and artifact location. Load before mutating bead state.
 - **`bv`** — Graph-informed triage, impact, and review context. Load before every phase.
-- **`omp`** — Complete OMP reference: tools, sessions, skills, agents, hooks, MCP, plugins. Load when changing `.omp/` surfaces.
 - **`orchestrator`** — Active phase routing agent. Load when the user's intent is unclear or the workflow stalls.
 - **`verification-before-completion`** — Evidence discipline. Load before review, PR, or close.
 

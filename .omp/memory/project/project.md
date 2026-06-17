@@ -1,18 +1,28 @@
-# Project
+---
+purpose: Project vision, goals, success criteria, and current phase
+updated: 2026-06-17
+---
 
-Purpose: OMP-native project template centered on br for task state and bv for graph-informed planning.
+# Project: <project-name>
 
-## Goals
+Replace this with your actual project name.
 
-- Keep the workflow boring, explicit, and inspectable.
-- Make beads the source of truth for active work.
-- Make bv the first stop for triage, impact, and review.
-- Prefer OMP built-ins over custom glue when they already solve the problem.
+## The Goal
 
-## Success criteria
+<One sentence — what are we building and why?>
 
-- `.omp/` contains the workflow backbone.
-- The beads phases exist as namespaced slash commands.
-- br and bv usage is documented as skills.
-- Workflow artifacts have stable templates under `.omp/templates`.
-- Write protection blocks edits before PRD and plan exist for the active bead.
+## Success Criteria
+
+1. **<Criterion 1>** — <measurable outcome>
+2. **<Criterion 2>** — <measurable outcome>
+3. **<Criterion 3>** — <measurable outcome>
+
+Keep to 3-5 criteria. Each must be verifiable — "good UX" is not verifiable. "Zero uncaught exceptions in prod for 30 days" is.
+
+## Current Phase
+
+- **Status:** <active | maintenance | paused>
+- **Milestone:** <what we're working toward right now>
+- **Next:** <the next concrete deliverable>
+
+Update this section after every milestone. An agent reading this must understand, within 3 seconds, what the project is doing right now.
