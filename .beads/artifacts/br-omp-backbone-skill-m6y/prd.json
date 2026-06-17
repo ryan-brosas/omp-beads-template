@@ -1,0 +1,67 @@
+{
+  "bead_id": "br-omp-backbone-skill-m6y",
+  "title": "Post-review cleanup: fix Codex findings, trim conventions.md, harden success criteria",
+  "type": "task",
+  "priority": "P2",
+  "created": "2026-06-17",
+  "estimate": "30m",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "title": "conventions.md size reduced to ≤4500 bytes",
+      "metric": "wc -c .omp/memory/project/conventions.md < 4500",
+      "files": [".omp/memory/project/conventions.md", ".omp/skills/design-system/SKILL.md"]
+    },
+    {
+      "id": "REQ-2",
+      "title": "Self-matching grep fixed in project.md",
+      "metric": "grep -r '<project-name>' .omp/memory/project/ --exclude=project.md returns 0 matches",
+      "files": [".omp/memory/project/project.md"]
+    },
+    {
+      "id": "REQ-3",
+      "title": "tech-stack.md commands are valid shell no-ops",
+      "metric": "No 'N/A' in bash blocks; all replaced with 'true  #'",
+      "files": [".omp/memory/project/tech-stack.md"]
+    },
+    {
+      "id": "REQ-4",
+      "title": "Tree diagram lists all 9 template files",
+      "metric": "Template entries in AGENTS.md tree == count of .omp/templates/ files",
+      "files": [".omp/AGENTS.md"]
+    },
+    {
+      "id": "REQ-5",
+      "title": "project.md current phase updated",
+      "metric": "No reference to br-omp-backbone-skill-1da; references br-omp-backbone-skill-m6y",
+      "files": [".omp/memory/project/project.md"]
+    }
+  ],
+  "non_goals": [
+    "Do not modify design system content (DESIGN.md, CSS, craft files)",
+    "Do not change conventions.md structure beyond UI Design section",
+    "Do not add/remove templates",
+    "Do not change density gate logic",
+    "Do not modify .omp/commands/*.md",
+    "Do not retroactively fix closed bead artifacts"
+  ],
+  "files_changed": [
+    ".omp/memory/project/conventions.md",
+    ".omp/memory/project/project.md",
+    ".omp/memory/project/tech-stack.md",
+    ".omp/AGENTS.md",
+    ".omp/skills/design-system/SKILL.md"
+  ],
+  "success_metrics": [
+    "conventions.md < 4,500 bytes",
+    "No UI Design section in conventions.md",
+    "UI Design rules absorbed into SKILL.md",
+    "grep self-match fixed (--exclude=project.md)",
+    "Zero N/A in tech-stack.md bash blocks",
+    "All 9 templates in AGENTS.md tree",
+    "project.md phase reflects completed vui bead",
+    "No dependency cycles",
+    "No bv alerts"
+  ],
+  "risk": "Low — all changes to documentation/config files, no runtime code"
+}
