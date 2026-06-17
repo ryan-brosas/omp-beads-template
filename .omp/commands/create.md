@@ -1,5 +1,5 @@
 ---
-name: beads-create
+name: create
 description: Turn a selected request into a bead plus a concrete PRD artifact.
 ---
 

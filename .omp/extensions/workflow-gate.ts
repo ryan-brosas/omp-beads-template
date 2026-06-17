@@ -99,14 +99,14 @@ export default function workflowGate(pi: {
     if (!hasPrd) {
       return {
         block: true,
-        reason: `Workflow gate: active bead ${activeBead} has no PRD. Run /beads-create first.`,
+        reason: `Workflow gate: active bead ${activeBead} has no PRD. Run /create first.`,
       };
     }
 
     if (!hasPlan) {
       return {
         block: true,
-        reason: `Workflow gate: active bead ${activeBead} has no plan. Run /beads-plan first.`,
+        reason: `Workflow gate: active bead ${activeBead} has no plan. Run /plan first.`,
       };
     }
   });

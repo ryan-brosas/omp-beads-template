@@ -1,5 +1,5 @@
 ---
-name: beads-verify
+name: verify
 description: Run targeted verification for the active bead and record the evidence.
 ---
 

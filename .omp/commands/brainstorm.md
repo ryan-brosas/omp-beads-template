@@ -1,5 +1,5 @@
 ---
-name: beads-brainstorm
+name: brainstorm
 description: Use bv and current bead state to surface the next best work items before formalizing one.
 ---
 

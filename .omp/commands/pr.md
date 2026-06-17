@@ -1,5 +1,5 @@
 ---
-name: beads-pr
+name: pr
 description: Prepare a pull-request summary from bead artifacts, verification evidence, and review findings.
 ---
 

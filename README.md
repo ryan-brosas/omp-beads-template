@@ -19,17 +19,17 @@ cd my-project
 
 # 2. Initialize bead tracking
 omp
-/beads-init
+/init
 
 # 3. Start working
-/beads-brainstorm
-/beads-create
-/beads-plan
-/beads-ship
-/beads-verify
-/beads-review
-/beads-pr
-/beads-close
+/brainstorm
+/create
+/plan
+/ship
+/verify
+/review
+/pr
+/close
 ```
 
 That's it. Open `omp` in the project directory and the template is active.
@@ -38,15 +38,15 @@ That's it. Open `omp` in the project directory and the template is active.
 
 | Phase | Command | What happens |
 |---|---|---|
-| Init | `/beads-init` | Seeds bead tracking database |
-| Brainstorm | `/beads-brainstorm` | Understand repo state and candidate work with bv |
-| Create | `/beads-create` | Select or create a bead; write `prd.md` |
-| Plan | `/beads-plan` | Write `plan.md` with blast radius, risks, verification |
-| Ship | `/beads-ship` | Implement only the active bead |
-| Verify | `/beads-verify` | Run targeted checks; record evidence |
-| Review | `/beads-review` | Inspect diff and risks; write review report |
-| PR | `/beads-pr` | Open pull request with summary |
-| Close | `/beads-close` | Close bead once evidence exists |
+| Init | `/init` | Seeds bead tracking database |
+| Brainstorm | `/brainstorm` | Understand repo state and candidate work with bv |
+| Create | `/create` | Select or create a bead; write `prd.md` |
+| Plan | `/plan` | Write `plan.md` with blast radius, risks, verification |
+| Ship | `/ship` | Implement only the active bead |
+| Verify | `/verify` | Run targeted checks; record evidence |
+| Review | `/review` | Inspect diff and risks; write review report |
+| PR | `/pr` | Open pull request with summary |
+| Close | `/close` | Close bead once evidence exists |
 
 ## Escape hatch
 

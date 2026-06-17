@@ -19,14 +19,14 @@ Together they form the backbone: **bv → br → OMP → repeat.**
 
 | Phase | Command | Key tools | Artifacts | Pre-flight checks |
 |-------|---------|-----------|-----------|-------------------|
-| **brainstorm** | `/beads-brainstorm` | bv (triage, hotspots), read, search | none | bv context loaded; repo state understood |
-| **create** | `/beads-create` | br (list, show, create/update) | `prd.md` | bead id confirmed; no duplicate work |
-| **plan** | `/beads-plan` | bv (plan, impact, forecast), read | `plan.md` | prd.md exists; blast radius known |
-| **ship** | `/beads-ship` | OMP tools (edit, write, bash, task) | changed source files | prd.md + plan.md exist; bv context fresh |
-| **verify** | `/beads-verify` | bash, read, search, lsp | `completion-evidence.json` | plan verification section read; checks scoped |
-| **review** | `/beads-review` | bv (related, suggest), read, diff | `review-report.md` | evidence recorded; diff inspected |
-| **pr** | `/beads-pr` | gh, br, read | PR body | review-report.md exists; branch clean |
-| **close** | `/beads-close` | br (close), git | none | all artifacts present; evidence complete |
+| **brainstorm** | `/brainstorm` | bv (triage, hotspots), read, search | none | bv context loaded; repo state understood |
+| **create** | `/create` | br (list, show, create/update) | `prd.md` | bead id confirmed; no duplicate work |
+| **plan** | `/plan` | bv (plan, impact, forecast), read | `plan.md` | prd.md exists; blast radius known |
+| **ship** | `/ship` | OMP tools (edit, write, bash, task) | changed source files | prd.md + plan.md exist; bv context fresh |
+| **verify** | `/verify` | bash, read, search, lsp | `completion-evidence.json` | plan verification section read; checks scoped |
+| **review** | `/review` | bv (related, suggest), read, diff | `review-report.md` | evidence recorded; diff inspected |
+| **pr** | `/pr` | gh, br, read | PR body | review-report.md exists; branch clean |
+| **close** | `/close` | br (close), git | none | all artifacts present; evidence complete |
 
 ## Artifact layout
 

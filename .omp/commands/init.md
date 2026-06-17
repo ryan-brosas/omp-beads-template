@@ -1,5 +1,5 @@
 ---
-name: beads-init
+name: init
 description: Initialize or inspect the beads workflow backbone for this repository.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: beads-close
+name: close
 description: Close the active bead only after evidence exists and the remaining follow-ups are explicit.
 ---
 

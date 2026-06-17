@@ -1,5 +1,5 @@
 ---
-name: beads-plan
+name: plan
 description: Build a scoped plan for the active bead using bv blast-radius and dependency context.
 ---
 

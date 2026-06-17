@@ -46,7 +46,7 @@ If a schema, flag, hook payload, TypeScript type, credential rule, or CLI option
    - Plan: `.beads/artifacts/<bead-id>/plan.md`.
    - Implementation starts only after both exist unless this is an approved bootstrap escape.
 4. Change OMP-native surfaces, not parallel systems.
-   - Commands: `.omp/commands/beads-*`.
+   - Commands: `.omp/commands/*.md`.
    - Skills: `.omp/skills/`.
    - Agents: `.omp/agents/`.
    - Templates: `.omp/templates/`.
@@ -1570,7 +1570,7 @@ This skill covers the rendered docs navigation:
 - bv run for the current phase or limitation recorded.
 - PRD and plan exist before implementation edits.
 - Changed surfaces live under `.omp/`, not a parallel config tree.
-- Names follow existing conventions: `beads-*` commands, short noun skills, kebab-case artifacts/slugs.
+- Names follow existing conventions: bare command names (`/create`, `/plan`, `/ship`), short noun skills, kebab-case artifacts/slugs.
 - Exact docs/source re-read for any schema, flag, env var, payload, or TypeScript API used.
 - Targeted verification run and recorded in `.beads/artifacts/<bead-id>/completion-evidence.json`.
 - No compatibility shim, duplicate workflow, stale alias, fabricated evidence, or unverified claim left behind.

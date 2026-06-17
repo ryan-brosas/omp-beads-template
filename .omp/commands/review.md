@@ -1,5 +1,5 @@
 ---
-name: beads-review
+name: review
 description: Review the active bead after verification using bv context plus direct file inspection.
 ---
 

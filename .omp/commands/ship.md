@@ -1,5 +1,5 @@
 ---
-name: beads-ship
+name: ship
 description: Implement the active bead only after PRD and plan exist.
 ---
 
