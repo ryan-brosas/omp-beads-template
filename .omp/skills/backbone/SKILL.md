@@ -33,14 +33,14 @@ Together they form the backbone: **bv → br → OMP → repeat.**
 ```
 .beads/artifacts/<bead-id>/
 ├── prd.md                   # Problem, outcome, acceptance criteria
+├── prd.json                 # Machine-readable requirements mirror
 ├── plan.md                  # Scope, blast radius, steps, risks, verification
 ├── tasks.md                 # Ordered task list with dependencies
 ├── decisions.md             # Architecture and design decisions
 ├── context-capsule.md       # Handoff for the next agent
 ├── progress.txt             # Phase checklist
 ├── completion-evidence.json # Verification commands and results
-├── review-report.md         # Diff summary and risk assessment
-└── solve-ledger.md          # Wave-by-wave execution log
+└── review-report.md         # Diff summary and risk assessment
 ```
 
 ## Tool decision rules

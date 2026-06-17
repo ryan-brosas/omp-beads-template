@@ -9,7 +9,7 @@ description: Graph-aware triage engine for Beads projects. Use --robot-* flags f
 
 ## Scope Boundary
 
-bv handles **what to work on** (triage, priority, planning). For agent-to-agent coordination (messaging, work claiming, file reservations), use [MCP Agent Mail](https://github.com/Dicklesworthstone/mcp_agent_mail).
+bv handles **what to work on** (triage, priority, planning). For agent-to-agent coordination, use br's file reservation and bead claiming.
 
 ## Output Conventions
 

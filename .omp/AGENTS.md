@@ -118,7 +118,6 @@ Keep each under 1KB.
 
 ## Skills Map
 
-
 | Skill | Load When |
 |-------|-----------|
 | `br` | Before any br mutation or bead state query |
@@ -136,29 +135,27 @@ Keep each under 1KB.
 | `reflection-checkpoints` | During /ship — scope drift detection |
 | `security-and-hardening` | Auditing for vulnerabilities, handling secrets |
 | `deprecation-and-migration` | Removing old APIs or migrating data |
+| `condition-based-waiting` | Tests with race conditions or timing dependencies |
 
 Skills are decision trees, not reference manuals. They tell the agent *what to do* and *in what order*, not *everything about the topic*.
-
 ```
 omp-template/
 ├── AGENTS.md                          # Delegates to .omp/AGENTS.md
 ├── .beads/                            # br workspace (SQLite + JSONL)
-│   └── artifacts/<bead-id>/           # Bead artifacts
-│       ├── prd.md                     # Problem, outcome, acceptance criteria
-│       ├── plan.md                    # Scope, blast radius, steps, risks, verification
-│       ├── tasks.md                   # Ordered task list with dependencies
-│       ├── decisions.md               # Architecture and design decisions
-│       ├── context-capsule.md         # Handoff for the next agent
-│       ├── progress.txt               # Phase checklist
-│       ├── completion-evidence.json   # Verification commands and results
-│       ├── review-report.md           # Parallel review findings and verdict
-│       └── solve-ledger.md            # Wave-by-wave execution log
-├── .omp/
+│   │   ├── prd.md                     # Problem, outcome, acceptance criteria
+│   │   ├── prd.json                   # Machine-readable requirements mirror
+│   │   ├── plan.md                    # Scope, blast radius, steps, risks, verification
+│   │   ├── tasks.md                   # Ordered task list with dependencies
+│   │   ├── decisions.md               # Architecture and design decisions
+│   │   ├── context-capsule.md         # Handoff for the next agent
+│   │   ├── progress.txt               # Phase checklist
+│   │   ├── completion-evidence.json   # Verification commands and results
+│   │   └── review-report.md           # Parallel review findings and verdict
 │   ├── AGENTS.md                      # You are here — canonical project context
-│   ├── commands/                      # 9 slash commands (912 lines)
+│   ├── commands/                      # 9 slash commands
 │   │   ├── brainstorm.md, create.md, plan.md, ship.md
 │   │   ├── verify.md, review.md, pr.md, close.md, init.md
-│   ├── skills/                        # 16 skills (2896 lines)
+│   ├── skills/                        # 16 skills
 │   │   ├── br/SKILL.md, bv/SKILL.md
 │   │   ├── backbone/SKILL.md, orchestrator/SKILL.md
 │   │   └── <cognitive-tool>/SKILL.md

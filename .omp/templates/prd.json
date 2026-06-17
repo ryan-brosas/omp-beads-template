@@ -1,5 +1,5 @@
 {
-  "bead_id": "{bead-id}",
+  "beadId": "{bead-id}",
   "type": "{feature|bugfix|chore|research|epic}",
   "priority": {0|1|2|3},
   "estimate_minutes": {minutes},

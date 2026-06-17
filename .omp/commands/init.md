@@ -94,14 +94,14 @@ Do not write `HONCHO_API_KEY` into `.env`; use `~/.honcho/config.json`, `HONCHO_
 ## Phase 4: Verify Backbone
 
 Check that these directories exist:
-- `.omp/commands/`, `.omp/skills/`, `.omp/templates/`, `.omp/agents/`, `.omp/extensions/`
+- `.omp/commands/`, `.omp/skills/`, `.omp/templates/`, `.omp/extensions/`
 - `.beads/artifacts/` (create with `.gitkeep` if missing)
 
 ## Phase 5: Check Agent Files
 
 Verify these are present and current:
 - `.omp/AGENTS.md` — the main agent context file
-- `.omp/RULES.md` — the 4 rules
+- `.omp/RULES.md` — the 6 rules
 - `.omp/memory/project/*.md` — project conventions, tech-stack, decisions, gotchas
 
 ## Phase 6: Report
