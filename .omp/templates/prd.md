@@ -1,4 +1,4 @@
-<!-- DENSITY: Target 80-120 lines. <60 = incomplete (missing sections, hand-wavy answers). >150 = cut fluff (be more specific, not more wordy). This is an AI handoff — every line must carry a fact, decision, or constraint. -->
+<!-- DENSITY: Target 500-700 lines. <300 = incomplete (missing sections, hand-wavy, no real technical context). No upper cap — be thorough. This is an AI handoff: another agent must be able to pick this up and implement correctly without guessing. Every section must have concrete evidence: file paths, API signatures, existing patterns, constraints. -->
 # PRD: {title}
 
 **Bead:** {bead-id} | **Type:** {feature|bugfix|chore|research|epic} | **Priority:** {P0|P1|P2|P3}
