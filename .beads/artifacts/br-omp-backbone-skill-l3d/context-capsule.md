@@ -1,153 +1,483 @@
 # Context Capsule: br-omp-backbone-skill-l3d
 
+> **Purpose:** Self-contained handoff for the `/ship` agent. Read this capsule first, then follow `tasks.md` for the step-by-step execution. Do not read the PRD during `/ship` — this capsule and the plan are complete.
+
+---
+
 ## Objective
 
-Hydrate the 5 template memory files under `.omp/memory/project/` with real project identity. These files were written by `/init` with placeholder text (`<project-name>`, `<!-- TODO: fill in -->`, `<option1 | option2>` markers) and have never been updated since template bootstrap. Every agent session loads this placeholder noise — `grep -r '<project-name>' .omp/memory/project/` currently returns 5 matches. The fix replaces all placeholders with concrete content derived from README.md and observable repo state, fixes a broken markdown table in tech-stack.md (3 orphan rows after an attribution paragraph, plus a missing file entry), promotes 5 real architecture decisions from an "Example" section to the actual "Decision Log" (removing the redundancy), and separates project-specific gotchas from template-universal gotchas with a consumer note. After this bead, an agent loading the context can answer "what is this project" within 3 seconds.
+Hydrate the 5 template memory files under `.omp/memory/project/` with real project identity. These
+files were written by `/init` with placeholder text (`<project-name>`, `<!-- TODO: fill in -->`,
+`<option1 | option2>` markers) and have never been updated since template bootstrap. Every agent
+session loads this placeholder noise — `grep -r '<project-name>' .omp/memory/project/` currently
+returns 5 matches (one per file). The fix replaces all placeholders with concrete content derived
+from README.md and observable repo state, fixes a broken markdown table in `tech-stack.md` (3 orphan
+rows after an attribution paragraph plus a missing file entry), promotes 5 real architecture
+decisions from an "Example" section to the actual "Decision Log" (removing the redundancy), and
+separates project-specific gotchas from template-universal gotchas with a consumer-facing blockquote
+note. After this bead, an agent loading the context can answer "what is this project" within 3
+seconds — currently impossible because `project.md` literally says `<project-name>`.
 
-The work is a chore (P2, 45-minute estimate). No compiled code changes. No graph dependencies — all 9 beads in the graph are orphans (density 0). The blast radius is exactly 5 markdown files with no cross-file references. Each file is edited independently in sequential waves with per-wave verification gates.
+The work is a chore (P2, 45-minute estimate, 52-minute bv forecast at confidence 0.4). No compiled
+code changes. No dependencies in either direction — all 9 beads in the graph are orphans with
+density 0. The blast radius is exactly 5 markdown files with no cross-file references. Each file is
+edited independently in sequential waves (1 through 5) with per-wave verification gates, followed by
+a full cross-file verification in wave 6.
+
+### Why This Matters
+
+The OMP Beads Template is the project that teaches other repos how to hydrate their memory files via
+`/init`. But it hasn't dogfooded its own hydration. The gap widens with every new feature added to
+the template — design system (19 files, 1,907 lines), Honcho memory workflow, git-clean command —
+while its own memory files still claim it's `<project-name>`. Template consumers see this gap and
+reasonably ask: "If the template can't dogfood its own hydration, why should I trust it?" This bead
+closes that gap.
+
+The PRD quantifies the impact: 19 discrete placeholder issues across 5 files (~330 tokens of noise
+per agent session). At 10 sessions per repo lifetime, that's ~3,300 wasted tokens just from template
+cruft — and each session typically involves multiple agent turns, each reloading the context.
+
+---
 
 ## Key Patterns
 
-- **Memory file frontmatter** — Every memory file uses a YAML-style frontmatter block delimited by `---`. The block contains `purpose:` (a one-line description of the file's role) and `updated:` (a YYYY-MM-DD date). The `purpose` field must not change. The `updated` date must change from `2026-06-17` to `2026-06-18` (today) in all 5 files. Reference: `.omp/memory/project/project.md` lines 1-3 for the canonical frontmatter pattern.
-- **Placeholder replacement, not section addition** — The PRD explicitly forbids adding new top-level sections. Edits replace placeholder text with concrete text in-place. The file structure (headings, sections, instruction paragraphs) stays intact. This preserves the files' dual role as both project documentation and template examples for consumers. Reference: `.omp/memory/project/project.md` for the section structure that must survive.
-- **README.md as canonical identity source** — The project name "OMP Beads Template" is derived from `README.md` line 1 heading. The goal description incorporates the README's first paragraph ("OMP-native project template with br and bv as the backbone of planning, execution, verification, and review") expanded with concrete deliverables observable in the repo. Do not invent project identity — if uncertain, re-read README.md. Reference: `README.md` lines 1-3.
-- **Markdown table structure rules** — Tables use pipe syntax with a header row, separator row (`|---|---|...`), and data rows. Column counts must be consistent across all rows in a table. Multi-word cells are space-padded for readability but padding is not required. An attribution or description paragraph must appear OUTSIDE the table (before or after), not between data rows. The tech-stack.md craft table fix is specifically about this rule — currently it's violated by the attribution paragraph sitting between table row 4 and table row 5. Reference: `.omp/memory/project/conventions.md` "Languages by Purpose" table for a well-formed table example; `.omp/memory/project/tech-stack.md` lines 78-88 for the broken table.
-- **Decision log format** — Each decision in the Decision Log is a table row: `| # | Date | Decision | Rationale | Confidence |`. The `#` is sequential starting from 1. Date is `YYYY-MM` (month precision). Decision is one sentence — concrete, not abstract. Rationale includes tradeoffs and rejected alternatives. Confidence is one of High/Medium/Low. The "How to Add a Decision" reference section describes this format in detail. Reference: `.omp/memory/project/decisions.md` "Example" section for the exact 5 decision texts.
-- **Gotcha entry format** — Each gotcha is a table row: `| Date | Area | Gotcha | Impact | Mitigation |`. Date is `YYYY-MM` (discovery date). Area is a subsystem name (workflow, bv, br, memory, commands, skills, omp, models, git). Gotcha is specific — what happens, not vague ("bv returns empty" not "bv is broken"). Impact is a concrete consequence. Mitigation is actionable — something the next person can DO. The "How to Add a Gotcha" reference section describes this format. Reference: `.omp/memory/project/gotchas.md` "Template Bootstrap Gotchas" table for the exact 12 entry texts.
-- **Idempotency is not a concern** — The memory files are static markdown, not generated code. No automated process regenerates them. Re-running `/init` would write them fresh from templates (with placeholders), so this bead's edits are one-time. The shipping agent must NOT run `/init` during `/ship` because it would overwrite the edits. Reference: `.omp/commands/init.md` Phase 2.5 for the `/init` hydration logic that writes these files.
-- **Scope boundary: memory files only** — The blast radius is exactly 5 files under `.omp/memory/project/`: `project.md`, `conventions.md`, `tech-stack.md`, `decisions.md`, `gotchas.md`. No other directory is touched. The shipping agent must not edit `.omp/commands/init.md` (which contains the Python script that originally wrote these files), `.omp/templates/` (which contains the templates the files were instantiated from), `.omp/skills/`, `.omp/AGENTS.md`, `.omp/RULES.md`, `DESIGN.md`, `design/`, `README.md`, or `.gitignore`. Reference: PRD "Out of Scope" section for the full exclusion list.
-- **Content preservation is mandatory** — The 5 decisions in decisions.md and all 12 gotchas in gotchas.md must survive the restructure. Decision text, rationale, and confidence are verbatim — the shipping agent copies exact strings, not paraphrases. Gotcha entries are verbatim except for the one meta-gotcha ("Memory templates waste tokens if left as placeholders") whose mitigation text is updated to reference this bead ID (`br-omp-backbone-skill-l3d`). The update changes "Delete placeholder gotchas when real ones exist" to "Fill with real project content immediately. This bead (br-omp-backbone-skill-l3d) addresses the initial hydration. Audit memory files during /close." All other text in that entry (Date, Area, Gotcha, Impact) is verbatim. Reference: `.omp/memory/project/decisions.md` Example section lines and `.omp/memory/project/gotchas.md` Template Bootstrap table lines for the original texts.
-- **Verification-first editing discipline** — Before each edit, read the target file to anchor current line numbers (they may differ from the plan's approximate line numbers). After each edit, run the per-task verification checks before moving to the next file. Do not edit from memory — line numbers shift between tasks as text is inserted or removed. Reference: plan.md "Observable Truths" for the pre-edit state of each file; plan.md "File Edit Map" for the approximate line ranges.
-- **No new content creation** — This bead fills placeholders and fixes structure. It does not add new gotchas, new decisions, new sections, or new factual claims. The goal text in project.md derives from README.md (canonical). The success criteria are observable properties of this bead's own outcome (zero placeholders, valid markdown, agent comprehension). The current phase reflects actual repo activity (8 beads closed in last 7 days, design system scaffolded, commands and skills refined). Every claim in the edited memory files has a verifiable source in the repo. Reference: PRD "In Scope" list for what this bead does touch; "Out of Scope" for what it explicitly does not.
-- **Sequential waves with rollback safety** — Each wave (1 through 5) edits exactly one memory file and verifies it before moving to the next. Wave 6 runs full cross-file verification. If a wave fails verification, the shipping agent can revert that single file's changes without affecting the other 4 files. The files are logically independent — no memory file references another memory file's content. The sequential structure also prevents context window saturation: reading and editing 5 files simultaneously risks holding stale snapshots. Reference: plan.md "Why Sequential Waves" rationale for the design decision.
-- **Craft file table alphabetization** — The tech-stack.md craft references table should list files in alphabetical order for consistency. The current order (before fix) is arbitrary: typography, color, anti-ai-slop, animation-discipline, [attribution break], accessibility-baseline, form-validation, typography-hierarchy. The fixed order is alphabetical: accessibility-baseline, animation-discipline, anti-ai-slop, color, form-validation, state-coverage, typography, typography-hierarchy. This makes it easy to check if a file is listed and easy to insert new craft files in the future. Reference: `ls design/craft/` output for the file listing.
-- **Blockquote for consumer guidance** — Template-universal gotchas (those that apply to any project cloning the template) need a clear marker that they ship with the template and should be replaced. Use a markdown blockquote (`> `) for this. The blockquote text is: `> These gotchas ship with the OMP Beads Template. They apply to any project using this template. Replace with your project's actual gotchas as you discover them.` This pattern is used nowhere else in the repo and introduces no new markdown syntax that agents can't parse. Reference: The blockquote will appear in `.omp/memory/project/gotchas.md` under the "## Template Bootstrap Gotchas" heading, between the description paragraph and the table.
+### 1. Memory file frontmatter
+
+Every memory file uses a YAML-style frontmatter block delimited by `---` on its own line. The block
+has exactly two fields:
+- `purpose:` — a one-line description of the file's role (e.g., "Project vision, goals, success
+criteria, and current phase")
+- `updated:` — a YYYY-MM-DD date of last modification
+
+**Rule:** The `purpose` field must NOT change — it's the file's identity. The `updated` date MUST
+change from `2026-06-17` to `2026-06-18` (today) in all 5 files. This is the only frontmatter
+change.
+
+**Reference:** `.omp/memory/project/project.md` lines 1-4 for the canonical frontmatter pattern. The
+same pattern appears in all 5 files.
+
+**Example:**
+```
+---
+purpose: Project vision, goals, success criteria, and current phase
+updated: 2026-06-18
+---
+```
+
+### 2. Placeholder replacement, not section addition
+
+The memory files serve a dual role: (1) they are this project's own documentation, and (2) they are
+template examples for consumers who clone the repo. Because of role #2, the file structure
+(headings, sections, instruction paragraphs) must survive intact. Template consumers need to see the
+full structure to know what to fill in.
+
+**Rule:** Replace placeholder text with concrete text in-place. Do NOT add new top-level sections
+(no new `##` headings). Do NOT remove existing sections except where the PRD explicitly authorizes
+removal (the "Example" section in decisions.md — because its content is migrated, not lost).
+Instruction paragraphs like "Fill in the actual languages for your project" stay because they guide
+template consumers.
+
+**Anti-pattern:** "While I'm here, I'll add a section about X." Don't. The PRD scope is explicit.
+
+**Reference:** `.omp/memory/project/project.md` for the section structure that must survive after editing.
+
+### 3. README.md as canonical identity source
+
+The project name and goal description are NOT invented. They are derived from the repo's own
+README.md, which is the public-facing canonical description.
+
+**Rule:** The project name is the README's first H1 heading: `# OMP Beads Template`. The goal
+description incorporates the README's first paragraph ("OMP-native project template with br and bv
+as the backbone of planning, execution, verification, and review") expanded with concrete
+deliverables observable in the repo structure: task tracking (br database), graph-informed planning
+(bv commands), artifact generation (.omp/skills/ and .omp/templates/), quality gating
+(.omp/extensions/workflow-gate.ts).
+
+**Anti-pattern:** Inventing a project name or goal that sounds better but doesn't match the README.
+If the README says "OMP Beads Template," don't write "OMP Workflow Framework" because you think it
+sounds more professional.
+
+**Reference:** `README.md` lines 1-5 for the canonical heading and description.
+
+### 4. Markdown table structure rules
+
+Tables in these memory files use standard GitHub-Flavored Markdown pipe syntax:
+
+```
+| Header1 | Header2 | Header3 |
+|---------|---------|---------|
+| data1   | data2   | data3   |
+```
+
+**Critical rules for the tech-stack.md craft table fix:**
+- A table is a contiguous block: header row, separator row, data rows. No non-table content between rows.
+- Attribution paragraphs, descriptions, and notes that reference a table must appear BEFORE or AFTER
+the table, never between data rows.
+- All data rows must have the same number of columns as the header.
+- An attribution paragraph is NOT a table row — it should not start with `|`.
+
+**The bug being fixed:** The current craft table has 4 valid data rows, then an attribution
+paragraph ("Adapted from Open Design..."), then 3 orphan data rows with no header. This renders as:
+valid 4-row table, then a paragraph, then 3 lines of broken markdown that look like table rows but
+aren't because there's no header above them.
+
+**The fix:** Create exactly ONE contiguous table with header + separator + 8 data rows (alphabetical
+order). Place the attribution paragraph AFTER the table, separated by a blank line.
+
+**Reference:** `.omp/memory/project/tech-stack.md` lines 78-88 for the broken table.
+`.omp/memory/project/conventions.md` "Languages by Purpose" table for a well-formed table example.
+
+### 5. Decision log format
+
+Each architecture decision is a table row with 5 columns:
+
+```
+| # | Date | Decision | Rationale | Confidence |
+|---|------|----------|-----------|------------|
+| 1 | 2026-06 | Use br/bv for task tracking... | Graph-informed workflow is... | High |
+```
+
+**Column meanings:**
+- `#` — Sequential number starting from 1. When adding new decisions, use the next number.
+- `Date` — Month of decision in `YYYY-MM` format. Month precision is sufficient for architecture decisions.
+- `Decision` — One sentence. Concrete, not abstract. "Use br/bv for task tracking and graph
+intelligence" not "Choose good tools."
+- `Rationale` — What we rejected, what we accepted, and why. Enough detail that someone 6 months
+later can follow the reasoning without asking. Include tradeoffs and alternatives considered.
+- `Confidence` — One of: `High` (multiple sources confirmed), `Medium` (strong consensus but one
+uncertainty), `Low` (experiment, subject to change).
+
+**Rule:** The 5 decisions currently in the "Example" section are real. Their text, rationale, and
+confidence are verbatim — copy character-for-character. Do not "improve" the wording. Do not add new
+rationale. Do not change confidence levels. If the file's text differs from what the plan records,
+the file is authoritative.
+
+**Reference:** `.omp/memory/project/decisions.md` "Example" section for the exact 5 decision texts.
+The "How to Add a Decision" section for the format specification.
+
+### 6. Gotcha entry format
+
+Each gotcha is a table row with 5 columns:
+
+```
+| Date | Area | Gotcha | Impact | Mitigation |
+|------|------|--------|--------|------------|
+| 2026-06 | memory | Memory templates waste tokens... | ~1KB of template text... | Fill with real project content... |
+```
+
+**Column meanings:**
+- `Date` — When discovered (`YYYY-MM`).
+- `Area` — The subsystem affected: `workflow`, `bv`, `br`, `memory`, `commands`, `skills`, `omp`,
+`models`, `git`, or a project-specific component name.
+- `Gotcha` — What happens. Be specific: "bv returns empty until at least one commit exists" not "bv is broken."
+- `Impact` — Concrete consequence: "Graph queries fail silently" not "bad."
+- `Mitigation` — Actionable: something the next person can DO. "Create at least one commit before
+relying on bv" not "be careful."
+
+**Rule:** The 12 existing gotcha entries must all survive. The "memory templates waste tokens" entry
+moves from Template Bootstrap to Active Warnings. Its mitigation text is updated to reference this
+bead ID (`br-omp-backbone-skill-l3d`). All other 11 entries are verbatim — no text changes, no
+reordering.
+
+**Reference:** `.omp/memory/project/gotchas.md` "Template Bootstrap Gotchas" table for the exact 12
+entry texts. The "How to Add a Gotcha" section for the format specification.
+
+### 7. Idempotency is not a concern
+
+The memory files are static markdown, not generated code. No automated process regenerates them. The
+`/init` command's Phase 2.5 (the Python hydration script) would regenerate them from templates IF
+run again — but `/init` is only run once during project bootstrap. No CI pipeline, no git hook, no
+scheduled job touches these files.
+
+**Rule:** Do NOT run `/init` during `/ship`. It would regenerate placeholder-filled memory files and
+undo this bead's work. There's no reason to run it — you're editing markdown, not re-initializing
+the project.
+
+**Anti-pattern:** "Let me run `/init` to make sure everything is consistent." No. `/init` writes
+fresh templates with placeholders. Your edits would be overwritten.
+
+**Reference:** `.omp/commands/init.md` Phase 2.5 for the `/init` hydration logic.
+
+### 8. Scope boundary: memory files only
+
+The blast radius is exactly 5 files under `.omp/memory/project/`. Your `edit` and `write` tool calls
+must target only these 5 paths:
+
+1. `.omp/memory/project/project.md`
+2. `.omp/memory/project/conventions.md`
+3. `.omp/memory/project/tech-stack.md`
+4. `.omp/memory/project/decisions.md`
+5. `.omp/memory/project/gotchas.md`
+
+**Rule:** If a tool call would write to ANY other path, abort that call. The PRD explicitly
+excludes: `.omp/commands/init.md`, `.omp/templates/`, `.omp/skills/`, `.omp/AGENTS.md`,
+`.omp/RULES.md`, `DESIGN.md`, `design/`, `README.md`, `.gitignore`.
+
+**Exception:** Reading `README.md` is allowed (for identity derivation). Reading
+`design/craft/state-coverage.md` is allowed (for purpose description). Reading `.omp/AGENTS.md` is
+allowed (for philosophy context). All other files outside `.omp/memory/project/` should only be read
+if absolutely necessary for verification.
+
+**Reference:** PRD "Out of Scope" section for the full exclusion list. Plan "Required Artifacts"
+table for the file status.
+
+### 9. Content preservation is mandatory
+
+The 5 decisions in decisions.md and all 12 gotchas in gotchas.md are institutional knowledge. They
+must survive the restructure unchanged except where the PRD explicitly authorizes modification.
+
+**Decisions:** Copy verbatim from Example section to Decision Log. The content moves; it does not
+change. Verify preservation with Python assertion checks (provided in tasks.md Wave 6).
+
+**Gotchas:** The "memory templates waste tokens" entry moves from Template Bootstrap to Active
+Warnings. Its mitigation text is updated from "Delete placeholder gotchas when real ones exist" to
+"Fill with real project content immediately. This bead (br-omp-backbone-skill-l3d) addresses the
+initial hydration. Audit memory files during /close." All other text in that entry (Date, Area,
+Gotcha, Impact) is verbatim. The other 11 entries are entirely verbatim — no text changes, no
+reordering, no "clarification" edits.
+
+**Rule:** If you're tempted to "improve" a decision's rationale or "clarify" a gotcha's impact,
+don't. The PRD scope is structure and identity, not content revision. Content revision is a separate
+bead.
+
+**Reference:** `.omp/memory/project/decisions.md` Example section. `.omp/memory/project/gotchas.md`
+Template Bootstrap table.
+
+### 10. Verification-first editing discipline
+
+Before any edit to a file, read the file to anchor current line numbers. After the edit, run the
+verification checks for that file before moving to the next file. The plan's "Observable Truths"
+section describes the pre-edit state of each file — use it as a checklist to confirm you're editing
+the right things.
+
+**Rule:** Read → Confirm → Edit → Verify → Next. Never: Read once at the start and edit all 5 files
+from memory. Line numbers shift between edits because you're inserting text longer than the
+placeholders.
+
+**Recovery rule:** If a verification check fails, fix only the file that failed. Re-run just that
+check to confirm the fix. Then re-run all checks for that file. Then proceed to the next file.
+
+**Reference:** Plan "Observable Truths" (items 1-5) for pre-edit state. Tasks.md per-task
+verification steps for post-edit checks.
+
+### 11. No new content creation
+
+This bead fills placeholders and fixes structure. It does NOT:
+- Add new gotchas (beyond the existing 12)
+- Add new decisions (beyond the existing 5)
+- Add new sections to any file
+- Add new factual claims not verifiable in the repo
+- Change the meaning of existing content
+
+**Rule:** Every claim in the edited memory files has a verifiable source in the repo. The goal text
+comes from README.md. The success criteria describe this bead's own outcome. The current phase
+status ("active") is supported by 8 closed beads in 7 days. The milestone IS this bead. The next
+deliverable (audit command files) is a natural next step.
+
+**Anti-pattern:** "This project also does X, I'll add that to the goal." If it's not in the PRD
+approach section, don't add it.
+
+**Reference:** PRD "In Scope" for what this bead does. PRD "Out of Scope" for what it doesn't.
+
+### 12. Sequential waves with rollback safety
+
+The plan structures work into 6 waves:
+- Wave 1: project.md
+- Wave 2: conventions.md
+- Wave 3: tech-stack.md
+- Wave 4: decisions.md
+- Wave 5: gotchas.md
+- Wave 6: full verification
+
+**Why sequential?** Each file is logically independent — no cross-file references exist between
+memory files. They could run in parallel. But sequential waves provide:
+1. **Recovery surface:** If a file edit is wrong, only one file needs reverting via `git checkout -- <file>`, not all 5.
+2. **Incremental confidence:** Each wave verified means progress is banked. You never have to roll back all 5 files.
+3. **Context preservation:** Reading and editing 5 files simultaneously risks holding stale
+snapshots in the context window.
+
+**Rule:** Do not skip ahead. Complete Wave 1 verification → Wave 2 → Wave 3 → Wave 4 → Wave 5 → Wave
+6. If you discover that a later wave's edit depends on an earlier wave's content (it shouldn't —
+they're independent), note it and continue.
+
+**Reference:** Plan "Why Sequential Waves" for the design rationale.
+
+### 13. Craft file table alphabetization
+
+The tech-stack.md craft references table should list files in alphabetical order. This makes it easy
+to check if a file is listed and easy to insert new craft files in the future.
+
+**Rule:** The fixed table order is:
+1. `design/craft/accessibility-baseline.md`
+2. `design/craft/animation-discipline.md`
+3. `design/craft/anti-ai-slop.md`
+4. `design/craft/color.md`
+5. `design/craft/form-validation.md`
+6. `design/craft/state-coverage.md`
+7. `design/craft/typography.md`
+8. `design/craft/typography-hierarchy.md`
+
+**Reference:** `ls design/craft/` output for the complete file listing.
+
+### 14. Blockquote for consumer guidance
+
+The gotchas.md "Template Bootstrap Gotchas" section needs a clear visual marker that these entries
+ship with the template and should be replaced by consumers. Use a markdown blockquote (`> `).
+
+**Rule:** Insert `> These gotchas ship with the OMP Beads Template. They apply to any project using
+this template. Replace with your project's actual gotchas as you discover them.` between the
+description paragraph and the table, with blank lines above and below.
+
+**Reference:** The blockquote will be the only `>` line in any memory file. It introduces no new
+markdown syntax that agents can't parse.
+
+---
 
 ## Constraints
 
-### MUST
+### MUST (20 items — hard boundaries, violations block `/review`)
 
-1. MUST replace all `<project-name>` placeholders with "OMP Beads Template" across all 5 files — `grep -r '<project-name>' .omp/memory/project/` must return zero matches after the bead
-2. MUST replace all `<!-- TODO: fill in -->` markers in project.md with concrete text — no `<!-- TODO` should remain in project.md
-3. MUST fill the Languages by Purpose table in conventions.md with actual values: Backend = N/A, Frontend = N/A, Scripts = Python. Agent instructions and Configuration rows stay as-is (already have real content)
-4. MUST fix the craft references table in tech-stack.md: all 8 craft files in one contiguous table (header + separator + 8 data rows) with the attribution paragraph after the table, separated by a blank line. No orphan rows. No attribution between table rows.
-5. MUST replace verification command placeholders in tech-stack.md with "N/A" and a brief explanation. The 4 verification commands (typecheck, lint, test, build) and 2 security commands (dependency audit, secrets scan) all become N/A because this is a template repo with no compiled code, no dependencies, and no configured tooling.
-6. MUST keep `bv --robot-triage` and `br list --status open --status in_progress --json` commands in tech-stack.md under "Graph state (always available)" — these are always valid regardless of repo type
-7. MUST move 5 real decisions from the "Example" section to the "Decision Log" section in decisions.md. Content is verbatim — exact same date, decision text, rationale, and confidence. Only the heading changes.
-8. MUST remove the "## Example" section heading and all its content from decisions.md — the content is already migrated to Decision Log, so the Example section is redundant
-9. MUST remove the placeholder row (`| 1 | <YYYY-MM> | <what we decided> | <why — tradeoffs, alternatives considered> | <High | Medium | Low> |`) from the Decision Log table in decisions.md
-10. MUST separate project-specific gotchas (Active Warnings) from template-universal gotchas (Template Bootstrap Gotchas) in gotchas.md. The "memory templates waste tokens" entry is project-specific — it describes this repo's own maintenance problem. The other 11 entries are template-universal — they apply to any project that clones the template.
-11. MUST add a blockquote note in gotchas.md under "Template Bootstrap Gotchas" clarifying that these ship with the template and consumers should replace them: `> These gotchas ship with the OMP Beads Template. They apply to any project using this template. Replace with your project's actual gotchas as you discover them.`
-12. MUST preserve all 5 decision texts, rationales, and confidence levels verbatim from the Example section to the Decision Log. Use `git diff` or Python assertion checks to verify verbatim preservation.
-13. MUST preserve all 12 gotcha entries (1 in Active Warnings, 11 in Template Bootstrap Gotchas). Only the meta-gotcha's mitigation text may be updated to reference this bead ID. All other gotcha text (Date, Area, Gotcha, Impact) is verbatim.
-14. MUST update the `updated:` frontmatter date in all 5 files from `2026-06-17` to `2026-06-18` (today's date)
-15. MUST keep each memory file as valid markdown: frontmatter is properly delimited with `---`, headings use `#` and `##` syntax, tables have consistent column counts across header/separator/data rows, no orphan rows without headers, no broken pipe syntax
-16. MUST keep the "How to Add a Decision" reference section in decisions.md — its 5-step guide is useful documentation
-17. MUST keep the "How to Add a Gotcha" reference section in gotchas.md — its 5-step guide with the "Remove entries once the underlying bug is fixed" note is useful documentation
-18. MUST keep instruction/guidance paragraphs that are useful for template consumers: the "Fill in the actual languages..." line after the conventions.md languages table, the "Keep to 3-5 criteria..." line after project.md success criteria, the "Replace placeholders..." line after tech-stack.md verification commands, the intro paragraph after decisions.md header
-19. MUST read each target file before editing it — current line numbers may differ from the plan's approximate line numbers. Do not rely on plan line numbers; use the actual file state
-20. MUST read `design/craft/state-coverage.md` to derive its purpose description for the craft references table. Do not invent a description — read the file and extract keywords from its heading and introductory text
+1. MUST replace all `<project-name>` placeholders with "OMP Beads Template" across all 5 files.
+Final check: `grep -r '<project-name>' .omp/memory/project/` returns zero matches.
+2. MUST replace all `<!-- TODO: fill in -->` markers in project.md with concrete text. The goal, 3
+success criteria, status, milestone, and next deliverable all get real text.
+3. MUST fill the Languages by Purpose table in conventions.md: Backend = N/A, Frontend = N/A,
+Scripts = Python. Agent instructions and Configuration rows are unchanged.
+4. MUST fix the craft references table in tech-stack.md: one contiguous 8-row table (header +
+separator + 8 data rows in alphabetical order), attribution paragraph AFTER the table.
+5. MUST replace verification command placeholders in tech-stack.md: typecheck, lint, test, build →
+"N/A — template repo, no compiled code" (and variants). Security: dependency audit, secrets scan →
+"N/A — template repo, no runtime dependencies" / "N/A — no secrets scanning configured".
+6. MUST keep `bv --robot-triage` and `br list --status open --status in_progress --json` in
+tech-stack.md under "Graph state (always available)."
+7. MUST move 5 decisions from Example section to Decision Log section in decisions.md. Content verbatim.
+8. MUST remove the entire "## Example" section from decisions.md (heading, table header, separator, 5 rows).
+9. MUST remove the placeholder row from the Decision Log table.
+10. MUST move the "memory templates waste tokens" gotcha from Template Bootstrap to Active Warnings.
+11. MUST add blockquote note in Template Bootstrap Gotchas: `> These gotchas ship with the OMP Beads
+Template. They apply to any project using this template. Replace with your project's actual gotchas
+as you discover them.`
+12. MUST preserve all 5 decision texts, rationales, and confidence levels verbatim.
+13. MUST preserve all 12 gotcha entries — 1 in Active Warnings (with updated mitigation), 11 in
+Template Bootstrap (verbatim).
+14. MUST update `updated:` frontmatter date to `2026-06-18` in all 5 files.
+15. MUST keep every memory file as valid markdown: frontmatter delimited, headings present, tables
+with consistent column counts, no orphan rows.
+16. MUST keep "How to Add a Decision" section in decisions.md unchanged.
+17. MUST keep "How to Add a Gotcha" section in gotchas.md unchanged.
+18. MUST keep instruction/guidance paragraphs useful for template consumers.
+19. MUST read each target file before editing it.
+20. MUST read `design/craft/state-coverage.md` to derive its purpose description for the craft table.
 
-### SHOULD
+### SHOULD (7 items — best practices, not blocking)
 
-1. SHOULD verify each file immediately after editing (per-wave verification gates) before moving to the next wave. This limits blast radius if an edit is wrong — only one file needs reverting
-2. SHOULD keep edits minimal — replace only placeholder text, do not reformat unchanged sections. For example, don't re-align table columns that aren't being edited
-3. SHOULD record line numbers edited for each file (start and end of each edit block) for the diff scope check in Wave 6
-4. SHOULD derive the project goal text from README.md first paragraph rather than inventing it. If the plan's suggested goal text doesn't match the README after re-reading, use the README
-5. SHOULD alphabetize the craft references table — the fixed table should list files in alphabetical order: accessibility-baseline, animation-discipline, anti-ai-slop, color, form-validation, state-coverage, typography, typography-hierarchy
-6. SHOULD update the meta-gotcha's mitigation text to reference this bead ID (`br-omp-backbone-skill-l3d`) so future maintainers can trace when and how the problem was addressed
-7. SHOULD NOT run `/init` during `/ship` — it would regenerate placeholder-filled memory files, undoing this bead's work
+1. SHOULD verify each file immediately after editing before moving to the next wave.
+2. SHOULD keep edits minimal — don't reformat unchanged sections.
+3. SHOULD record line numbers edited for the diff scope check.
+4. SHOULD derive goal text from README.md first paragraph.
+5. SHOULD alphabetize the craft references table.
+6. SHOULD update the meta-gotcha mitigation to reference this bead ID.
+7. SHOULD NOT run `/init` during `/ship`.
 
-### MUST NOT
+### MUST NOT (20 items — violations are scope bleed)
 
-1. MUST NOT edit `.omp/commands/init.md` — the hydration script that wrote these files. PRD explicitly excludes it
-2. MUST NOT edit `.omp/templates/` — the template files that define the placeholder structure
-3. MUST NOT edit `.omp/skills/` — any skill definition files
-4. MUST NOT edit `.omp/AGENTS.md` — the canonical project context that inlines memory files
-5. MUST NOT edit `.omp/RULES.md` — workflow rules
-6. MUST NOT edit `DESIGN.md` — the 9-section brand contract
-7. MUST NOT edit `design/` — any design system files (tokens.css, primitives.css, base.css, craft/)
-8. MUST NOT edit `README.md` — project README (the canonical identity source is read-only)
-9. MUST NOT edit `.gitignore` — ignore rules
-10. MUST NOT add new top-level sections to any memory file — headings and structure stay as-is
-11. MUST NOT change existing decision rationale or confidence values — verbatim copy only
-12. MUST NOT add new gotcha entries beyond the 12 that already exist
-13. MUST NOT delete any existing gotcha entry — all 12 entries (1 project-specific + 11 template-universal) must survive
-14. MUST NOT add new memory files — the 5 existing files are the complete set
-15. MUST NOT change the frontmatter `purpose:` field in any file — only `updated:` changes
-16. MUST NOT reformat unchanged sections of any file — this creates noisy diffs and increases review burden. If a table column alignment is "wrong" but wasn't part of the edit, leave it
-17. MUST NOT run destructive commands (`rm`, `git reset --hard`, `git checkout --`, force push) on memory files
-18. MUST NOT create a `.pi/` directory or move files out of `.omp/` — this breaks OMP native discovery
-19. MUST NOT modify the Runtime table in tech-stack.md — the `<TypeScript | Python | Go | Rust>` placeholders in the Runtime/Language/Runtime/Package manager rows are intentionally kept as template patterns for consumers
-20. MUST NOT modify the Key Dependencies table in tech-stack.md — the `<name> | <what it does> | <version>` placeholder row is intentionally kept
+1. MUST NOT edit `.omp/commands/init.md`
+2. MUST NOT edit `.omp/templates/`
+3. MUST NOT edit `.omp/skills/`
+4. MUST NOT edit `.omp/AGENTS.md`
+5. MUST NOT edit `.omp/RULES.md`
+6. MUST NOT edit `DESIGN.md`
+7. MUST NOT edit `design/` (except read `design/craft/state-coverage.md`)
+8. MUST NOT edit `README.md`
+9. MUST NOT edit `.gitignore`
+10. MUST NOT add new top-level sections to any memory file
+11. MUST NOT change existing decision rationale or confidence values
+12. MUST NOT add new gotcha entries
+13. MUST NOT delete any existing gotcha entry
+14. MUST NOT add new memory files
+15. MUST NOT change frontmatter `purpose:` field
+16. MUST NOT reformat unchanged sections
+17. MUST NOT run destructive commands on memory files
+18. MUST NOT create `.pi/` directory or move files out of `.omp/`
+19. MUST NOT modify Runtime table in tech-stack.md
+20. MUST NOT modify Key Dependencies table in tech-stack.md
+
+---
 
 ## File Ownership
 
-| Task | Allowed (edit) | Allowed (read) | Forbidden |
-|------|---------------|----------------|-----------|
-| 1.1 | `.omp/memory/project/project.md` | `README.md`, `.omp/AGENTS.md` | All other files |
-| 2.1 | `.omp/memory/project/conventions.md` | — | All other files |
-| 3.1 | `.omp/memory/project/tech-stack.md` | `design/craft/state-coverage.md` | All other files |
-| 4.1 | `.omp/memory/project/decisions.md` | — | All other files |
-| 5.1 | `.omp/memory/project/gotchas.md` | — | All other files |
-| 6.1 | — (read-only) | All 5 memory files | All non-memory files |
+| Task | Edit | Read | Forbidden |
+|------|------|------|-----------|
+| 1.1 | `.omp/memory/project/project.md` | `README.md`, `.omp/AGENTS.md` | All others |
+| 2.1 | `.omp/memory/project/conventions.md` | — | All others |
+| 3.1 | `.omp/memory/project/tech-stack.md` | `design/craft/state-coverage.md` | All others |
+| 4.1 | `.omp/memory/project/decisions.md` | — | All others |
+| 5.1 | `.omp/memory/project/gotchas.md` | — | All others |
+| 6.1 | — | All 5 memory files | All non-memory files |
 
-## File Edit Map
+---
 
-This map shows every edit to every file with approximate line numbers. The shipping agent must read each file before editing — line numbers may differ from these approximations. Use these as a guide for what to look for, not as exact coordinates.
+## Detailed File Edit Maps
 
-### project.md — Task 1.1 (10 estimated minutes)
+### project.md (Task 1.1, ~10 min)
 
-Edits: 10 replacements across ~29 lines. Pre-edit size: ~750 bytes. Post-edit size: ~900 bytes.
+Pre-edit state: ~29 lines, ~750 bytes. Post-edit: ~30 lines, ~900 bytes.
 
-| # | Approx Line | What | From | To |
-|---|-------------|------|------|----|
-| 1 | 2 | Frontmatter date | `updated: 2026-06-17` | `updated: 2026-06-18` |
-| 2 | 5 | Header | `# Project: <project-name>` | `# Project: OMP Beads Template` |
-| 3 | 7-8 | Instruction line | `Replace this with your actual project name.\n\n` | (remove, or keep one blank line) |
-| 4 | 11 | Goal | `<One sentence — what are we building and why?>` | `An OMP-native project template that provides br/bv-powered workflow infrastructure for AI-agent-driven software development — task tracking, graph-informed planning, artifact generation, and quality gating.` |
-| 5 | 15 | Criterion 1 | `1. **<Criterion 1>** — <measurable outcome>` | `1. **Zero template placeholders** — No \`<project-name>\` or \`<!-- TODO\` markers in any \`.omp/memory/project/\` file. Verifiable with \`grep\`.` |
-| 6 | 16 | Criterion 2 | `2. **<Criterion 2>** — <measurable outcome>` | `2. **Valid markdown throughout** — Every memory file is valid markdown with correctly structured tables. Verifiable by reading each file.` |
-| 7 | 17 | Criterion 3 | `3. **<Criterion 3>** — <measurable outcome>` | `3. **Agent comprehension within 3 seconds** — An agent loading this context can answer 'what is this project' immediately from project.md. Qualitative but observable.` |
-| 8 | 24 | Status | `- **Status:** <active \| maintenance \| paused>` | `- **Status:** active` |
-| 9 | 25 | Milestone | `- **Milestone:** <what we're working toward right now>` | `- **Milestone:** Memory file hydration — project identity hardening` |
-| 10 | 26 | Next | `- **Next:** <the next concrete deliverable>` | `- **Next:** Audit command files for consistency with conventions` |
+| # | Where | From | To | Notes |
+|---|-------|------|----|-------|
+| 1 | Line 2 | `updated: 2026-06-17` | `updated: 2026-06-18` | Frontmatter date — do this in all 5 files |
+| 2 | Line 5 | `# Project: <project-name>` | `# Project: OMP Beads Template` | Canonical name from README.md |
+| 3 | Lines 7-8 | `Replace this with your actual project name.` + blank line | Remove the instruction line; keep one blank line | Don't leave a visual gap that makes the file look broken |
+| 4 | Line 11 | `<One sentence — what are we building and why?>` | `An OMP-native project template that provides br/bv-powered workflow infrastructure for AI-agent-driven software development — task tracking, graph-informed planning, artifact generation, and quality gating.` | Derived from README.md + repo-observable deliverables |
+| 5 | Line 15 | `1. **<Criterion 1>** — <measurable outcome>` | `1. **Zero template placeholders** — No \`<project-name>\` or \`<!-- TODO\` markers in any \`.omp/memory/project/\` file. Verifiable with \`grep\`.` | Verifiable: grep returns 0 matches |
+| 6 | Line 16 | `2. **<Criterion 2>** — <measurable outcome>` | `2. **Valid markdown throughout** — Every memory file is valid markdown with correctly structured tables. Verifiable by reading each file.` | Verifiable: visual inspection or markdown parser |
+| 7 | Line 17 | `3. **<Criterion 3>** — <measurable outcome>` | `3. **Agent comprehension within 3 seconds** — An agent loading this context can answer 'what is this project' immediately from project.md. Qualitative but observable.` | Meta-criterion: did hydration work? |
+| 8 | Lines 18-20 | `Keep to 3-5 criteria...` | UNCHANGED | Instruction paragraph for template consumers |
+| 9 | Line 24 | `- **Status:** <active \| maintenance \| paused>` | `- **Status:** active` | 8 beads closed in 7 days = active |
+| 10 | Line 25 | `- **Milestone:** <what we're working toward right now>` | `- **Milestone:** Memory file hydration — project identity hardening` | THIS bead is the milestone |
+| 11 | Line 26 | `- **Next:** <the next concrete deliverable>` | `- **Next:** Audit command files for consistency with conventions` | Natural next step |
+| 12 | Last para | `Update this section after every milestone...` | UNCHANGED | Critical maintainer guidance |
 
-After edit: The "Keep to 3-5 criteria..." instruction paragraph (lines ~18-20) stays. The section headings (`## The Goal`, `## Success Criteria`, `## Current Phase`) stay. The frontmatter stays (with updated date). The "Update this section after every milestone..." instruction paragraph (last paragraph) stays.
+### conventions.md (Task 2.1, ~10 min)
 
-### conventions.md — Task 2.1 (10 estimated minutes)
+Pre-edit: ~143 lines, ~4.4KB. Post-edit: ~143 lines, ~4.4KB. Most of the file is unchanged — only
+header + 3 table rows change.
 
-Edits: 5 replacements across ~143 lines. Pre-edit size: ~4.4KB. Post-edit size: ~4.4KB (placeholders replaced with similar-length text).
+| # | Where | From | To | Notes |
+|---|-------|------|----|-------|
+| 1 | Line 2 | `updated: 2026-06-17` | `updated: 2026-06-18` | |
+| 2 | Line ~6 | `# Conventions: <project-name>` | `# Conventions: OMP Beads Template` | |
+| 3 | Backend row | `\| Backend \| <TypeScript \| Go \| Rust \| Python> \| <strict? Bun? Deno?> \|` | `\| Backend \| N/A \| Template repo — no backend runtime \|` | No runtime manifest in repo |
+| 4 | Frontend row | `\| Frontend \| <TypeScript \| JavaScript> \| <React? Svelte? plain?> \|` | `\| Frontend \| N/A \| Template repo — provides design system assets only \|` | Design assets only, no app |
+| 5 | Scripts row | `\| Scripts \| <Bash \| Python \| TypeScript> \| <CI, dev tooling, one-offs> \|` | `\| Scripts \| Python \| \`/init\` hydration script \|` | Only executable code is init.py |
 
-| # | Approx Line | What | From | To |
-|---|-------------|------|------|----|
-| 1 | 2 | Frontmatter date | `updated: 2026-06-17` | `updated: 2026-06-18` |
-| 2 | 6 | Header | `# Conventions: <project-name>` | `# Conventions: OMP Beads Template` |
-| 3 | ~19 | Backend row | `\| Backend \| <TypeScript \| Go \| Rust \| Python> \| <strict? Bun? Deno?> \|` | `\| Backend \| N/A \| Template repo — no backend runtime \|` |
-| 4 | ~20 | Frontend row | `\| Frontend \| <TypeScript \| JavaScript> \| <React? Svelte? plain?> \|` | `\| Frontend \| N/A \| Template repo — provides design system assets only \|` |
-| 5 | ~21 | Scripts row | `\| Scripts \| <Bash \| Python \| TypeScript> \| <CI, dev tooling, one-offs> \|` | `\| Scripts \| Python \| \`/init\` hydration script \|` |
+**Unchanged sections (verify they're preserved):** `## Naming`, `## Skill Structure`, `## Command
+Structure`, `## Git`, `## Workflow`, `## Agent Conventions`, `## Honcho Memory`, `## Memory File
+Maintenance`, `## UI Design`. Also unchanged: Agent instructions and Configuration rows in the
+language table.
 
-After edit: Agent instructions row stays (`Markdown | Skills, commands, memory files`). Configuration row stays (`JSON / YAML | settings, manifests`). The "Fill in the actual languages..." instruction paragraph after the table stays. All other sections (`## Naming`, `## Skill Structure`, `## Command Structure`, `## Git`, `## Workflow`, `## Agent Conventions`, `## Honcho Memory`, `## Memory File Maintenance`, `## UI Design`) are untouched.
+### tech-stack.md (Task 3.1, ~15 min)
 
-### tech-stack.md — Task 3.1 (15 estimated minutes)
+Pre-edit: ~88 lines, ~2.5KB. Post-edit: ~88 lines, ~2.5KB. Three areas change: header,
+verification/security commands, craft table.
 
-Edits: 9 replacements across ~88 lines. Pre-edit size: ~2.5KB. Post-edit size: ~2.5KB.
+| # | Where | From | To |
+|---|-------|------|----|
+| 1 | Line 2 | `updated: 2026-06-17` | `updated: 2026-06-18` |
+| 2 | Line ~6 | `# Tech Stack: <project-name>` | `# Tech Stack: OMP Beads Template` |
+| 3 | Typecheck | `<tsc --noEmit \| mypy \| cargo check \| go vet>` | `N/A — template repo, no compiled code` |
+| 4 | Lint | `<eslint \| ruff \| clippy \| golangci-lint>` | `N/A — no linter configured for template files` |
+| 5 | Test | `<vitest run \| pytest \| cargo test \| go test ./...>` | `N/A — no test framework` |
+| 6 | Build | `<tsup \| pip install -e . \| cargo build --release \| go build>` | `N/A — no build step` |
+| 7 | Dep audit | `<npm audit \| pip-audit \| cargo audit \| govulncheck>` | `N/A — template repo, no runtime dependencies` |
+| 8 | Secrets | `<gitleaks detect \| trufflehog filesystem .>` | `N/A — no secrets scanning configured` |
+| 9 | Craft block | Broken: 4 rows + attribution + 3 orphans, missing state-coverage.md | Unified 8-row alphabetical table + attribution after |
 
-| # | Approx Line | What | From | To |
-|---|-------------|------|------|----|
-| 1 | 2 | Frontmatter date | `updated: 2026-06-17` | `updated: 2026-06-18` |
-| 2 | 6 | Header | `# Tech Stack: <project-name>` | `# Tech Stack: OMP Beads Template` |
-| 3 | ~35 | Typecheck cmd | `<tsc --noEmit \| mypy \| cargo check \| go vet>` | `N/A — template repo, no compiled code` |
-| 4 | ~38 | Lint cmd | `<eslint \| ruff \| clippy \| golangci-lint>` | `N/A — no linter configured for template files` |
-| 5 | ~41 | Test cmd | `<vitest run \| pytest \| cargo test \| go test ./...>` | `N/A — no test framework` |
-| 6 | ~44 | Build cmd | `<tsup \| pip install -e . \| cargo build --release \| go build>` | `N/A — no build step` |
-| 7 | ~52 | Audit cmd | `<npm audit \| pip-audit \| cargo audit \| govulncheck>` | `N/A — template repo, no runtime dependencies` |
-| 8 | ~55 | Secrets cmd | `<gitleaks detect \| trufflehog filesystem .>` | `N/A — no secrets scanning configured` |
-| 9 | 78-88 | Craft table block | Broken: 4 rows + attribution mid-table + 3 orphan rows, missing state-coverage.md | Fixed: one contiguous 8-row table + attribution after |
-
-**Craft table edit detail:** Replace the entire "## Craft References" section body (from the description paragraph through the last orphan row) with:
+**Craft table replacement text (copy exactly):**
 
 ```
+## Craft References
+
 Brand-agnostic universal design rules that apply on top of any `DESIGN.md`:
 
 | File | Purpose |
@@ -157,27 +487,34 @@ Brand-agnostic universal design rules that apply on top of any `DESIGN.md`:
 | `design/craft/anti-ai-slop.md` | Seven cardinal sins, soft tells, polish tells, soul-injection rules |
 | `design/craft/color.md` | Palette structure, accent discipline, contrast minimums, dark themes, semantic naming |
 | `design/craft/form-validation.md` | Input state machine, validation timing, Constraint Validation API, error wiring, submit hygiene |
-| `design/craft/state-coverage.md` | [Derived from file — read design/craft/state-coverage.md for purpose keywords] |
+| `design/craft/state-coverage.md` | [READ THE FILE to derive purpose — keywords from heading/intro text] |
 | `design/craft/typography.md` | Type scale, line-height, letter-spacing, font pairing, line length, weight discipline |
 | `design/craft/typography-hierarchy.md` | Entry points, hierarchy vectors, rhythm failure modes, controlled violations |
 
-Adapted from Open Design's `craft/` directory (Apache 2.0) and [refero_skill](https://github.com/referodesign/refero_skill) (MIT).
+Adapted from Open Design's `craft/` directory (Apache 2.0) and
+[refero_skill](https://github.com/referodesign/refero_skill) (MIT).
 ```
 
-After edit: The `## Runtime` table, `## Key Dependencies` table, `## Design Assets` table, and `## Constraints` section are untouched. The "Graph state (always available)" commands under verification stay unchanged.
+For the `[READ THE FILE...]` placeholder: read `design/craft/state-coverage.md`, extract 3-5
+keywords from its H1 title and first paragraph, and construct a concise comma-separated purpose
+matching the style of other rows. Example expected output: "UI state handling: rest, hover, focus,
+active, disabled, loading, empty, error" — but use what the file actually says.
 
-### decisions.md — Task 4.1 (10 estimated minutes)
+**Unchanged sections:** `## Runtime` table, `## Key Dependencies` table, `## Design Assets` table,
+`## Constraints` section. The `bv --robot-triage` and `br list` commands under Graph state stay.
 
-Edits: 4 structural changes across ~34 lines. Pre-edit size: ~1.3KB. Post-edit size: ~1.3KB.
+### decisions.md (Task 4.1, ~10 min)
 
-| # | Approx Line | What | From | To |
-|---|-------------|------|------|----|
-| 1 | 2 | Frontmatter date | `updated: 2026-06-17` | `updated: 2026-06-18` |
-| 2 | 6 | Header | `# Decisions: <project-name>` | `# Decisions: OMP Beads Template` |
-| 3 | ~14-16 | Decision Log body | Placeholder row removed; 5 real decision rows inserted from Example section | Decision Log has 5 real rows (verbatim from Example) |
-| 4 | ~24-34 | Example section | Entire `## Example` heading, table header, separator, and 5 rows removed | Section gone; content is in Decision Log |
+Pre-edit: ~34 lines, ~1.3KB. Post-edit: ~30 lines, ~1.3KB.
 
-**Decision rows to insert (verbatim):**
+| # | Where | From | To |
+|---|-------|------|----|
+| 1 | Line 2 | `updated: 2026-06-17` | `updated: 2026-06-18` |
+| 2 | Line ~6 | `# Decisions: <project-name>` | `# Decisions: OMP Beads Template` |
+| 3 | Decision Log body | Placeholder row | 5 real decision rows (verbatim from Example) |
+| 4 | Example section | Entire `## Example` section | REMOVED (content is in Decision Log) |
+
+**5 decision rows to insert (verbatim — copy from the Example section of the actual file, not from here):**
 
 ```
 | 1 | 2026-06 | Use br/bv for task tracking and graph intelligence | Graph-informed workflow is the template's core differentiator. Alternatives (linear, plain markdown) lack the graph query ability. | High |
@@ -187,93 +524,106 @@ Edits: 4 structural changes across ~34 lines. Pre-edit size: ~1.3KB. Post-edit s
 | 5 | 2026-06 | Ergonomic tooling lives in separate template repos | omp-makora-provider and friends are independent packages. The beads template stays pure workflow — install providers separately. | High |
 ```
 
-After edit: The intro paragraph ("Every architecture decision...") stays. The "## How to Add a Decision" section (5 steps) stays verbatim. The "## Example" section is gone. The document ends with the How to Add section.
+**Unchanged:** Intro paragraph, `## How to Add a Decision` section (all 5 steps).
 
-### gotchas.md — Task 5.1 (10 estimated minutes)
+### gotchas.md (Task 5.1, ~10 min)
 
-Edits: 5 changes across ~44 lines. Pre-edit size: ~2.2KB. Post-edit size: ~2.3KB.
+Pre-edit: ~44 lines, ~2.2KB. Post-edit: ~46 lines, ~2.3KB.
 
-| # | Approx Line | What | From | To |
-|---|-------------|------|------|----|
-| 1 | 2 | Frontmatter date | `updated: 2026-06-17` | `updated: 2026-06-18` |
-| 2 | 6 | Header | `# Gotchas: <project-name>` | `# Gotchas: OMP Beads Template` |
-| 3 | ~13-14 | Active Warnings body | Placeholder row removed; project-specific gotcha inserted | Active Warnings has 1 real entry (memory templates gotcha with updated mitigation) |
-| 4 | ~17 | Template Bootstrap note | (none) | Blockquote note inserted after description paragraph, before table |
-| 5 | ~29 | Template Bootstrap row | "Memory templates waste tokens" row removed (moved to Active Warnings) | Template Bootstrap has 11 entries (original 12 minus 1 moved) |
+| # | Where | From | To |
+|---|-------|------|----|
+| 1 | Line 2 | `updated: 2026-06-17` | `updated: 2026-06-18` |
+| 2 | Line ~6 | `# Gotchas: <project-name>` | `# Gotchas: OMP Beads Template` |
+| 3 | Active Warnings body | Placeholder row | 1 real entry: memory templates gotcha with updated mitigation |
+| 4 | Template Bootstrap | (no blockquote) | Insert `> These gotchas ship with the OMP Beads Template...` after description paragraph |
+| 5 | Template Bootstrap row | "memory templates waste tokens" row | REMOVED (moved to Active Warnings) |
 
-**Project-specific gotcha to insert in Active Warnings (with updated mitigation):**
+**Active Warnings entry (updated mitigation):**
 
 ```
 | 2026-06 | memory | Memory templates waste tokens if left as placeholders | ~1KB of template text the agent reads every session — compounds across sessions | Fill with real project content immediately. This bead (br-omp-backbone-skill-l3d) addresses the initial hydration. Audit memory files during /close. |
 ```
 
-**Blockquote note to insert in Template Bootstrap Gotchas:**
+**Blockquote to insert:**
 
 ```
 > These gotchas ship with the OMP Beads Template. They apply to any project using this template. Replace with your project's actual gotchas as you discover them.
 ```
 
-After edit: The "How to Add a Gotcha" section (5 steps + "Remove entries once the underlying bug is fixed" note) stays verbatim. The 11 template-universal gotcha entries stay in their original order. The description paragraph for Template Bootstrap Gotchas stays ("These are the gotchas that come with the template itself...") — the blockquote supplements it, doesn't replace it.
+**Unchanged:** The other 11 template-universal entries (verbatim, original order). `## How to Add a
+Gotcha` section (all 5 steps + "Remove entries" note).
 
-## Graph Context
+---
 
-- **Blast radius:** 5 files (0 new, 5 edits, 0 deletes) — all under `.omp/memory/project/`. No files outside this directory are touched.
-- **Related beads:** 8 other beads exist in the graph: `br-omp-backbone-skill-1ct`, `-9tl`, `-hfh`, `-iej`, `-kfu`, `-mcu`, `-nvf`, `-qjk`. All 9 beads (including this one) are completely disconnected — no dependency edges exist between any pair. The graph has 9 nodes, 0 edges, and density 0. This bead neither blocks nor is blocked by any other bead.
-- **File history:** The 5 target memory files have zero bead history. `bv --robot-file-hotspots --format json` reports `total_files: 0` and `total_bead_links: 0`. No bead has ever edited `.omp/memory/project/*.md` files. They were written once by `/init` during template bootstrap and have been read-only since. This is the first bead to touch them.
-- **Hotspots touched:** None — no file in the graph has >3 bead history. The repo has no file-level bead links at all.
-- **Graph metrics:**
-  - Nodes: 9 | Edges: 0 | Density: 0.0
-  - Cycles: 0 (acyclic DAG — trivially, with no edges)
-  - Articulation points: 0
-  - KCore: 0 for all nodes (no node has any neighbors)
-  - PageRank: 0.111 for all nodes (equal in a disconnected graph)
-  - Eigenvector: 0.111 for all nodes (equal)
-  - Betweenness: 0 for all nodes (no paths to be on)
-  - HITS Hubs: 0 for all nodes | Authorities: 0 for all nodes
-  - Critical path score: 1 for all nodes (equal)
-  - Slack: 0 for all nodes
-  - Topological order: all 9 nodes are in arbitrary order (no edges to constrain)
-- **Velocity:** 8 beads closed in the last 7 days. 8 beads closed in the last 30 days (all in the past week). Average 0.02 days to close. Estimated velocity: 16 minutes per day.
-- **Forecast:** 52 minutes (confidence 0.4). The bead's own estimate is 45 minutes. Forecast factors: chore type ×0.8, dependency depth 1 ×1.10, empty description ×1.00, 1 agent. ETA: 2026-06-21 (low: 2026-06-19, high: 2026-06-22).
-- **Planning track:** Single track (`track-A`) with this bead as the only item. No parallelizable work because the graph has no dependency edges to identify parallelism — but the files themselves are independent and could be parallelized. The plan chooses sequential waves for rollback safety, not because the graph constrains it.
-- **What this bead unblocks:** Nothing directly in the dependency graph (no edges). Indirectly, it unblocks agent comprehension: every future agent session in this repo will load real project identity in ~300 tokens instead of ~330 tokens of placeholder noise. Over 10 sessions, that saves ~300 tokens. More importantly, agents will understand what this project IS, which is currently impossible from memory files alone.
-- **What blocks this bead:** Nothing — no upstream dependencies. The PRD (>600 lines) and plan artifacts exist. The target files are readable and editable. The workflow gate will allow writes because PRD and plan both exist.
+## Graph Context Summary
 
-## No Graph Surprises
+- **Blast radius:** 5 files (0 new, 5 edits, 0 deletes) — all under `.omp/memory/project/`
+- **Graph:** 9 nodes, 0 edges, density 0. All beads are orphaned — no dependency relationships exist.
+- **This bead:** No upstream blockers. No downstream dependents. Isolated housekeeping task.
+- **File history:** Zero bead history on all 5 target files. `bv --robot-file-hotspots` reports 0
+files, 0 links. These files have never been edited by any bead — they were written once by `/init`.
+- **Hotspots:** None. No file in the repo has >3 bead history.
+- **Forecast:** 52 minutes (confidence 0.4). Factors: chore ×0.8, depth 1 ×1.10, 1 agent, 16 min/day
+velocity. ETA: 2026-06-21.
+- **Key insight:** The graph is boring because this bead is boring — it's a standalone chore with no
+structural coupling to any other work. This is correct and expected.
 
-The bv graph is maximally boring for this bead — and that's exactly what we expect. Memory file hydration is a standalone project maintenance chore. It touches files that no bead has ever touched. It depends on no other bead's work, and no other bead depends on its completion. The graph accurately reflects an isolated housekeeping task:
+---
 
-- **0 edges** — no structural coupling to any other bead
-- **0 file history** — the memory files are untouched territory
-- **0 hotspots** — no risk of destabilizing high-churn files
-- **0 cycles** — no risk of dependency deadlock
-- **0 articulation points** — removing this bead from the graph changes nothing
+## What Could Go Wrong
 
-This bead could be done first, last, or anywhere in between — the graph doesn't care. The only urgency is the PRD's stated reason: every agent session wastes context on placeholder noise, and the gap widens with every new feature added to the template.
+1. **Wrong line numbers:** The plan gives approximate line numbers. If you edit from plan numbers
+without reading the file first, you'll edit the wrong line. Always read before edit.
+2. **Over-editing:** It's tempting to "fix" other things while editing — misaligned table columns,
+inconsistent formatting, "while I'm here" cleanups. Don't. The diff scope check in Wave 6 will catch
+these and they'll need reverting.
+3. **Under-editing:** Missing a placeholder because you searched for `<project-name>` but forgot
+that the conventions.md language table has `<TypeScript | Go | Rust | Python>` which is a different
+placeholder pattern. The per-task verification catches these.
+4. **Losing content:** Deleting a decision's rationale text instead of copying it, or accidentally
+deleting a gotcha entry when restructuring. The content preservation Python checks in Wave 6 catch
+these.
+5. **Craft table structure error:** Putting the attribution paragraph inside the table (between
+rows) instead of after it. The Python contiguity check in Wave 6 catches this.
+6. **Frontmatter corruption:** Accidentally deleting a `---` delimiter or changing the `purpose:`
+field. The markdown validity check catches this.
+7. **Running `/init`:** If you run `/init` for any reason, it will regenerate placeholder-filled
+memory files and undo all edits. Don't run it.
+8. **Scope bleed:** Editing a file outside `.omp/memory/project/` because it "looks related." The
+git diff scope check catches this.
+9. **Paraphrasing decisions:** "Improving" the decision text to be clearer or more concise. The
+content preservation check catches this — it looks for exact substring matches.
+10. **Wrong alphabetical order in craft table:** Sorting case-sensitively (capital letters first)
+instead of case-insensitively. The filenames are all lowercase, so this shouldn't matter, but be
+consistent.
+
+---
 
 ## Handoff Checklist
 
-Before handing off to `/ship`, confirm all of the following:
+Before starting `/ship`, confirm:
 
-- [ ] `prd.md` exists in `.beads/artifacts/br-omp-backbone-skill-l3d/` — must be ≥600 lines (currently ~700+ including the PRD JSON mirror)
-- [ ] `plan.md` exists — must be ≥600 lines
-- [ ] `tasks.md` exists — must be ≥600 lines
-- [ ] `context-capsule.md` exists — this file
-- [ ] `prd.json` exists — machine-readable requirements mirror (may need generation if missing; currently present at 3696 bytes)
-- [ ] br bead status is `in_progress` — claimed at 2026-06-17T16:16:35Z
-- [ ] `br dep cycles --json` returns empty (no cycles)
-- [ ] `bv --robot-plan --format json` shows this bead as the single actionable item in track-A
-- [ ] `git status` shows a clean or known state — no uncommitted changes that would conflict with memory file edits
+- [ ] `prd.md` exists and is ≥600 lines (currently 600 lines)
+- [ ] `plan.md` exists and is ≥600 lines (currently ~957 lines)
+- [ ] `tasks.md` exists and is ≥600 lines
+- [ ] `context-capsule.md` exists (this file, target ≥600 lines)
+- [ ] `prd.json` exists (machine-readable requirements mirror)
+- [ ] br bead status is `in_progress` (claimed at 2026-06-17T16:16:35Z)
+- [ ] `br dep cycles --json` returns empty (acyclic — confirmed: 0 cycles)
+- [ ] `bv --robot-plan --format json` shows this bead as the sole item in track-A
+- [ ] `git status` is clean or shows known state (no uncommitted changes that conflict)
 
-For the shipping agent reading this capsule:
+For the `/ship` agent:
 
-1. **Start with tasks.md** — it has the detailed ordered checklist with 161+ checkbox items across 6 waves
-2. **Reference plan.md "Observable Truths"** (23 statements) for the pre-edit state of each file — confirm each truth before editing the corresponding file
-3. **Reference "File Edit Map"** (above) for what changes where with approximate line numbers
-4. **Edit files in wave order: 1 → 2 → 3 → 4 → 5**, verifying each file before moving to the next
-5. **Wave 6** runs the full cross-file verification suite. The plan.md "Full Verification" section has copypaste-ready Python and bash scripts
-6. **Do NOT read the PRD during ship** — the plan and this capsule are self-contained. The PRD is the requirements authority; the plan is the execution authority
-7. **If anything is unclear**, re-read the "Constraints" section above — the MUST/SHOULD/MUST NOT lists are the final authority. The "Key Patterns" section explains WHY certain choices were made
-8. **If a verification check fails**, fix only the file that failed, re-run just that check, then re-run the full suite
-9. **Do not run `/init`** — it would regenerate placeholders and undo this bead's work
-10. **After all waves pass**, the bead is ready for `/verify` (record evidence in completion-evidence.json) and `/review`
+1. **Read this capsule first** — it provides the full context: objective, patterns, constraints, file edit maps
+2. **Read `tasks.md`** — it has the detailed step-by-step checklist with 160+ checkbox items across 6 waves
+3. **Reference `plan.md` "Observable Truths"** (items 1-23) — confirm each truth before editing the corresponding file
+4. **Reference "File Edit Maps"** (above) — what changes where, with approximate line numbers
+5. **Edit in wave order: 1 → 2 → 3 → 4 → 5** — verify each file after editing it, before moving to the next
+6. **Wave 6** runs the full cross-file verification suite. `plan.md` "Full Verification" section has
+copypaste-ready Python and bash scripts
+7. **Do NOT read the PRD during `/ship`** — the plan, tasks, and this capsule are self-contained.
+The PRD is the requirements authority; the plan is the execution authority
+8. **If unclear**, re-read the "Constraints" section above — the MUST/SHOULD/MUST NOT lists are the final authority
+9. **Maximum 3 fix cycles** — if a verification check still fails after 3 attempts, escalate, don't loop
+10. **After all waves pass**, the bead is ready for `/verify` (record evidence) and `/review` (5-agent parallel review)
