@@ -20,7 +20,7 @@ Keep to 3-5 criteria. Each must be verifiable — "good UX" is not verifiable. "
 ## Current Phase
 
 - **Status:** active
-- **Milestone:** Memory file hydration — project identity hardening
-- **Next:** Audit command files for consistency with conventions.md
+- **Milestone:** Command–convention consistency audit (br-omp-backbone-skill-1da)
+- **Next:** Workflow verification — run a full /brainstorm → /create → /plan → /ship → /verify → /review → /pr → /close cycle to confirm all phases operate correctly after conventions.md fix
 
 Update this section after every milestone. An agent reading this must understand, within 3 seconds, what the project is doing right now.

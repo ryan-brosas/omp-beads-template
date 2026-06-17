@@ -80,7 +80,7 @@ Always `--robot-*` for machine-readable output. Always `--format json` for parse
 
 ## br Conventions
 
-- **Prefix:** `omp` (beads are `omp-a1b2`, `omp-c3d4`, ...)
+- **Prefix:** `br-omp` (beads are `br-omp-<purpose>-<short-id>`, e.g. `br-omp-backbone-skill-1da`)
 - **Artifacts:** `.beads/artifacts/<bead-id>/` — prd.md, plan.md, tasks.md, completion-evidence.json, review-report.md
 - **Inspect before mutate:** `br show <id> --json` before any state change
 - **Claim atomically:** `br update <id> --claim --json`
@@ -98,7 +98,7 @@ Full reference in the `br` skill. Short ID resolution: suffix match via `br list
 
 `@memory/project/project.md` and `@memory/project/conventions.md` are inlined into this file via OMP `@` imports before injection. They are always present in the agent's context — no separate load needed.
 
-Keep each under 1KB.
+Keep each focused and concise. Target ≤1KB for project.md (vision + current phase), ≤4KB for conventions.md (workflow + naming + rules), and ≤2KB for other Tier 1 files. Prune stale entries before adding new ones.
 
 ### Tier 2 — On-Demand (load when relevant)
 
@@ -185,33 +185,54 @@ If wiring Honcho directly later: use one shared workspace when agents should sha
 | `security-and-hardening` | Auditing for vulnerabilities, handling secrets |
 | `deprecation-and-migration` | Removing old APIs or migrating data |
 | `condition-based-waiting` | Tests with race conditions or timing dependencies |
+| `design-system` | When generating UI, choosing colors/fonts/spacing, implementing components, or reviewing visual output |
 
 Skills are decision trees, not reference manuals. They tell the agent *what to do* and *in what order*, not *everything about the topic*.
 ```
 omp-template/
 ├── AGENTS.md                          # Delegates to .omp/AGENTS.md
 ├── .beads/                            # br workspace (SQLite + JSONL)
-│   │   ├── prd.md                     # Problem, outcome, acceptance criteria
-│   │   ├── prd.json                   # Machine-readable requirements mirror
-│   │   ├── plan.md                    # Scope, blast radius, steps, risks, verification
-│   │   ├── tasks.md                   # Ordered task list with dependencies
-│   │   ├── decisions.md               # Architecture and design decisions
-│   │   ├── context-capsule.md         # Handoff for the next agent
-│   │   ├── progress.txt               # Phase checklist
-│   │   ├── completion-evidence.json   # Verification commands and results
-│   │   └── review-report.md           # Parallel review findings and verdict
-│   ├── AGENTS.md                      # You are here — canonical project context
-│   ├── commands/                      # 9 slash commands
-│   │   ├── brainstorm.md, create.md, plan.md, ship.md
-│   │   ├── verify.md, review.md, pr.md, close.md, init.md
-│   ├── skills/                        # 16 skills
-│   │   ├── br/SKILL.md, bv/SKILL.md
-│   │   ├── backbone/SKILL.md, orchestrator/SKILL.md
-│   │   └── <cognitive-tool>/SKILL.md
-│   ├── extensions/                    # Workflow gate
-│   │   └── workflow-gate.ts
+│   ├── beads.db                       # SQLite database
+│   ├── beads.jsonl                    # Append-only journal
+│   └── artifacts/                     # Per-bead artifact directories
+│       └── <bead-id>/                 # e.g. br-omp-backbone-skill-1da
+│           ├── prd.md                 # Problem, outcome, acceptance criteria
+│           ├── prd.json               # Machine-readable requirements mirror
+│           ├── plan.md                # Scope, blast radius, steps, risks, verification
+│           ├── tasks.md               # Ordered task list with dependencies
+│           ├── decisions.md           # Architecture and design decisions
+│           ├── context-capsule.md     # Handoff for the next agent
+│           ├── completion-evidence.json  # Verification commands and results
+│           └── review-report.md       # Parallel review findings and verdict
+├── .omp/                              # OMP harness configuration
+│   ├── AGENTS.md                      # Canonical project context (loaded by OMP)
+│   ├── commands/                      # Slash commands (9)
+│   │   ├── brainstorm.md
+│   │   ├── create.md
+│   │   ├── plan.md
+│   │   ├── ship.md
+│   │   ├── verify.md
+│   │   ├── review.md
+│   │   ├── pr.md
+│   │   ├── close.md
+│   │   └── init.md
+│   ├── skills/                        # Agent skills (17)
+│   │   ├── br/SKILL.md
+│   │   ├── bv/SKILL.md
+│   │   ├── backbone/SKILL.md
+│   │   ├── orchestrator/SKILL.md
+│   │   ├── design-system/
+│   │   │   ├── SKILL.md               # Brand contract + craft rules
+│   │   │   └── DESIGN.md              # 9-section visual language spec
+│   │   └── <cognitive-tool>/SKILL.md   # decision-tree pattern
+│   ├── extensions/                    # OMP tool extensions
+│   │   └── workflow-gate.ts           # edit/write gating based on bead state
 │   ├── templates/                     # Artifact templates
-│   │   └── prd.md, plan.md, tasks.md, review-report.md, ...
+│   │   ├── prd.md
+│   │   ├── plan.md
+│   │   ├── tasks.md
+│   │   ├── context-capsule.md
+│   │   └── review-report.md
 │   └── memory/project/                # Durable project knowledge
 │       ├── project.md                 # Vision, goals, current phase
 │       ├── conventions.md             # Naming, workflow, agent rules
