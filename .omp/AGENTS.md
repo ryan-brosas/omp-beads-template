@@ -227,7 +227,8 @@ omp-template/
 │   │   │   └── DESIGN.md              # 9-section visual language spec
 │   │   └── <cognitive-tool>/SKILL.md   # decision-tree pattern
 │   ├── extensions/                    # OMP tool extensions
-│   │   └── workflow-gate.ts           # edit/write gating based on bead state
+│   │   ├── workflow-gate.ts           # edit/write gating based on bead state
+│   │   └── native-command-override.ts # intercepts /plan and /review before native builtins
 │   ├── templates/                     # Artifact templates
 │   │   ├── prd.md
 │   │   ├── prd.json
