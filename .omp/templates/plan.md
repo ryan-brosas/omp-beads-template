@@ -1,3 +1,4 @@
+<!-- DENSITY: Target 100-250 lines. <80 = too thin (tasks lack detail, waves undefined, verification hand-wavy). >300 = too verbose (task outlines should show the shape of the code, not the implementation). Total artifact bundle (PRD + plan + tasks + decisions + capsule): 300-600 lines. -->
 # Plan: {bead-id}
 
 **Goal:** {One sentence — what does "done" look like?}

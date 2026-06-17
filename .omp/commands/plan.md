@@ -90,6 +90,12 @@ br lint "$BEAD_ID" --json
 bv --robot-suggest --format json
 br dep cycles --json                         # Must be empty
 ls .beads/artifacts/"$BEAD_ID"/plan.md .beads/artifacts/"$BEAD_ID"/tasks.md .beads/artifacts/"$BEAD_ID"/context-capsule.md
+
+# Density check: plan should be 100-250 lines, tasks 50-200, capsule 30-50
+echo "Plan: $(wc -l < .beads/artifacts/$BEAD_ID/plan.md) lines (target 100-250)"
+echo "Tasks: $(wc -l < .beads/artifacts/$BEAD_ID/tasks.md) lines (target 50-200)"
+echo "Bundle: $(cat .beads/artifacts/$BEAD_ID/*.md | wc -l) lines (target 300-600)"
+
 br sync --flush-only
 ```
 
