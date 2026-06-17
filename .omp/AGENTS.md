@@ -26,7 +26,7 @@ Or load the **orchestrator** skill to chain phases automatically — the agent r
 | `/verify` | Run checks, record evidence | plan verification section | `completion-evidence.json` | triage, alerts, impact, impact-network, blocker-chain |
 | `/review` | 5-agent parallel review with confidence scoring | `completion-evidence.json`, git diff | `review-report.md` | impact, related, file-beads, file-relations, suggest |
 | `/pr` | Create GitHub PR (single-turn executable) | `review-report.md`, `completion-evidence.json` | PR body | — |
-| `/close` | Close bead, suggest next | all artifacts | — | suggest, next, capacity |
+| `/close` | Close bead, suggest next | all artifacts, memory files | memory files (on user approval) | suggest, next, capacity |
 | `/init` | Bootstrap workspace + br init | — | `.beads/` | — |
 | `/git-clean` | Remove merged worktrees and local branches | — | — | — |
 
