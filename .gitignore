@@ -1,0 +1,10 @@
+# bv (beads viewer) local config and caches
+.bv/
+
+# Beads runtime state (SQLite, locks, touch files)
+.beads/beads.db
+.beads/beads.db-shm
+.beads/beads.db-wal
+.beads/.write.lock
+.beads/last-touched
+.beads/issues.jsonl
