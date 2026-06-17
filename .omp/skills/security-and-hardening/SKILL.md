@@ -17,7 +17,7 @@ Security is a constraint, not a feature. It should be present by default and req
 | 2. Diff review | On `Stop` (response complete) | LLM reviews the diff for multi-line vulnerabilities. Catches what patterns miss. |
 | 3. Commit review | On `git commit`/`push` | Agentic reviewer traces data flow across files. Catches cross-file vulns (IDOR, auth bypass, SSRF chains). |
 
-This skill covers layer-1 knowledge (the sink catalog). Install the `security-guidance` plugin for automated layer-2/3 enforcement in the edit loop.
+This skill covers layer-1 knowledge (the sink catalog). The `security-guidance` plugin (if installed) provides automated layer-2/3 enforcement in the edit loop.
 
 ## When to Use
 
@@ -524,7 +524,7 @@ For org-specific rules the generic catalog can't cover, create `.omp/security-po
 - <org-specific crypto rules, data handling policies, etc.>
 ```
 
-Loaded by the `security-guidance` plugin's LLM reviewer as supplementary context (concatenated with any `~/.omp/security-policy.md` user-wide rules). Keep under 8KB total. Local overrides go in `.omp/security-policy.local.md` (gitignored).
+Loaded by the `security-guidance` plugin if installed. Without the plugin, agents should read this file directly during `/review`. Keep under 8KB total. Local overrides go in `.omp/security-policy.local.md` (gitignored).
 
 ## Common Rationalizations
 

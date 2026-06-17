@@ -132,7 +132,7 @@ When context is running low, run **Near-Limit Warning** regardless of task posit
 
 ## Reflection Log
 
-Append all reflections to `.beads/artifacts/$BEAD_ID/reflections.md`:
+Append all reflections to `.beads/artifacts/$BEAD_ID/progress.txt` (under a `## Reflections` heading):
 
 ```markdown
 ## Reflection Log

@@ -44,12 +44,11 @@ This is the core of ideation. Read the codebase, not just the bead graph.
 
 Map the project: what directories exist, what patterns repeat, what looks out of place.
 
-```bash
-# Top-level structure
-ls -la
+Use the `read` tool on the project root to see directory structure. Use the `find` tool to locate heavy files:
 
-# Find the heaviest files — bloat candidates
-find . -type f -name '*.ts' -o -name '*.py' -o -name '*.rs' -o -name '*.go' | head -50
+```
+read .                           # Top-level structure
+find . -name '*.ts' -o -name '*.py' -o -name '*.rs' -o -name '*.go' --limit 50   # Bloat candidates
 ```
 
 Look for:

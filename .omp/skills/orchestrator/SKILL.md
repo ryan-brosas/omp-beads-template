@@ -64,3 +64,16 @@ The core loop: `/create` → `/plan` → `/ship` → `/verify` → `/review` →
 | `/review` | `review-report.md` |
 | `/pr` | PR URL (terminal output) |
 | `/close` | Closed bead in br, synced JSONL |
+
+## Related Skills
+
+- **`br`** — Bead state, ownership, and artifact location. Load before mutating bead state.
+- **`bv`** — Graph-informed triage, impact, and review context. Load before every phase.
+- **`verification-before-completion`** — Evidence discipline. Load before review, PR, or close.
+- **`incremental-implementation`** — Slice strategy during /ship.
+- **`reflection-checkpoints`** — Scope drift detection during /ship.
+- **`test-driven-development`** — Write tests first during /ship.
+- **`code-simplification`** — Reduce complexity during refactoring.
+- **`security-and-hardening`** — Security audit during /review.
+
+Full skills map in `.omp/AGENTS.md`.

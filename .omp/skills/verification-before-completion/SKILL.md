@@ -166,7 +166,7 @@ Minimal stamp:
 
 ```json
 {
-  "bead_id": "<id>",
+  "beadId": "<id>",
   "timestamp": "<ISO 8601>",
   "gates": {
     "lint": "PASS",

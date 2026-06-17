@@ -150,6 +150,7 @@ Filter: keep only findings scored ≥80. If none survive: report "No high-confid
 1. **Read the template**: `read .omp/templates/review-report.md`
 2. **Fill in every `{placeholder}`** with the filtered findings from Phases 4-5:
    - **Verdict**: `approved` (0 high-confidence findings or all addressed), `changes-requested` (≥1 high-confidence, no criticals), `blocked` (≥1 critical)
+   - **Ready for close**: `true` if verdict is `approved` and no unresolved critical/high findings, `false` otherwise
    - **Review Summary**: fill agent counts and finding stats from Phase 4-5 results
    - **Findings**: each high-confidence (≥80) finding gets its own `### #N` block with title, agent, severity, file, issue, recommendation
    - **Spec ↔ Code Adherence**: from Phase 2-3 reading of PRD + plan — what's covered, what's missing

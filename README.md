@@ -61,7 +61,12 @@ Skips the workflow gate for emergencies or template bootstrap work.
 ```
 .beads/artifacts/<bead-id>/
   prd.md
+  prd.json
   plan.md
+  tasks.md
+  decisions.md
+  context-capsule.md
+  progress.txt
   completion-evidence.json
   review-report.md
 ```

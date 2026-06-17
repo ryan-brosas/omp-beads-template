@@ -4,6 +4,8 @@
 
 `{approved | changes-requested | blocked}` — {one-line justification}
 
+**Ready for close:** {true | false}
+
 ## Review Summary
 
 - Agents run: {N} ({which agents})

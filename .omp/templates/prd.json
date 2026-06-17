@@ -1,7 +1,7 @@
 {
   "beadId": "{bead-id}",
   "type": "{feature|bugfix|chore|research|epic}",
-  "priority": {0|1|2|3},
+  "priority": {0|1|2|3|4},
   "estimate_minutes": {minutes},
   "requirements": [
     {
