@@ -5,49 +5,61 @@ description: Strict workflow recipe. Run each prompt in sequence. No skipping. N
 
 # orchestrator
 
-## The Sequence
+## The Core Loop
 
-Follow this sequence. Run each prompt in FULL. Do not skip phases.
+The core loop: `/create` → `/plan` → `/ship` → `/verify` → `/review` → `/pr` → (human merges) → `/close` → loop.
+
+`/brainstorm` is the entry point — use it when you don't know what to build. Once you have an idea, enter the loop.
+
+## The Sequence
 
 | Step | Command | Produces | Gate |
 |------|---------|----------|------|
-| 1 | `/brainstorm [topic]` | Candidate work items | User confirms direction |
-| 2 | `/create [description]` | `prd.md`, `prd.json`, `decisions.md` | All sections filled, no placeholders |
-| 3 | `/plan <bead-id>` | `plan.md`, `tasks.md`, `context-capsule.md` | Observable truths defined, verification plan exists |
-| 4 | `/ship <bead-id>` | Working code, `progress.txt` | Plan verification gates pass per wave |
-| 5 | `/verify <bead-id>` | `completion-evidence.json` | All checks pass |
-| 6 | `/review <bead-id>` | `review-report.md` | Verdict: approved |
-| 7 | `/pr <bead-id>` | PR summary | — |
-| 8 | `/close <bead-id>` | Closed bead, synced JSONL | Evidence + review exist |
+| * | `/brainstorm [topic]` | Candidate work items | User confirms direction |
+| 1 | `/create [--worktree] <desc>` | `prd.md`, `prd.json`, `decisions.md` | All sections filled, no placeholders |
+| 2 | `/plan <bead-id>` | `plan.md`, `tasks.md`, `context-capsule.md` | Observable truths defined, verification plan exists |
+| 3 | `/ship <bead-id>` | Working code, `progress.txt` | Plan verification gates pass per wave |
+| 4 | `/verify <bead-id>` | `completion-evidence.json` | All checks pass |
+| 5 | `/review <bead-id>` | `review-report.md` | Verdict: approved |
+| 6 | `/pr <bead-id>` | PR summary | — |
+| — | **Human merges** | Merged code | Human gets the last call |
+| 7 | `/close <bead-id>` | Closed bead, synced JSONL | Evidence + review exist |
+| → | Back to `/brainstorm` | Next idea | Loop |
+
+`/brainstorm` is starred (*) because it's not always needed — only when you're looking for new ideas. The numbered steps (1-7) are the required sequence for every bead.
 
 ## Rules
 
 - **Run each prompt in FULL.** Every section, every step. Do not abbreviate.
-- **Do not skip phases.** Brainstorm before create, create before plan, plan before ship.
+- **Do not skip phases.** Create before plan, plan before ship, ship before verify.
 - **Do not "helpfully" proceed if the prompt says STOP.** If blocked, run the prerequisite prompt.
+- **The human merges.** `/pr` creates the PR. The human reviews and merges. `/close` happens after merge.
+- **The human always gets the last call.** The agent proposes, the human decides.
 - **The workflow-gate extension enforces this.** It blocks `edit`/`write` until PRD and plan exist. Don't fight it.
 - **If the user says "just do X"**, route them to the right phase. "That's a /ship step — let's /plan first."
 - **If a phase fails verification**, stay in that phase. Do not advance until the gate clears.
 
 ## Routing
 
-- No bead yet or idea still fuzzy → `/brainstorm`
+- Idea still fuzzy or looking for what to build → `/brainstorm`
 - Work item chosen but not formalized → `/create`
 - PRD exists but implementation path is unclear → `/plan`
 - PRD and plan exist and code must change → `/ship`
 - Code changed and behavior must be proven → `/verify`
 - Verification complete and risk must be assessed → `/review`
-- Review complete and change must be summarized upstream → `/pr`
-- PR merged/reviewed and bead must be finalized → `/close`
+- Review approved and change must be proposed upstream → `/pr`
+- PR merged by human and bead must be finalized → `/close`
+- Bead closed, looking for next thing → `/brainstorm`
 
 ## Artifacts Per Phase
 
 | Phase | Artifacts |
 |-------|-----------|
-| `/create` | `prd.md`, `prd.json`, `decisions.md` |
+| `/brainstorm` | Decision, rationale, scope boundaries (terminal output) |
+| `/create` | `prd.md`, `prd.json`, `decisions.md`, optional `worktree.txt` |
 | `/plan` | `plan.md`, `tasks.md`, `context-capsule.md` |
 | `/ship` | Implementation changes, `progress.txt` |
 | `/verify` | `completion-evidence.json` |
 | `/review` | `review-report.md` |
-| `/pr` | PR summary (terminal output) |
+| `/pr` | PR URL (terminal output) |
 | `/close` | Closed bead in br, synced JSONL |
