@@ -1,6 +1,6 @@
 ---
 description: "Formalize work into a br bead + quality PRD. Investigates the codebase before writing — no speculative PRDs."
-argument-hint: "<description of work>"
+argument-hint: "[--worktree] <description of work>"
 ---
 
 ## Prerequisites (CHECK FIRST)
@@ -12,6 +12,21 @@ If no input: STOP. Ask the user: "What are we building? Provide a description or
 Do NOT proceed. Do NOT "helpfully" skip ahead.
 
 You are formalizing work into a tracked br bead. The bead is the backbone. **A low-quality PRD collapses the entire workflow** — plan, ship, verify, and review all depend on it. Invest in this phase.
+
+## Flag Parsing
+
+```bash
+# Extract --worktree flag and description
+WORKTREE=false
+DESCRIPTION="$ARGUMENTS"
+
+if echo "$ARGUMENTS" | grep -q '\-\-worktree'; then
+  WORKTREE=true
+  DESCRIPTION=$(echo "$ARGUMENTS" | sed 's/--worktree//g' | xargs)
+fi
+```
+
+If `--worktree` is set, a git worktree will be created at `<repo>/.worktrees/<bead-id>/` after artifacts are written. This isolates the bead's work into its own directory — no branch switching, no conflicts with other beads. Without `--worktree`, work happens in the current directory normally.
 
 ## Phase 1: Graph Context
 
@@ -129,7 +144,7 @@ For each risk, state:
 
 ```bash
 ACTOR="${BR_ACTOR:-assistant}"
-br create --actor "$ACTOR" "$ARGUMENTS" \
+br create --actor "$ACTOR" "$DESCRIPTION" \
   --type <type> \
   --priority <0-4> \
   --json
@@ -164,12 +179,47 @@ Use `.omp/templates/decisions.md` as the shape:
 - **Rejected Alternatives**: from 4a — what you considered and why you rejected it. Include "Risk if Re-introduced" — if someone later tries the rejected approach, what breaks?
 - **Assumptions**: from 3d — what you assume to be true, how you validated it, what changes if the assumption is wrong
 
+## Phase 6b: Worktree (if --worktree)
+
+If `WORKTREE=true`, create an isolated git worktree for this bead:
+
+```bash
+REPO_ROOT=$(git rev-parse --show-toplevel)
+SLUG="<kebab-slug-from-description>"       # e.g. "short-bead-id-resolution"
+BRANCH="${BEAD_ID}-${SLUG}"
+WORKTREE_PATH="${REPO_ROOT}/.worktrees/${BEAD_ID}"
+
+# Safety check — don't overwrite existing
+if [ -d "$WORKTREE_PATH" ]; then
+  echo "Worktree already exists at $WORKTREE_PATH" >&2
+  exit 1
+fi
+
+# Create worktree
+mkdir -p "${REPO_ROOT}/.worktrees"
+git worktree add "$WORKTREE_PATH" -b "$BRANCH" HEAD
+
+# Mirror artifacts into worktree
+mkdir -p "$WORKTREE_PATH/.beads/artifacts/$BEAD_ID"
+cp .beads/issues.jsonl "$WORKTREE_PATH/.beads/issues.jsonl"
+cp -R ".beads/artifacts/$BEAD_ID/." "$WORKTREE_PATH/.beads/artifacts/$BEAD_ID/"
+
+# Record worktree path for later cleanup
+echo "$WORKTREE_PATH" > ".beads/artifacts/$BEAD_ID/worktree.txt"
+```
+
+**What gets copied:** artifacts (prd.md, prd.json, decisions.md), issues.jsonl (for bv).
+**What NEVER gets copied:** `.beads/beads.db`, `.env*`, credentials, node_modules.
+
+If `WORKTREE=false`, skip this phase entirely. Work happens in the current directory.
 ## Phase 7: Verify
 
 ```bash
 br show "$BEAD_ID" --json                    # Confirm creation
 br dep cycles --json                         # Must be empty
 ls .beads/artifacts/"$BEAD_ID"/              # Confirm all 3 artifacts exist
+[ "$WORKTREE" = "true" ] && ls "$WORKTREE_PATH/.beads/artifacts/$BEAD_ID/"  # Confirm mirror
+[ "$WORKTREE" = "true" ] && git worktree list | grep "$WORKTREE_PATH"       # Confirm worktree registered
 ```
 
 ### PRD Quality Self-Check
@@ -201,6 +251,9 @@ Files investigated: <N files read>
 Alternatives considered: <N>
 Risks identified: <N>
 Artifacts: .beads/artifacts/$BEAD_ID/ (prd.md, prd.json, decisions.md)
+Worktree: <$WORKTREE_PATH if --worktree, "none" otherwise>
 PRD quality: <N/8 self-checks passed>
 Next: /plan $BEAD_ID
 ```
+
+**If a worktree was created:** tell the user to `cd $WORKTREE_PATH` and open `omp` there. All subsequent commands (/plan, /ship, etc.) should be run inside the worktree.
