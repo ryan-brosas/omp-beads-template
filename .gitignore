@@ -9,6 +9,10 @@
 .beads/last-touched
 .beads/issues.jsonl
 
+# Python bytecode
+__pycache__/
+*.pyc
+
 # Local Honcho/OMP environment overrides
 .env
 .worktree/

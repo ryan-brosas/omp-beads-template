@@ -7,7 +7,7 @@ OMP-native project template with **br** and **bv** as the backbone of planning, 
 - `.omp/` — skills, commands, agents, extensions, and templates for the beads workflow
 - `.beads/` — bead state directory (br database, artifact storage)
 - Workflow gate — blocks implementation edits until PRD and plan exist
-- Nine slash commands covering the full bead lifecycle
+- Ten slash commands covering the full bead lifecycle plus npm releases
 - Review agents (correctness, performance, security)
 
 ## Quickstart
@@ -47,6 +47,7 @@ That's it. Open `omp` in the project directory and the template is active.
 | Review | `/review` | Inspect diff and risks; write review report |
 | PR | `/pr` | Open pull request with summary |
 | Close | `/close` | Close bead once evidence exists |
+| Release | `/npm-release` | Cut a GitHub Release that publishes to npm via trusted publishing |
 
 ## Escape hatch
 
