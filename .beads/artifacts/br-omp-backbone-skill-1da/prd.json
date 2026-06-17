@@ -1,0 +1,95 @@
+{
+  "beadId": "br-omp-backbone-skill-1da",
+  "type": "task",
+  "priority": 1,
+  "estimate_minutes": 45,
+  "requirements": [
+    {
+      "id": 1,
+      "text": "conventions.md Workflow step 2: change '/create produces PRD + plan + tasks' to '/create produces PRD + decisions.md'",
+      "priority": "MUST",
+      "acceptance": "grep 'PRD + plan + tasks' .omp/memory/project/conventions.md returns no matches"
+    },
+    {
+      "id": 2,
+      "text": "conventions.md Workflow: add '/brainstorm' as entry point (step 1) before '/create'",
+      "priority": "MUST",
+      "acceptance": "grep -i 'brainstorm' .omp/memory/project/conventions.md appears in workflow section"
+    },
+    {
+      "id": 3,
+      "text": "conventions.md Workflow: add '/plan' as step 3 with correct outputs (plan.md + tasks.md + context-capsule.md)",
+      "priority": "MUST",
+      "acceptance": "grep 'Plan.*plan.*produces.*plan.md' .omp/memory/project/conventions.md returns >=1"
+    },
+    {
+      "id": 4,
+      "text": "conventions.md: add br prefix information ('Prefix: br-omp')",
+      "priority": "SHOULD",
+      "acceptance": "grep 'Prefix' .omp/memory/project/conventions.md matches"
+    },
+    {
+      "id": 5,
+      "text": "AGENTS.md line 83: change prefix from 'omp' to 'br-omp' to match actual bead IDs",
+      "priority": "MUST",
+      "acceptance": "grep 'Prefix:.*br-omp' .omp/AGENTS.md matches and grep 'omp-a1b2' .omp/AGENTS.md returns 0"
+    },
+    {
+      "id": 6,
+      "text": "AGENTS.md tree diagram: fix nesting so .omp/ artifacts are under .omp/ not mixed with .beads/",
+      "priority": "MUST",
+      "acceptance": "Visual inspection — .omp/ items under .omp/ branch, separate from .beads/"
+    },
+    {
+      "id": 7,
+      "text": "AGENTS.md line 101: update 'Keep each under 1KB' to reflect actual sizes or note aspirational target",
+      "priority": "SHOULD",
+      "acceptance": "Updated text acknowledges current sizes"
+    },
+    {
+      "id": 8,
+      "text": "project.md: update 'Current Phase' to reflect this audit work and set next milestone",
+      "priority": "SHOULD",
+      "acceptance": "Current Phase reflects audit-in-progress"
+    },
+    {
+      "id": 9,
+      "text": "conventions.md Workflow: renumber steps 1-7 to 1-8 (adding /brainstorm and /plan)",
+      "priority": "MUST",
+      "acceptance": "Steps flow 1-8 with brainstorm as step 1"
+    },
+    {
+      "id": 10,
+      "text": "conventions.md Workflow step titles: rename 'Implement' to 'Ship' to match /ship command name",
+      "priority": "SHOULD",
+      "acceptance": "Step reads 'Ship — /ship follows plan'"
+    },
+    {
+      "id": 11,
+      "text": "conventions.md Workflow step 1: rename 'Triage' to 'Brainstorm' to match command name /brainstorm",
+      "priority": "MUST",
+      "acceptance": "Step 1 reads 'Brainstorm — /brainstorm explores codebase, identifies work'"
+    },
+    {
+      "id": 12,
+      "text": "conventions.md Workflow step 8 (Close): change 'after merge' to 'after review approval'",
+      "priority": "SHOULD",
+      "acceptance": "Step reads '/close after review approval, suggests next bead' per RULES.md"
+    },
+    {
+      "id": 13,
+      "text": "conventions.md Review step: make description match actual /review command behavior",
+      "priority": "SHOULD",
+      "acceptance": "'runs 5 parallel agents, confidence filter >=80'"
+    }
+  ],
+  "success_criteria": [
+    "grep 'PRD + plan + tasks' .omp/memory/project/conventions.md returns 0 (bug line removed)",
+    "conventions.md workflow has 8 steps: Brainstorm, Create, Plan, Ship, Verify, Review, PR, Close",
+    "AGENTS.md prefix matches actual bead IDs (br-omp-*)",
+    "AGENTS.md tree diagram shows proper .omp/ and .beads/ hierarchy",
+    "conventions.md and AGENTS.md agree on all workflow phases and artifact outputs",
+    "project.md Current Phase reflects audit completion",
+    "No regressions: bv --robot-triage and br list --json succeed"
+  ]
+}

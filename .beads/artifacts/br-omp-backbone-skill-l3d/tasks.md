@@ -1,637 +1,530 @@
 # Tasks: br-omp-backbone-skill-l3d
 
-## Task Metadata
+> **Execution note:** This task list is self-contained. Read each task's pre-read section before editing. Verify after each task before moving to the next. If a verification fails, fix only that task's file, re-verify, then continue. Do not move to the next task until the current task's verification passes entirely.
 
-| Task | Complexity | Risk | Parallel Safe? | Rollback Cost | Files Touched |
-|------|-----------|------|----------------|---------------|---------------|
-| 1.1 project.md | Low | Low | Yes | Trivial (`git checkout`) | 1 |
-| 1.2 conventions.md | Low | Low | Yes | Trivial (`git checkout`) | 1 |
-| 1.3 tech-stack.md | Medium | Low | Yes | Trivial (`git checkout`) | 2 (edit + read) |
-| 1.4 decisions.md | Low | Low | Yes | Trivial (`git checkout`) | 1 |
-| 1.5 gotchas.md | Low | Low | Yes | Trivial (`git checkout`) | 1 |
-| 2.1 verification | Low | Low | No | N/A (read-only) | 5 (read) |
-| 3.1 commit | Low | Low | No | Trivial (`git reset`) | 6 (5 edit + .beads) |
+---
 
-## Pre-Flight Checklist
+## 1. Hydrate project.md
 
-Before starting ANY task, confirm:
-
-- [ ] `.beads/artifacts/br-omp-backbone-skill-l3d/prd.md` exists and has ≥600 lines
-- [ ] `.beads/artifacts/br-omp-backbone-skill-l3d/plan.md` exists and has ≥600 lines
-- [ ] Bead `br-omp-backbone-skill-l3d` is open: `br show br-omp-backbone-skill-l3d --json` shows status "open"
-- [ ] No uncommitted changes in `.omp/memory/project/`: `git diff .omp/memory/project/` is empty for files not yet edited (other files may have pre-existing changes)
-- [ ] Working directory is at repo root: `pwd` shows `/home/ryan/repos/omp-template`
-
-## Common Edit Operations Reference
-
-### Reading a file before editing
-
-```
-read .omp/memory/project/<file>.md
-```
-
-Always read the file first to confirm current content matches the documented state. If the file has been modified since the PRD was written, adapt the edit to the current state — only replace placeholders that still exist, skip already-filled ones.
-
-### Replacing a single placeholder string
-
-Use the `edit` tool with `SWAP` to replace the exact placeholder string with the target value. Always match the exact string — including angle brackets `<>`, pipes `|`, and whitespace. For table cells, replace the entire cell content, not just the placeholder tokens.
-
-Example:
-```
-SWAP 6.=6:
-+ # Project: OMP Beads Template
-```
-
-This replaces line 6 (which contains `# Project: <project-name>`) with the new line.
-
-### Verifying a replacement
-
-After each replacement:
-```bash
-grep "OLD_STRING" .omp/memory/project/<file>.md    # Should return nothing (exit 1)
-grep "NEW_STRING" .omp/memory/project/<file>.md    # Should return at least 1 match
-```
-
-### Rolling back a single file
-
-```bash
-git checkout -- .omp/memory/project/<file>.md
-```
-
-### Checking file state before editing
-
-```bash
-# See what placeholders exist
-grep -n '<project-name>\|<Criterion\|<measurable\|TODO\|<active \|' .omp/memory/project/project.md
-
-# See the current language table
-grep -A5 'Languages by Purpose' .omp/memory/project/conventions.md
-
-# See the current craft table
-grep -n 'design/craft/' .omp/memory/project/tech-stack.md
-
-# See the current decision sections
-grep -n 'Decision Log\|Example\|How to Add' .omp/memory/project/decisions.md
-
-# See the current gotcha sections
-grep -n 'Active Warnings\|Template Bootstrap\|How to Add' .omp/memory/project/gotchas.md
-```
-
-## Task Execution Order Rationale
-
-Although all 5 Wave 1 tasks are parallel-safe (different files, no shared state), the recommended sequential order is:
-
-1. **project.md first** — establishes the project identity ("OMP Beads Template") that other files reference. Also the simplest edit — 11 literal string replacements. Builds confidence.
-2. **conventions.md second** — completes the core identity pair (project + conventions are always loaded in agent context by OMP imports). 7 replacements in the language table.
-3. **tech-stack.md third** — most complex edit: header fix, runtime table fix, verification command fix, AND structural craft table fix. Do this when you're familiar with the edit patterns from tasks 1 and 2.
-4. **decisions.md fourth** — pure restructure with content preservation. Lower cognitive load after the complex edit. Only 3 operations: replace header, promote decisions, delete Example section.
-5. **gotchas.md fifth** — pure recategorization. Fastest and simplest. 5 operations: replace header, fill active warning, remove from template, add blockquote, update frontmatter.
-
-## 1. Wave 1: File Edits (all parallel)
-
-All five tasks in this wave edit different files with no inter-dependencies. They can execute in any order, including simultaneously if using parallel agents.
-
-### 1.1 Edit project.md — fill project identity
+### 1.1 Fill project identity, goal, success criteria, and current phase
 
 ```yaml
 depends_on: []
-parallel: true
-conflicts_with: []
-files: [".omp/memory/project/project.md"]
-estimated_minutes: 5
-risk: Low
-rollback: "git checkout -- .omp/memory/project/project.md"
-pre_checks:
-  - "grep '<project-name>' .omp/memory/project/project.md  # Should match (placeholder exists)"
-  - "grep '<!-- TODO' .omp/memory/project/project.md       # Should match 7 times"
-post_checks:
-  - "grep '<project-name>' .omp/memory/project/project.md  # Should return nothing"
-  - "grep '<!-- TODO' .omp/memory/project/project.md       # Should return nothing"
-  - "grep 'OMP Beads Template' .omp/memory/project/project.md  # Should match once"
-```
-
-**What this task does:** Replace all 11 placeholder strings in project.md with real content describing the OMP Beads Template.
-
-**Why this order:** First task — establishes the project identity that all other files reference. Also the simplest edit (literal string replacements) — good for building momentum.
-
-**Before:**
-```
-# Project: <project-name>
-## The Goal
-<One sentence — what are we building and why?>
-## Success Criteria
-1. **<Criterion 1>** — <measurable outcome>
-2. **<Criterion 2>** — <measurable outcome>
-3. **<Criterion 3>** — <measurable outcome>
-## Current Phase
-- **Status:** <active | maintenance | paused>
-- **Milestone:** <what we're working toward right now>
-- **Next:** <the next concrete deliverable>
-```
-
-**After:**
-```
-# Project: OMP Beads Template
-## The Goal
-An OMP-native project template that provides br/bv-powered workflow infrastructure for AI-agent-driven software development — task tracking, graph-informed planning, artifact generation, and quality gating.
-## Success Criteria
-1. **Zero `<project-name>` or template placeholders in any `.omp/memory/project/` file** — `grep -r '<project-name>' .omp/memory/project/` returns no matches
-2. **Every memory file is valid markdown with filled tables** — Read each file — tables have consistent columns, no orphan rows
-3. **An agent loading this context can answer what this project is within 3 seconds** — `project.md` heading + goal is self-contained and understandable
-## Current Phase
-- **Status:** active
-- **Milestone:** Memory file hydration — project identity hardening
-- **Next:** Audit command files for consistency with conventions.md
-```
-
-**Steps:**
-
-- [ ] Read `.omp/memory/project/project.md` — confirm all 11 placeholders exist as documented above
-- [ ] Replace `# Project: <project-name>` → `# Project: OMP Beads Template`
-- [ ] Replace `<One sentence — what are we building and why?>` → full goal text (see After section above)
-- [ ] Replace `<Criterion 1>` → "Zero `<project-name>` or template placeholders in any `.omp/memory/project/` file"
-- [ ] Replace `<Criterion 2>` → "Every memory file is valid markdown with filled tables"
-- [ ] Replace `<Criterion 3>` → "An agent loading this context can answer what this project is within 3 seconds"
-- [ ] Replace first `<measurable outcome>` → "`grep -r '<project-name>' .omp/memory/project/` returns no matches"
-- [ ] Replace second `<measurable outcome>` → "Read each file — tables have consistent columns, no orphan rows"
-- [ ] Replace third `<measurable outcome>` → "`project.md` heading + goal is self-contained and understandable"
-- [ ] Replace `<active | maintenance | paused>` → `active`
-- [ ] Replace `<what we're working toward right now>` → "Memory file hydration — project identity hardening"
-- [ ] Replace `<the next concrete deliverable>` → "Audit command files for consistency with conventions.md"
-- [ ] Update frontmatter `updated:` date to `2026-06-17`
-- [ ] Verify: `grep '<project-name>' .omp/memory/project/project.md` returns no output (exit code 1)
-- [ ] Verify: `grep '<!-- TODO' .omp/memory/project/project.md` returns no output (exit code 1)
-- [ ] Verify: `grep -c 'OMP Beads Template' .omp/memory/project/project.md` returns 1
-- [ ] Verify: `grep -c 'br/bv-powered workflow infrastructure' .omp/memory/project/project.md` returns 1
-- [ ] Verify: `grep -c 'Memory file hydration' .omp/memory/project/project.md` returns 1
-- [ ] Verify: Read file end-to-end — confirm all 11 placeholders have been replaced, all fields have real content
-
-**Error handling:**
-- If a placeholder has already been filled (grep returns no match for the placeholder), skip that replacement and note it. The file may have been manually edited.
-- If a replacement introduces a formatting error (e.g., table misalignment), roll back with `git checkout -- .omp/memory/project/project.md` and re-edit with corrected alignment.
-- If the frontmatter `updated:` field uses a different format (e.g., `updated: "2026-06-17"` with quotes), match the existing format.
-
-### 1.2 Edit conventions.md — fill language table
-
-```yaml
-depends_on: []
-parallel: true
-conflicts_with: []
-files: [".omp/memory/project/conventions.md"]
-estimated_minutes: 5
-risk: Low
-rollback: "git checkout -- .omp/memory/project/conventions.md"
-pre_checks:
-  - "grep '<project-name>' .omp/memory/project/conventions.md                    # Should match"
-  - "grep '<TypeScript | Go | Rust | Python>' .omp/memory/project/conventions.md # Should match"
-  - "grep '<Bash | Python | TypeScript>' .omp/memory/project/conventions.md       # Should match"
-post_checks:
-  - "grep '<TypeScript | Go | Rust | Python>' .omp/memory/project/conventions.md  # Should return nothing"
-  - "grep 'N/A' .omp/memory/project/conventions.md                                 # Should match ≥2 times"
-  - "grep 'Python.*init.*hydration' .omp/memory/project/conventions.md             # Should match once"
-  - "grep 'OMP Beads Template' .omp/memory/project/conventions.md                  # Should match once"
-```
-
-**What this task does:** Replace the project name in the header and fill the "Languages by Purpose" table with actual values. Backend and Frontend rows become N/A (template repo). Scripts row becomes Python (init hydration script).
-
-**Why this order:** Second task — completes the core identity pair. Project.md + conventions.md are the two files always loaded in agent context via OMP imports. Getting both done early means all subsequent agent context loads will see real identity.
-
-**Before (Languages by Purpose table):**
-```
-| Purpose | Language | Notes |
-|---------|----------|-------|
-| Agent instructions | Markdown | Skills, commands, memory files |
-| Configuration | JSON / YAML | settings, manifests |
-| Backend | <TypeScript | Go | Rust | Python> | <strict? Bun? Deno?> |
-| Frontend | <TypeScript | JavaScript> | <React? Svelte? plain?> |
-| Scripts | <Bash | Python | TypeScript> | <CI, dev tooling, one-offs> |
-```
-
-**After (Languages by Purpose table):**
-```
-| Purpose | Language | Notes |
-|---------|----------|-------|
-| Agent instructions | Markdown | Skills, commands, memory files |
-| Configuration | JSON / YAML | settings, manifests |
-| Backend | N/A | Template repo — no backend runtime |
-| Frontend | N/A | Template repo — provides design system assets only |
-| Scripts | Python | `/init` hydration script |
-```
-
-**Steps:**
-
-- [ ] Read `.omp/memory/project/conventions.md` — confirm "Languages by Purpose" table exists with placeholder rows as shown above
-- [ ] Replace `# Conventions: <project-name>` → `# Conventions: OMP Beads Template`
-- [ ] Replace Backend language cell: `<TypeScript | Go | Rust | Python>` → `N/A`
-- [ ] Replace Backend notes cell: `<strict? Bun? Deno?>` → `Template repo — no backend runtime`
-- [ ] Replace Frontend language cell: `<TypeScript | JavaScript>` → `N/A`
-- [ ] Replace Frontend notes cell: `<React? Svelte? plain?>` → `Template repo — provides design system assets only`
-- [ ] Replace Scripts language cell: `<Bash | Python | TypeScript>` → `Python`
-- [ ] Replace Scripts notes cell: `<CI, dev tooling, one-offs>` → `` `/init` hydration script ``
-- [ ] Update frontmatter `updated:` date to `2026-06-17`
-- [ ] Verify: Agent instructions row is UNCHANGED (Markdown)
-- [ ] Verify: Configuration row is UNCHANGED (JSON / YAML)
-- [ ] Verify: `grep '<TypeScript | Go | Rust | Python>' .omp/memory/project/conventions.md` returns no output
-- [ ] Verify: `grep '<Bash | Python | TypeScript>' .omp/memory/project/conventions.md` returns no output
-- [ ] Verify: `grep -c 'N/A' .omp/memory/project/conventions.md` returns ≥2 (backend + frontend)
-- [ ] Verify: `grep 'Python.*init.*hydration' .omp/memory/project/conventions.md` returns 1 match
-- [ ] Verify: `grep 'OMP Beads Template' .omp/memory/project/conventions.md` returns 1 match (header)
-- [ ] Verify: Read file — confirm table has 5 rows, all filled, consistent column alignment
-
-**Error handling:**
-- If the Backend/Frontend/Scripts rows use different cell separators or whitespace, match the existing format exactly.
-- The "Notes" column may contain pipe characters (`|`) — ensure the table row uses proper escaping or avoids pipes in the Notes cell.
-- If the file has additional rows in the table beyond the 5 documented rows, preserve them and only edit the 3 placeholder rows.
-
-### 1.3 Edit tech-stack.md — fix craft table, fill placeholders
-
-```yaml
-depends_on: []
-parallel: true
-conflicts_with: []
-files: [".omp/memory/project/tech-stack.md"]
-estimated_minutes: 10
-risk: Low
-rollback: "git checkout -- .omp/memory/project/tech-stack.md"
-pre_checks:
-  - "grep '<project-name>' .omp/memory/project/tech-stack.md                            # Should match"
-  - "grep '<TypeScript | Python | Go | Rust>' .omp/memory/project/tech-stack.md         # Should match"
-  - "grep '<tsc --noEmit | mypy | cargo check | go vet>' .omp/memory/project/tech-stack.md  # Should match"
-  - "grep -c 'design/craft/' .omp/memory/project/tech-stack.md                          # Should be 7 (missing state-coverage)"
-  - "ls design/craft/state-coverage.md                                                  # Should exist"
-post_checks:
-  - "grep '<TypeScript | Python | Go | Rust>' .omp/memory/project/tech-stack.md         # Should return nothing"
-  - "grep '<tsc --noEmit' .omp/memory/project/tech-stack.md                              # Should return nothing"
-  - "grep -c 'design/craft/' .omp/memory/project/tech-stack.md                          # Should be 8"
-  - "grep 'N/A.*template repo' .omp/memory/project/tech-stack.md                         # Should match ≥5 times"
-  - "grep 'OMP Beads Template' .omp/memory/project/tech-stack.md                         # Should match once"
-```
-
-**What this task does:** This is the most complex edit — it fixes the header, runtime table (3 rows), verification commands (5 placeholders), security audit (1 placeholder), AND the structurally broken craft table (merge 7+1 rows, move attribution).
-
-**Why this order:** Third task — do this when you're familiar with the edit patterns from tasks 1.1 and 1.2. The craft table fix requires reading an additional file (`design/craft/state-coverage.md`) and structural table surgery.
-
-**Required pre-read:** Before editing, read `design/craft/state-coverage.md` to extract a one-line purpose description for the craft table. The description should match the pattern of existing craft file descriptions (~5-10 words describing what the file covers).
-
-**Steps — Part A: Header + Runtime Table:**
-
-- [ ] Read `.omp/memory/project/tech-stack.md` — confirm placeholders and broken craft table
-- [ ] Read `design/craft/state-coverage.md` — extract one-line purpose description
-- [ ] Replace `# Tech Stack: <project-name>` → `# Tech Stack: OMP Beads Template`
-- [ ] Replace Language row language cell: `<TypeScript | Python | Go | Rust>` → `N/A`
-- [ ] Replace Language row version cell: `<version>` → `—`
-- [ ] Replace Language row notes cell: `<strict mode? async? experimental flags?>` → `Template repo — no application language`
-- [ ] Replace Runtime row runtime cell: `<Node.js | Bun | Deno | Python 3.x | Go 1.x>` → `N/A`
-- [ ] Replace Runtime row version cell: `<version>` → `—`
-- [ ] Replace Runtime row notes cell: `<LTS? latest?>` → `Template repo — no application runtime`
-- [ ] Replace Package manager row manager cell: `<npm | pnpm | yarn | pip | cargo | go mod>` → `N/A`
-- [ ] Replace Package manager row version cell: `<version>` → `—`
-
-**Steps — Part B: Verification Commands:**
-
-- [ ] Replace Typecheck placeholder: `<tsc --noEmit | mypy | cargo check | go vet>` → `N/A — template repo, no application code`
-- [ ] Replace Lint placeholder: `<eslint | ruff | clippy | golangci-lint>` → `N/A — template repo, no application code`
-- [ ] Replace Test placeholder: `<vitest run | pytest | cargo test | go test ./...>` → `N/A — template repo, no application code`
-- [ ] Replace Build placeholder: `<tsup | pip install -e . | cargo build --release | go build>` → `N/A — template repo, no application code`
-- [ ] Replace Dependency audit placeholder: `<npm audit | pip-audit | cargo audit | govulncheck>` → `N/A — template repo, no dependencies`
-
-**Steps — Part C: Craft Table Fix:**
-
-The current craft table has lines ~78-89 in this structure:
-
-```
-78: ## Craft References
-79: | File | Purpose |
-80: |------|---------|
-81: | `design/craft/typography.md` | Type scale, ... |
-82: | `design/craft/color.md` | Palette structure, ... |
-83: | `design/craft/anti-ai-slop.md` | Seven cardinal sins, ... |
-84: | `design/craft/animation-discipline.md` | When motion earns its place, ... |
-85: (blank line)
-86: Adapted from Open Design's `craft/` directory (Apache 2.0) and [refero_skill](https://github.com/referodesign/refero_skill) (MIT).
-87: | `design/craft/accessibility-baseline.md` | WCAG 2.2 AA floor, ... |
-88: | `design/craft/form-validation.md` | Input state machine, ... |
-89: | `design/craft/typography-hierarchy.md` | Entry points, hierarchy vectors, ... |
-```
-
-The problem: lines 87-89 are orphan table rows (no header) because the attribution paragraph on line 86 breaks the table. Plus state-coverage.md is missing.
-
-Fix: Merge into one contiguous table:
-
-```
-78: ## Craft References
-79: | File | Purpose |
-80: |------|---------|
-81: | `design/craft/typography.md` | Type scale, line-height, letter-spacing, font pairing, line length, weight discipline |
-82: | `design/craft/color.md` | Palette structure, accent discipline, contrast minimums, dark themes, semantic naming |
-83: | `design/craft/anti-ai-slop.md` | Seven cardinal sins, soft tells, polish tells, soul-injection rules |
-84: | `design/craft/animation-discipline.md` | When motion earns its place, duration thresholds, curve vs spring, reduced motion, flashing limits |
-85: | `design/craft/state-coverage.md` | {purpose from reading the file} |
-86: | `design/craft/accessibility-baseline.md` | WCAG 2.2 AA floor, contrast, touch targets, focus, labels, keyboard, ARIA discipline |
-87: | `design/craft/form-validation.md` | Input state machine, validation timing, Constraint Validation API, error wiring, submit hygiene |
-88: | `design/craft/typography-hierarchy.md` | Entry points, hierarchy vectors, rhythm failure modes, controlled violations |
-89:
-90: Adapted from Open Design's `craft/` directory (Apache 2.0) and [refero_skill](https://github.com/referodesign/refero_skill) (MIT).
-```
-
-- [ ] Insert state-coverage.md row after animation-discipline.md (line 84)
-- [ ] Merge orphan rows 87-89 into the table above (remove blank line 85, move attribution to line 90)
-- [ ] Verify: `grep -c 'design/craft/' .omp/memory/project/tech-stack.md` returns 8
-- [ ] Verify: Attribution paragraph ("Adapted from Open Design...") comes AFTER all 8 table rows, not between them
-
-**Steps — Part D: Final Verification:**
-
-- [ ] Update frontmatter `updated:` date to `2026-06-17`
-- [ ] Verify: `grep '<TypeScript | Python | Go | Rust>' .omp/memory/project/tech-stack.md` returns no output
-- [ ] Verify: `grep '<tsc --noEmit | mypy | cargo check | go vet>' .omp/memory/project/tech-stack.md` returns no output
-- [ ] Verify: `grep '<npm audit | pip-audit | cargo audit | govulncheck>' .omp/memory/project/tech-stack.md` returns no output
-- [ ] Verify: `grep -c 'N/A.*template repo' .omp/memory/project/tech-stack.md` returns ≥5
-- [ ] Verify: `grep -c 'design/craft/' .omp/memory/project/tech-stack.md` returns 8
-- [ ] Verify: `grep 'OMP Beads Template' .omp/memory/project/tech-stack.md` returns 1 match
-- [ ] Verify: Read file — craft table is one contiguous table, attribution paragraph after, no code verification placeholder strings remain
-
-**Error handling:**
-- If `design/craft/state-coverage.md` doesn't exist or is empty, use a reasonable fallback: "Loading, empty, error, and edge-case state handling patterns"
-- If the craft table has been restructured (different line numbers), adapt the fix to the current structure. The invariant is: all craft files in one table, attribution after.
-- If the Runtime table has additional columns or different alignment, match the existing format.
-
-### 1.4 Edit decisions.md — promote decisions to Decision Log
-
-```yaml
-depends_on: []
-parallel: true
-conflicts_with: []
-files: [".omp/memory/project/decisions.md"]
-estimated_minutes: 5
-risk: Low
-rollback: "git checkout -- .omp/memory/project/decisions.md"
-pre_checks:
-  - "grep '<project-name>' .omp/memory/project/decisions.md       # Should match"
-  - "grep '## Example' .omp/memory/project/decisions.md           # Should match"
-  - "grep '<YYYY-MM>' .omp/memory/project/decisions.md            # Should match (placeholder in Decision Log)"
-  - "grep 'br/bv for task tracking' .omp/memory/project/decisions.md  # Should match (in Example)"
-post_checks:
-  - "grep -c '^| [1-5] |' .omp/memory/project/decisions.md        # Should be 5"
-  - "grep -c '## Example' .omp/memory/project/decisions.md        # Should be 0"
-  - "grep -c '## Decision Log' .omp/memory/project/decisions.md   # Should be 1"
-  - "grep -c '## How to Add a Decision' .omp/memory/project/decisions.md  # Should be 1"
-  - "grep 'OMP Beads Template' .omp/memory/project/decisions.md   # Should match once"
-```
-
-**What this task does:** Promote 5 real architecture decisions from the "Example" section to the "Decision Log" section with sequential numbering. Remove the Example section and the Decision Log placeholder row.
-
-**Why this order:** Fourth task — pure restructure with content preservation. After the complex tech-stack.md edit, this is straightforward.
-
-**Before:**
-```
-## Decision Log
-| # | Date | Decision | Rationale | Confidence |
-|---|------|----------|-----------|------------|
-| 1 | <YYYY-MM> | <what we decided> | <why> | <High | Medium | Low> |
-
-## How to Add a Decision
-...
-
-## Example
-| # | Date | Decision | Rationale | Confidence |
-|---|------|----------|-----------|------------|
-| 1 | 2026-06 | Use br/bv for task tracking... | ... | High |
-| 2 | 2026-06 | Commands + skills only... | ... | High |
-| 3 | 2026-06 | Bare command names... | ... | High |
-| 4 | 2026-06 | `.omp/` as native project root... | ... | High |
-| 5 | 2026-06 | Ergonomic tooling lives in separate... | ... | High |
-```
-
-**After:**
-```
-## Decision Log
-| # | Date | Decision | Rationale | Confidence |
-|---|------|----------|-----------|------------|
-| 1 | 2026-06 | Use br/bv for task tracking and graph intelligence | Graph-informed workflow is the template's core differentiator. Alternatives (linear, plain markdown) lack the graph query ability. | High |
-| 2 | 2026-06 | Commands + skills only, no scripts | Every gap solvable through better prompts and skill knowledge. Scripts add maintenance burden, platform dependencies, and hidden logic. | High |
-| 3 | 2026-06 | Bare command names (`/create`, `/plan`) | OMP resolves commands by directory. Prefix would be noise. | High |
-| 4 | 2026-06 | `.omp/` as native project root | OMP loads from `.omp/`. Parallel `.pi/` config creates confusion. | High |
-| 5 | 2026-06 | Ergonomic tooling lives in separate template repos | omp-makora-provider and friends are independent packages. The beads template stays pure workflow — install providers separately. | High |
-
-## How to Add a Decision
-...
-```
-
-**Steps:**
-
-- [ ] Read `.omp/memory/project/decisions.md` — confirm "Example" section has 5 decisions, "Decision Log" has one placeholder row
-- [ ] Replace `# Decisions: <project-name>` → `# Decisions: OMP Beads Template`
-- [ ] Read the 5 decision rows from "## Example" section — capture the EXACT text of each row (date, decision, rationale, confidence)
-- [ ] Replace the placeholder row in "## Decision Log" (the row with `<YYYY-MM>`) with the 5 real rows, numbered 1-5
-- [ ] Delete the entire "## Example" section heading and all its rows
-- [ ] Confirm "## How to Add a Decision" section heading and content are untouched
-- [ ] Update frontmatter `updated:` date to `2026-06-17`
-- [ ] Verify: `grep -c '^| [1-5] |' .omp/memory/project/decisions.md` returns 5 (each decision has a number 1-5)
-- [ ] Verify: `grep -c '## Example' .omp/memory/project/decisions.md` returns 0 (section removed)
-- [ ] Verify: `grep -c '## Decision Log' .omp/memory/project/decisions.md` returns 1
-- [ ] Verify: `grep -c '## How to Add a Decision' .omp/memory/project/decisions.md` returns 1
-- [ ] Verify: `grep '<YYYY-MM>' .omp/memory/project/decisions.md` returns no output (placeholder removed)
-- [ ] Verify: `grep '<what we decided>' .omp/memory/project/decisions.md` returns no output (placeholder removed)
-- [ ] Verify: `grep 'OMP Beads Template' .omp/memory/project/decisions.md` returns 1 match (header)
-- [ ] Verify: Each of the 5 decisions' text matches the original verbatim — compare with `git show HEAD:.omp/memory/project/decisions.md` if needed
-
-**Content preservation critical check:**
-The 5 decision rows must be VERBATIM copies from the Example section. Do not retype, rephrase, or edit the decisions. Use the exact text from the current file. If in doubt, use `git show HEAD:.omp/memory/project/decisions.md` to get the original text.
-
-**Error handling:**
-- If the Example section has more or fewer than 5 decisions (file modified since PRD), promote ALL decisions in the Example section. Use sequential numbering starting from 1.
-- If the Decision Log section already has real rows (manually edited), merge the Example rows after the existing ones. Assign sequential numbers continuing from the last existing number.
-- If "## How to Add a Decision" section is missing, it's a file corruption — restore from git.
-
-### 1.5 Edit gotchas.md — separate template/project gotchas
-
-```yaml
-depends_on: []
-parallel: true
-conflicts_with: []
-files: [".omp/memory/project/gotchas.md"]
-estimated_minutes: 5
-risk: Low
-rollback: "git checkout -- .omp/memory/project/gotchas.md"
-pre_checks:
-  - "grep '<project-name>' .omp/memory/project/gotchas.md                      # Should match"
-  - "grep '<YYYY-MM>' .omp/memory/project/gotchas.md                           # Should match (Active Warnings placeholder)"
-  - "grep -c '^| 2026-06 |' .omp/memory/project/gotchas.md                     # Should be 13"
-  - "grep 'Memory templates waste tokens' .omp/memory/project/gotchas.md       # Should match once (in Template Bootstrap)"
-post_checks:
-  - "grep -c '## Active Warnings' .omp/memory/project/gotchas.md               # Should be 1"
-  - "grep -c '## Template Bootstrap Gotchas' .omp/memory/project/gotchas.md    # Should be 1"
-  - "grep -c '^> These gotchas ship' .omp/memory/project/gotchas.md            # Should be 1"
-  - "grep -c '^| 2026-06 |' .omp/memory/project/gotchas.md                     # Should be 13 (1 + 12)"
-  - "grep 'OMP Beads Template' .omp/memory/project/gotchas.md                  # Should match once"
-```
-
-**What this task does:** Separate the 13 mixed gotchas into two categories: 1 project-specific gotcha in "Active Warnings" + 12 template-universal gotchas in "Template Bootstrap Gotchas" with a blockquote note.
-
-**Why this order:** Fifth and simplest task — pure recategorization. One row moves between tables, one note changes format.
-
-**Classification rule:**
-- Project-specific = only applies to the OMP Beads Template's own maintenance → "Active Warnings"
-- Template-universal = applies to any project using this template → "Template Bootstrap Gotchas"
-
-The one project-specific gotcha: "Memory templates waste tokens if left as placeholders" — this is literally the problem this bead fixes. It's a meta-gotcha about the template repo's own maintenance.
-
-**Steps:**
-
-- [ ] Read `.omp/memory/project/gotchas.md` — confirm "Active Warnings" has placeholder row, "Template Bootstrap Gotchas" has 13 rows including the memory one
-- [ ] Replace `# Gotchas: <project-name>` → `# Gotchas: OMP Beads Template`
-- [ ] Replace Active Warnings placeholder row (`<YYYY-MM> | <area> | <what happens> | ...`) with the real gotcha: `| 2026-06 | memory | Memory templates waste tokens if left as placeholders | ~1KB of template text the agent reads every session | Fill with real project content immediately. Delete placeholder gotchas when real ones exist. |`
-- [ ] Remove the row `| 2026-06 | memory | Memory templates waste tokens if left as placeholders | ...` from the "Template Bootstrap Gotchas" table (it's now in Active Warnings)
-- [ ] Replace the introductory paragraph in Template Bootstrap Gotchas (the one saying "Replace with your project's actual gotchas as you discover them") with the blockquote: `> These gotchas ship with the OMP Beads Template. They apply to any project using this template. Replace with your project's actual gotchas as you discover them.`
-- [ ] Verify: The 12 remaining template gotchas are unchanged (same text, same dates, same areas)
-- [ ] Update frontmatter `updated:` date to `2026-06-17`
-- [ ] Verify: `grep -c '## Active Warnings' .omp/memory/project/gotchas.md` returns 1
-- [ ] Verify: `grep -c '## Template Bootstrap Gotchas' .omp/memory/project/gotchas.md` returns 1
-- [ ] Verify: `grep -c '^> These gotchas ship' .omp/memory/project/gotchas.md` returns 1
-- [ ] Verify: `grep -c '^| 2026-06 |' .omp/memory/project/gotchas.md` returns 13 (1 in Active Warnings + 12 in Template Bootstrap)
-- [ ] Verify: `grep 'OMP Beads Template' .omp/memory/project/gotchas.md` returns 1 match
-- [ ] Verify: `grep '<project-name>' .omp/memory/project/gotchas.md` returns no output
-- [ ] Verify: Read file — "Active Warnings" has exactly 1 real row, "Template Bootstrap Gotchas" has blockquote + 12 rows, "How to Add a Gotcha" section is untouched
-
-**Error handling:**
-- If Active Warnings already has real rows (manually added), ADD the memory-template gotcha to the existing rows instead of replacing. Do not overwrite user content.
-- If the "Memory templates waste tokens" row appears in a different format or with different text, match the exact text from the file when removing it from Template Bootstrap Gotchas.
-- If the introductory paragraph in Template Bootstrap Gotchas has different text than documented, replace the entire paragraph with the blockquote.
-
-## 2. Wave 2: Integration Verification
-
-### 2.1 Run full verification
-
-```yaml
-depends_on: ["1.1", "1.2", "1.3", "1.4", "1.5"]
 parallel: false
 conflicts_with: []
-files: []
-estimated_minutes: 5
-risk: Low
-rollback: N/A (read-only)
+files: [".omp/memory/project/project.md"]
+estimated_minutes: 10
 ```
 
-**What this task does:** Run all 14 verification checks across all 5 files. This is a read-only task — no edits.
+**Pre-read:**
+- [ ] 1.1.1 Read `.omp/memory/project/project.md` completely (all ~29 lines). Record the exact line number of every placeholder you'll replace. Confirm the file's current state matches the plan's Observable Truth #1:
+  - Line 2: `updated: 2026-06-17`
+  - Line 5: `# Project: <project-name>`
+  - Lines 7-8: `Replace this with your actual project name.` followed by a blank line
+  - Line 11: `<One sentence — what are we building and why?>`
+  - Line 15: `1. **<Criterion 1>** — <measurable outcome>`
+  - Line 16: `2. **<Criterion 2>** — <measurable outcome>`
+  - Line 17: `3. **<Criterion 3>** — <measurable outcome>`
+  - Lines ~18-20: `Keep to 3-5 criteria. Each must be verifiable...` (instruction paragraph — keep this)
+  - Line 24: `- **Status:** <active | maintenance | paused>`
+  - Line 25: `- **Milestone:** <what we're working toward right now>`
+  - Line 26: `- **Next:** <the next concrete deliverable>`
+  - Last lines: `Update this section after every milestone. An agent reading this must understand, within 3 seconds, what the project is doing right now.` (keep this)
+- [ ] 1.1.2 Read `README.md` lines 1-5. Confirm the heading is `# OMP Beads Template` and the first paragraph describes an OMP-native project template with br and bv as the backbone. This confirms the project name and provides the basis for the goal text.
+- [ ] 1.1.3 Read `.omp/AGENTS.md` — specifically the "Philosophy" section near the end. Note the 8 principles: YAGNI, Prune over pad, Graph-informed, Commands+skills only, Cognitive tools, Progressive disclosure, br is the backbone, bv is the brain, Agent-native. The goal text should incorporate these principles implicitly through the deliverables listed.
+- [ ] 1.1.4 If any placeholder's line number differs from the plan's approximation, update your scratch note but proceed. The edits are content replacements, not line-number-dependent operations.
 
-**Why this order:** After all Wave 1 tasks complete, confirm everything is correct before committing. Catches cross-file issues that individual task verifications might miss (e.g., inconsistent frontmatter dates, remaining placeholders).
+**Edits:**
+- [ ] 1.1.5 Edit line 2: Change `updated: 2026-06-17` to `updated: 2026-06-18`. This is the frontmatter date update — it goes in all 5 files.
+- [ ] 1.1.6 Edit line 5: Change `# Project: <project-name>` to `# Project: OMP Beads Template`. This is the canonical project name from README.md heading.
+- [ ] 1.1.7 Edit lines ~7-8: Remove the instruction `Replace this with your actual project name.` (the line after the header). Keep one blank line between the header and `## The Goal` heading for markdown readability. Don't leave a gap that makes the file look broken.
+- [ ] 1.1.8 Edit line ~11: Replace `<One sentence — what are we building and why?>` with: `An OMP-native project template that provides br/bv-powered workflow infrastructure for AI-agent-driven software development — task tracking, graph-informed planning, artifact generation, and quality gating.`
+- [ ] 1.1.9 Verify the goal text: It is one sentence. It names 4 concrete deliverables (task tracking, graph-informed planning, artifact generation, quality gating). All 4 are observable in the repo: `br` for task tracking, `bv` for graph-informed planning, `.omp/skills/` and `.omp/templates/` for artifact generation, `.omp/extensions/workflow-gate.ts` for quality gating. The phrase "OMP-native" matches the README. The phrase "br/bv-powered" matches the backbone philosophy in AGENTS.md.
+- [ ] 1.1.10 Edit line ~15: Replace `1. **<Criterion 1>** — <measurable outcome>` with: `1. **Zero template placeholders** — No \`<project-name>\` or \`<!-- TODO\` markers in any \`.omp/memory/project/\` file. Verifiable with \`grep\`.`
+- [ ] 1.1.11 Verify criterion 1: The criterion mentions the exact placeholder strings (`<project-name>`, `<!-- TODO`) so an agent knows what to grep for. The verification method (`grep`) is explicit. The scope (`.omp/memory/project/`) is explicit.
+- [ ] 1.1.12 Edit line ~16: Replace `2. **<Criterion 2>** — <measurable outcome>` with: `2. **Valid markdown throughout** — Every memory file is valid markdown with correctly structured tables. Verifiable by reading each file.`
+- [ ] 1.1.13 Verify criterion 2: "Valid markdown" means frontmatter is properly delimited, tables have consistent column counts, headings use proper `#` syntax. "Reading each file" is the verification method — an agent can visually inspect or use a markdown parser.
+- [ ] 1.1.14 Edit line ~17: Replace `3. **<Criterion 3>** — <measurable outcome>` with: `3. **Agent comprehension within 3 seconds** — An agent loading this context can answer 'what is this project' immediately from project.md. Qualitative but observable.`
+- [ ] 1.1.15 Verify criterion 3: This is the meta-criterion — it verifies that criteria 1 and 2 achieved their purpose. If an agent can read project.md and immediately understand what the project is, the hydration worked. It's qualitative (no number to measure) but observable (either the agent can answer or it can't).
+- [ ] 1.1.16 Confirm the instruction paragraph after criterion 3 (`Keep to 3-5 criteria. Each must be verifiable — "good UX" is not verifiable. "Zero uncaught exceptions in prod for 30 days" is.`) is still present. If the edit accidentally removed it, re-insert it. This paragraph is meta-useful for template consumers who will customize their own criteria.
+- [ ] 1.1.17 Edit line ~24: Replace `- **Status:** <active | maintenance | paused>` with: `- **Status:** active`
+- [ ] 1.1.18 Verify status: "active" is correct — 8 beads closed in the last 7 days, design system scaffolded, commands and skills refined, Honcho memory workflow implemented, git-clean command added. The template is under active development.
+- [ ] 1.1.19 Edit line ~25: Replace `- **Milestone:** <what we're working toward right now>` with: `- **Milestone:** Memory file hydration — project identity hardening`
+- [ ] 1.1.20 Verify milestone: This bead IS the milestone. Naming it directly makes the project.md self-referential in a useful way — an agent reading this knows exactly what's happening right now.
+- [ ] 1.1.21 Edit line ~26: Replace `- **Next:** <the next concrete deliverable>` with: `- **Next:** Audit command files for consistency with conventions`
+- [ ] 1.1.22 Verify next: After memory files are authoritative (this bead), the natural next step is to verify that command files are consistent with the conventions they now reference. This is a suggested bead, not a commitment — but it's the concrete next deliverable.
+- [ ] 1.1.23 Confirm the last paragraph (`Update this section after every milestone...`) is preserved. This is critical guidance for maintainers.
+- [ ] 1.1.24 Confirm the frontmatter `---` delimiters are intact — lines 1 and 4 should still be `---`.
+- [ ] 1.1.25 Confirm the frontmatter `purpose:` field on line 2 (`purpose: Project vision, goals, success criteria, and current phase`) is unchanged.
 
-**Steps:**
+**Verification:**
+- [ ] 1.1.26 Run: `grep '<project-name>' .omp/memory/project/project.md` — expect return code 1 (no matches). If return code 0 (match found): you missed the header edit. Re-check line 5.
+- [ ] 1.1.27 Run: `grep '<!-- TODO' .omp/memory/project/project.md` — expect return code 1 (no matches). If a match: check if the goal or criteria placeholders still have `<!-- TODO: fill in -->` markers. Re-edit the corresponding line.
+- [ ] 1.1.28 Run: `grep '<Criterion' .omp/memory/project/project.md` — expect return code 1. If match: one of the 3 criteria lines wasn't edited.
+- [ ] 1.1.29 Run: `grep 'what we.re working toward' .omp/memory/project/project.md` — expect return code 1. If match: the milestone line wasn't edited.
+- [ ] 1.1.30 Run: `grep 'OMP Beads Template' .omp/memory/project/project.md` — expect return code 0 (at least 1 match, the header). If no match: the header edit failed. Re-check line 5.
+- [ ] 1.1.31 Run: `grep 'Memory file hydration' .omp/memory/project/project.md` — expect return code 0. If no match: the milestone line wasn't edited correctly.
+- [ ] 1.1.32 Run: `grep 'Audit command files' .omp/memory/project/project.md` — expect return code 0. If no match: the next line wasn't edited.
+- [ ] 1.1.33 Run: `grep 'updated: 2026-06-18' .omp/memory/project/project.md` — expect return code 0. If no match: the frontmatter date wasn't updated.
+- [ ] 1.1.34 Run: `grep -c '^---$' .omp/memory/project/project.md` — expect exactly 2 (opening and closing frontmatter delimiters). If 0 or 1: the frontmatter was corrupted during editing. Re-read the file and fix.
+- [ ] 1.1.35 Run: `grep '^# Project:' .omp/memory/project/project.md` — expect return code 0. The H1 heading must still exist.
+- [ ] 1.1.36 Run: `grep '^## The Goal' .omp/memory/project/project.md` — expect return code 0. Section heading preserved.
+- [ ] 1.1.37 Run: `grep '^## Success Criteria' .omp/memory/project/project.md` — expect return code 0. Section heading preserved.
+- [ ] 1.1.38 Run: `grep '^## Current Phase' .omp/memory/project/project.md` — expect return code 0. Section heading preserved.
+- [ ] 1.1.39 If ALL 14 verification checks (1.1.26 through 1.1.39) pass, Task 1.1 is complete. Record a PASS in your scratch note and proceed to Task 2.1.
+- [ ] 1.1.40 If ANY check fails: identify which edit was wrong or missed, re-read the file to see current state, fix only the failing line, re-run just the failing check, then re-run all 14 checks.
 
-- [ ] Check 1: `grep -r '<project-name>' .omp/memory/project/` — expect no output (exit code 1)
-- [ ] Check 2: `grep '<!-- TODO' .omp/memory/project/project.md` — expect no output (exit code 1)
-- [ ] Check 3: `grep -c '^| [1-5] |' .omp/memory/project/decisions.md` — expect 5
-- [ ] Check 4: `grep -c '## Example' .omp/memory/project/decisions.md` — expect 0
-- [ ] Check 5: `grep -c 'design/craft/' .omp/memory/project/tech-stack.md` — expect 8
-- [ ] Check 6: `grep -c '## Active Warnings' .omp/memory/project/gotchas.md` — expect 1
-- [ ] Check 7: `grep -c '^> These gotchas ship' .omp/memory/project/gotchas.md` — expect 1
-- [ ] Check 8: `grep -c '^| 2026-06 |' .omp/memory/project/gotchas.md` — expect 13
-- [ ] Check 9: `grep '<TypeScript | Go | Rust | Python>' .omp/memory/project/conventions.md` — expect no output
-- [ ] Check 10: `grep '<tsc --noEmit | mypy | cargo check | go vet>' .omp/memory/project/tech-stack.md` — expect no output
-- [ ] Check 11: `br list --status open --json` — expect valid JSON output, includes br-omp-backbone-skill-l3d
-- [ ] Check 12: `bv --robot-triage --format json` — expect valid JSON output, no errors
-- [ ] Check 13: `grep 'updated: 2026-06-17' .omp/memory/project/project.md` — expect 1 match
-- [ ] Check 13 continued: Repeat for conventions.md, tech-stack.md, decisions.md, gotchas.md — expect 1 match each (5 total)
-- [ ] Check 14: Read all 5 files end-to-end — confirm tables have consistent column counts, no orphan rows, no placeholders remain, all frontmatter dates are 2026-06-17
-- [ ] Verify: ALL 14 checks pass. If any check fails, identify the file, fix it, and re-run all checks.
+---
 
-**If a check fails:**
-1. Note which check failed and what file it's testing
-2. Read that file to understand the issue
-3. Fix the file with an edit
-4. Re-run the specific check to confirm the fix
-5. Re-run all 14 checks to confirm no regressions
+## 2. Hydrate conventions.md
 
-## 3. Commit
-
-### 3.1 Sync and commit
+### 2.1 Fill project name header and Languages by Purpose table
 
 ```yaml
-depends_on: ["2.1"]
+depends_on: ["1.1"]
+parallel: false
+conflicts_with: []
+files: [".omp/memory/project/conventions.md"]
+estimated_minutes: 10
+```
+
+**Pre-read:**
+- [ ] 2.1.1 Read `.omp/memory/project/conventions.md` completely (all ~143 lines). The file is long — most of it stays unchanged. Focus on two areas: (a) the header on line ~6, (b) the "Languages by Purpose" table block starting around line ~15 with `| Purpose | Language | Notes |` and ending after the instruction paragraph "Fill in the actual languages for your project..."
+- [ ] 2.1.2 Identify the exact line numbers for the 3 rows that need changing in the Languages table:
+  - Backend row: Contains `<TypeScript | Go | Rust | Python>` in the Language column and `<strict? Bun? Deno?>` in the Notes column
+  - Frontend row: Contains `<TypeScript | JavaScript>` in the Language column and `<React? Svelte? plain?>` in the Notes column
+  - Scripts row: Contains `<Bash | Python | TypeScript>` in the Language column and `<CI, dev tooling, one-offs>` in the Notes column
+- [ ] 2.1.3 Confirm that the Agent instructions row (`| Agent instructions | Markdown | Skills, commands, memory files |`) and Configuration row (`| Configuration | JSON / YAML | settings, manifests |`) already contain real content. These rows do NOT need editing. Note their line numbers to avoid accidentally touching them.
+- [ ] 2.1.4 The file's remaining sections (`## Naming`, `## Skill Structure`, `## Command Structure`, `## Git`, `## Workflow`, `## Agent Conventions`, `## Honcho Memory`, `## Memory File Maintenance`, `## UI Design`) are large (~120 lines total) and must remain completely untouched. The edit scope is header + 3 table rows + frontmatter date only.
+
+**Edits:**
+- [ ] 2.1.5 Edit line 2: Change `updated: 2026-06-17` to `updated: 2026-06-18`.
+- [ ] 2.1.6 Edit line ~6: Change `# Conventions: <project-name>` to `# Conventions: OMP Beads Template`.
+- [ ] 2.1.7 Edit the Backend row: Replace `| Backend | <TypeScript | Go | Rust | Python> | <strict? Bun? Deno?> |` with `| Backend | N/A | Template repo — no backend runtime |`.
+- [ ] 2.1.8 Rationale for Backend = N/A: This repo contains no `package.json`, `Cargo.toml`, `go.mod`, `requirements.txt`, `pyproject.toml`, or any runtime dependency manifest. It is a template that gets cloned and customized — the clone becomes a real project, but the template itself has no backend. The `/init` hydration script is Python but that's captured in the Scripts row, not Backend.
+- [ ] 2.1.9 Edit the Frontend row: Replace `| Frontend | <TypeScript | JavaScript> | <React? Svelte? plain?> |` with `| Frontend | N/A | Template repo — provides design system assets only |`.
+- [ ] 2.1.10 Rationale for Frontend = N/A: The repo provides `design/tokens.css`, `design/primitives.css`, `design/base.css`, and `design/craft/` as static design system assets. There is no frontend application code, no component library, no build pipeline for frontend assets. These assets are consumed by projects that clone the template — they are not a frontend application themselves.
+- [ ] 2.1.11 Edit the Scripts row: Replace `| Scripts | <Bash | Python | TypeScript> | <CI, dev tooling, one-offs> |` with `| Scripts | Python | \`/init\` hydration script |`.
+- [ ] 2.1.12 Rationale for Scripts = Python: The only executable code in this repo (outside OMP TypeScript extensions in `.omp/extensions/`) is the Python 3 hydration script embedded in `.omp/commands/init.md`. It uses stdlib only: `pathlib`, `json`, `os`, `re`, `subprocess`. No other scripting language has executable code in this repo. The notes field mentions `` `/init` `` specifically to guide agents to the right file.
+- [ ] 2.1.13 Confirm the instruction paragraph after the language table is preserved: "Fill in the actual languages for your project. Agents use this to pick the right tool for the job." This paragraph is meta-useful — it tells template consumers what to do with this table. Do NOT remove it.
+- [ ] 2.1.14 Confirm the "Languages by Purpose" section heading (`## Languages by Purpose`) is preserved. The heading is between line ~13-14.
+
+**Verification:**
+- [ ] 2.1.15 Run: `grep '<project-name>' .omp/memory/project/conventions.md` — expect return code 1. If match: header edit failed.
+- [ ] 2.1.16 Run: `grep '<TypeScript' .omp/memory/project/conventions.md` — expect return code 1. If match: one of the language table rows still has an option-placeholder. Check which row (Backend, Frontend, or Scripts) and verify it was edited.
+- [ ] 2.1.17 Run: `grep '<Bash' .omp/memory/project/conventions.md` — expect return code 1. Specifically the Scripts row placeholder.
+- [ ] 2.1.18 Run: `grep '<JavaScript>' .omp/memory/project/conventions.md` — expect return code 1. Specifically the Frontend row placeholder.
+- [ ] 2.1.19 Run: `grep '<Go' .omp/memory/project/conventions.md` — expect return code 1. Specifically the Backend row placeholder.
+- [ ] 2.1.20 Run: `grep 'N/A' .omp/memory/project/conventions.md` — expect at least 2 matches. These should be the Backend and Frontend rows. If exactly 1 match: one of the two rows wasn't set to N/A. If 0 matches: neither was edited.
+- [ ] 2.1.21 Run: `grep 'Backend.*N/A' .omp/memory/project/conventions.md` — expect return code 0. Backend row specifically has N/A.
+- [ ] 2.1.22 Run: `grep 'Frontend.*N/A' .omp/memory/project/conventions.md` — expect return code 0. Frontend row specifically has N/A.
+- [ ] 2.1.23 Run: `grep 'Scripts.*Python' .omp/memory/project/conventions.md` — expect return code 0. Scripts row says Python.
+- [ ] 2.1.24 Run: `grep 'init.*hydration' .omp/memory/project/conventions.md` — expect return code 0. Scripts notes reference the init hydration script.
+- [ ] 2.1.25 Run: `grep 'updated: 2026-06-18' .omp/memory/project/conventions.md` — expect return code 0.
+- [ ] 2.1.26 Run: `grep -c '^---$' .omp/memory/project/conventions.md` — expect exactly 2.
+- [ ] 2.1.27 Run: `grep '^# Conventions:' .omp/memory/project/conventions.md` — expect return code 0.
+- [ ] 2.1.28 Run: `grep '^## Naming' .omp/memory/project/conventions.md` — expect return code 0. Major section preserved.
+- [ ] 2.1.29 Run: `grep 'Agent instructions.*Markdown' .omp/memory/project/conventions.md` — expect return code 0. Agent instructions row unchanged.
+- [ ] 2.1.30 Run: `grep 'Configuration.*JSON' .omp/memory/project/conventions.md` — expect return code 0. Configuration row unchanged.
+- [ ] 2.1.31 Run: `grep 'Fill in the actual languages' .omp/memory/project/conventions.md` — expect return code 0. Instruction paragraph preserved.
+- [ ] 2.1.32 Run: `grep -c '^## ' .omp/memory/project/conventions.md` — expect approximately 10 (all major section headings). If significantly fewer: sections were accidentally deleted. Re-read the file.
+- [ ] 2.1.33 If ALL 18 verification checks pass, Task 2.1 is complete. Record PASS and proceed to Task 3.1.
+- [ ] 2.1.34 If ANY check fails: re-read the file, fix only the failing line, re-run the failing check, then re-run all 18 checks.
+
+---
+
+## 3. Fix tech-stack.md
+
+### 3.1 Fix header, verification commands, security commands, and broken craft references table
+
+```yaml
+depends_on: ["1.1", "2.1"]
+parallel: false
+conflicts_with: []
+files: [".omp/memory/project/tech-stack.md", "design/craft/state-coverage.md"]
+estimated_minutes: 15
+```
+
+**Pre-read:**
+- [ ] 3.1.1 Read `.omp/memory/project/tech-stack.md` completely (all ~88 lines). Identify these sections and their line ranges:
+  - Frontmatter: lines 1-4
+  - Header: `# Tech Stack: <project-name>` (line ~6)
+  - `## Runtime` table: approximately lines 8-17 (keep this — don't edit)
+  - `## Key Dependencies` table: approximately lines 19-23 (keep this — don't edit)
+  - `## Verification Commands` section: heading + bash code block with 5 placeholder commands (lines ~27-48)
+  - `## Security` section: heading + bash code block with 2 placeholder commands (lines ~50-58)
+  - `## Constraints` section: approximately lines 60-66 (keep this — don't edit)
+  - `## Design Assets` table: approximately lines 68-76 (keep this — don't edit)
+  - `## Craft References` section: heading + description + broken table (lines ~78-88) — THIS IS THE MAIN FIX
+- [ ] 3.1.2 Note which sections are read-only (Runtime, Key Dependencies, Constraints, Design Assets) and which are edited (Header, Verification Commands, Security, Craft References). The read-only sections contain template patterns for consumers — they intentionally have `<option1 | option2>` placeholders. The PRD's `<project-name>` grep check verifies the header is fixed; the craft table fix verifies structure.
+- [ ] 3.1.3 Read `design/craft/state-coverage.md`. This file exists on disk but is missing from the craft references table. Extract 3-5 keywords from its heading and first paragraph. If the file starts with a heading like `# State Coverage` or `# UI State Coverage`, use that. If it has a subtitle or introduction, extract the key concepts. Expected keywords based on the filename: states (rest, hover, focus, active, disabled, loading, empty, error), interactive elements, handling. Write down the purpose description you'll use in the table — it should be a concise, comma-separated keyword list matching the style of other craft files.
+- [ ] 3.1.4 Run: `ls design/craft/` and confirm exactly 8 files exist: `accessibility-baseline.md`, `animation-discipline.md`, `anti-ai-slop.md`, `color.md`, `form-validation.md`, `state-coverage.md`, `typography.md`, `typography-hierarchy.md`. If there are more or fewer files, STOP — the plan assumes exactly 8 craft files. Report the discrepancy.
+
+**Edits — Header:**
+- [ ] 3.1.5 Edit line 2: Change `updated: 2026-06-17` to `updated: 2026-06-18`.
+- [ ] 3.1.6 Edit line ~6: Change `# Tech Stack: <project-name>` to `# Tech Stack: OMP Beads Template`.
+
+**Edits — Verification Commands bash block:**
+- [ ] 3.1.7 Locate the line with `<tsc --noEmit | mypy | cargo check | go vet>`. Replace with `N/A — template repo, no compiled code`. Keep the `# Typecheck` comment line above it unchanged.
+- [ ] 3.1.8 Locate the line with `<eslint | ruff | clippy | golangci-lint>`. Replace with `N/A — no linter configured for template files`. Keep the `# Lint` comment line unchanged.
+- [ ] 3.1.9 Locate the line with `<vitest run | pytest | cargo test | go test ./...>`. Replace with `N/A — no test framework`. Keep the `# Test` comment line unchanged.
+- [ ] 3.1.10 Locate the line with `<tsup | pip install -e . | cargo build --release | go build>`. Replace with `N/A — no build step`. Keep the `# Build` comment line unchanged.
+- [ ] 3.1.11 Confirm the `# Graph state (always available)` section with `bv --robot-triage` and `br list --status open --status in_progress --json` is untouched. These commands are always valid.
+- [ ] 3.1.12 If there's an instruction comment like `# Replace placeholders with your project's actual commands...` after the code block, keep it — it's useful for template consumers.
+
+**Edits — Security Commands bash block:**
+- [ ] 3.1.13 Locate the line with `<npm audit | pip-audit | cargo audit | govulncheck>`. Replace with `N/A — template repo, no runtime dependencies`. Keep the `# Dependency audit` comment line unchanged.
+- [ ] 3.1.14 Locate the line with `<gitleaks detect | trufflehog filesystem .>`. Replace with `N/A — no secrets scanning configured`. Keep the `# Secrets scan (if configured)` comment line unchanged.
+
+**Edits — Craft References table (the big fix):**
+- [ ] 3.1.15 Identify the exact line range of the broken craft references block. Start: `## Craft References` heading. End: the last orphan table row (`| \`design/craft/typography-hierarchy.md\` | ... |`).
+- [ ] 3.1.16 Before making this edit, copy the purpose descriptions for the existing 7 craft files into a scratch buffer so you don't lose them. The existing descriptions are:
+  - typography: "Type scale, line-height, letter-spacing, font pairing, line length, weight discipline"
+  - color: "Palette structure, accent discipline, contrast minimums, dark themes, semantic naming"
+  - anti-ai-slop: "Seven cardinal sins, soft tells, polish tells, soul-injection rules"
+  - animation-discipline: "When motion earns its place, duration thresholds, curve vs spring, reduced motion, flashing limits"
+  - accessibility-baseline: "WCAG 2.2 AA floor, contrast, touch targets, focus, labels, keyboard, ARIA discipline"
+  - form-validation: "Input state machine, validation timing, Constraint Validation API, error wiring, submit hygiene"
+  - typography-hierarchy: "Entry points, hierarchy vectors, rhythm failure modes, controlled violations"
+- [ ] 3.1.17 Replace the entire craft references block (from `## Craft References` through the last orphan row) with the unified alphabetical 8-row table + attribution paragraph. Use this exact content:
+
+```
+## Craft References
+
+Brand-agnostic universal design rules that apply on top of any `DESIGN.md`:
+
+| File | Purpose |
+|------|---------|
+| `design/craft/accessibility-baseline.md` | WCAG 2.2 AA floor, contrast, touch targets, focus, labels, keyboard, ARIA discipline |
+| `design/craft/animation-discipline.md` | When motion earns its place, duration thresholds, curve vs spring, reduced motion, flashing limits |
+| `design/craft/anti-ai-slop.md` | Seven cardinal sins, soft tells, polish tells, soul-injection rules |
+| `design/craft/color.md` | Palette structure, accent discipline, contrast minimums, dark themes, semantic naming |
+| `design/craft/form-validation.md` | Input state machine, validation timing, Constraint Validation API, error wiring, submit hygiene |
+| `design/craft/state-coverage.md` | [Derived from reading the file — extract keywords from heading/intro, e.g., "UI state handling: rest, hover, focus, active, disabled, loading, empty, error"] |
+| `design/craft/typography.md` | Type scale, line-height, letter-spacing, font pairing, line length, weight discipline |
+| `design/craft/typography-hierarchy.md` | Entry points, hierarchy vectors, rhythm failure modes, controlled violations |
+
+Adapted from Open Design's `craft/` directory (Apache 2.0) and [refero_skill](https://github.com/referodesign/refero_skill) (MIT).
+```
+- [ ] 3.1.18 For the `state-coverage.md` row: replace the bracketed placeholder `[Derived from reading the file...]` with the actual purpose description you derived in step 3.1.3. Match the style: concise, comma-separated keywords, lowercase except proper nouns.
+- [ ] 3.1.19 Verify the attribution paragraph text: must contain "Adapted from Open Design's \`craft/\` directory (Apache 2.0) and [refero_skill](https://github.com/referodesign/refero_skill) (MIT)." — verbatim from the original file.
+- [ ] 3.1.20 Verify the attribution paragraph is separated from the last table row by exactly one blank line. It should NOT be part of the table.
+
+**Verification:**
+- [ ] 3.1.21 Run: `grep '<project-name>' .omp/memory/project/tech-stack.md` — expect return code 1.
+- [ ] 3.1.22 Run: `grep '<tsc' .omp/memory/project/tech-stack.md` — expect return code 1.
+- [ ] 3.1.23 Run: `grep '<eslint' .omp/memory/project/tech-stack.md` — expect return code 1.
+- [ ] 3.1.24 Run: `grep '<vitest' .omp/memory/project/tech-stack.md` — expect return code 1.
+- [ ] 3.1.25 Run: `grep '<tsup' .omp/memory/project/tech-stack.md` — expect return code 1.
+- [ ] 3.1.26 Run: `grep '<npm audit' .omp/memory/project/tech-stack.md` — expect return code 1.
+- [ ] 3.1.27 Run: `grep '<gitleaks' .omp/memory/project/tech-stack.md` — expect return code 1.
+- [ ] 3.1.28 Run: `grep 'N/A' .omp/memory/project/tech-stack.md` — expect at least 6 matches (typecheck, lint, test, build, dependency audit, secrets scan).
+- [ ] 3.1.29 Run: `grep -c 'design/craft/' .omp/memory/project/tech-stack.md` — expect exactly 8 (one per craft file in the table).
+- [ ] 3.1.30 Run: `grep 'state-coverage.md' .omp/memory/project/tech-stack.md` — expect return code 0 (the previously missing file is now listed).
+- [ ] 3.1.31 Run: `grep 'Adapted from Open Design' .omp/memory/project/tech-stack.md` — expect return code 0 (attribution preserved).
+- [ ] 3.1.32 Run the craft table contiguity check (Python):
+```bash
+python3 - <<'PY'
+from pathlib import Path
+text = Path(".omp/memory/project/tech-stack.md").read_text()
+craft_start = text.index("## Craft References")
+next_section = text.find("\n## ", craft_start + 10)
+if next_section == -1: craft_block = text[craft_start:]
+else: craft_block = text[craft_start:next_section]
+# Check: all pipe lines are contiguous (no non-pipe/non-blank lines between them)
+lines = craft_block.splitlines()
+pipe_indices = [i for i, l in enumerate(lines) if l.startswith("|")]
+for j in range(1, len(pipe_indices)):
+    gap = pipe_indices[j] - pipe_indices[j-1]
+    if gap > 1:
+        between = [lines[k].strip() for k in range(pipe_indices[j-1]+1, pipe_indices[j])]
+        if any(b and not b.startswith(">") for b in between):
+            print(f"FAIL: non-pipe content between table rows: {between}")
+            raise SystemExit(1)
+# Check: attribution is AFTER the last table row
+table_end = craft_block.rfind("\n|")
+attr_start = craft_block.find("Adapted from Open Design")
+assert attr_start != -1, "FAIL: missing attribution"
+assert attr_start > table_end, f"FAIL: attribution at {attr_start} before table end at {table_end}"
+print("PASS: tech-stack.md craft table structure correct")
+PY
+```
+- [ ] 3.1.33 Run: `grep 'updated: 2026-06-18' .omp/memory/project/tech-stack.md` — expect return code 0.
+- [ ] 3.1.34 Run: `grep '^## Runtime' .omp/memory/project/tech-stack.md` — expect return code 0 (section preserved).
+- [ ] 3.1.35 Run: `grep '^## Key Dependencies' .omp/memory/project/tech-stack.md` — expect return code 0 (section preserved).
+- [ ] 3.1.36 Run: `grep '^## Design Assets' .omp/memory/project/tech-stack.md` — expect return code 0 (section preserved).
+- [ ] 3.1.37 Run: `grep '^## Constraints' .omp/memory/project/tech-stack.md` — expect return code 0 (section preserved).
+- [ ] 3.1.38 Run: `grep 'bv --robot-triage' .omp/memory/project/tech-stack.md` — expect return code 0 (graph state commands preserved).
+- [ ] 3.1.39 If ALL 17 verification checks pass, Task 3.1 is complete. Record PASS and proceed to Task 4.1.
+- [ ] 3.1.40 If ANY check fails: re-read the file, fix only the failing section, re-run the failing check, then re-run all checks.
+
+---
+
+## 4. Restructure decisions.md
+
+### 4.1 Promote 5 real decisions from Example to Decision Log, remove Example section, fix header
+
+```yaml
+depends_on: ["1.1", "2.1", "3.1"]
+parallel: false
+conflicts_with: []
+files: [".omp/memory/project/decisions.md"]
+estimated_minutes: 10
+```
+
+**Pre-read:**
+- [ ] 4.1.1 Read `.omp/memory/project/decisions.md` completely (all ~34 lines). Identify these sections and their line ranges:
+  - Frontmatter: lines 1-4
+  - Header: `# Decisions: <project-name>` (line ~6)
+  - Intro paragraph: "Every architecture decision..." (lines ~8-9)
+  - `## Decision Log` heading: line ~11
+  - Decision Log table header: `| # | Date | Decision | Rationale | Confidence |` (line ~12)
+  - Separator: `|---|---|---|---|---|` (line ~13)
+  - Placeholder row: `| 1 | <YYYY-MM> | <what we decided> | <why — tradeoffs, alternatives considered> | <High | Medium | Low> |` (line ~14)
+  - Blank line(s): line ~15-16
+  - `## How to Add a Decision` heading: line ~17
+  - 5-step reference: lines ~18-23
+  - Blank line(s): line ~24
+  - `## Example` heading: line ~25
+  - Example table header + separator + 5 rows: lines ~26-34
+- [ ] 4.1.2 Before making ANY edits, copy the 5 decision rows from the Example section into a scratch buffer. These are the verbatim source texts. Do not paraphrase. Do not shorten. Do not "improve" the wording. Each row's text must survive character-for-character. The rows are:
+  - Row 1: `| 1 | 2026-06 | Use br/bv for task tracking and graph intelligence | Graph-informed workflow is the template's core differentiator. Alternatives (linear, plain markdown) lack the graph query ability. | High |`
+  - Row 2: `| 2 | 2026-06 | Commands + skills only, no scripts | Every gap solvable through better prompts and skill knowledge. Scripts add maintenance burden, platform dependencies, and hidden logic. | High |`
+  - Row 3: `| 3 | 2026-06 | Bare command names (\`/create\`, \`/plan\`) | OMP resolves commands by directory. Prefix would be noise. | High |`
+  - Row 4: `| 4 | 2026-06 | \`.omp/\` as native project root | OMP loads from \`.omp/\`. Parallel \`.pi/\` config creates confusion. | High |`
+  - Row 5: `| 5 | 2026-06 | Ergonomic tooling lives in separate template repos | omp-makora-provider and friends are independent packages. The beads template stays pure workflow — install providers separately. | High |`
+- [ ] 4.1.3 Verify each decision is real (not an example): Decision #1 matches AGENTS.md "br is the backbone / bv is the brain." Decision #2 matches AGENTS.md "Commands + skills only — no scripts, no machinery." Decision #3 is observable — all 9 commands in `.omp/commands/` are bare names. Decision #4 is observable — `.omp/` is the project root, no `.pi/` directory exists. Decision #5 is observable — `omp-makora-provider` is a separate package, not vendored in this template.
+- [ ] 4.1.4 If any decision text in the file differs from what's recorded here, use the FILE'S text, not this task list's text. The file is authoritative. This task list's copies are for reference only.
+
+**Edits:**
+- [ ] 4.1.5 Edit line 2: Change `updated: 2026-06-17` to `updated: 2026-06-18`.
+- [ ] 4.1.6 Edit line ~6: Change `# Decisions: <project-name>` to `# Decisions: OMP Beads Template`.
+- [ ] 4.1.7 Keep the intro paragraph ("Every architecture decision that affects the shape of the project goes here. Use the table. Dates, rationale, and confidence are required.") unchanged. It's useful guidance.
+- [ ] 4.1.8 In the Decision Log section: Remove the placeholder row. The table header (`| # | Date | Decision | Rationale | Confidence |`) and separator (`|---|---|---|---|---|`) stay. The placeholder row `| 1 | <YYYY-MM> | <what we decided> | ...` is deleted.
+- [ ] 4.1.9 In the Decision Log section: Insert the 5 real decision rows (from step 4.1.2) after the separator row. They should appear as:
+  - Row 1 (br/bv), Row 2 (commands+skills), Row 3 (bare names), Row 4 (.omp/ root), Row 5 (tooling separate)
+  - Each on its own line. No blank lines between decision rows. One blank line after row 5 before the next section heading.
+- [ ] 4.1.10 Check the numbering: The `# ` column should be 1, 2, 3, 4, 5 — sequential, starting from 1.
+- [ ] 4.1.11 Remove the entire "## Example" section. Remove:
+  - The `## Example` heading line
+  - The example table header row (`| # | Date | Decision | Rationale | Confidence |`)
+  - The separator row
+  - All 5 decision rows (they're already in the Decision Log now)
+  - Any trailing blank lines after the Example section
+- [ ] 4.1.12 After removing the Example section, the document should flow: Decision Log table (header + separator + 5 rows) → one blank line → `## How to Add a Decision` heading → 5-step content. There should be exactly one blank line between the last Decision Log row and the How to Add heading.
+- [ ] 4.1.13 Confirm the "## How to Add a Decision" section is present and its 5 steps are unchanged. The steps should be: (1) Assign next sequential #, (2) Date = month of decision, (3) Decision = one sentence, (4) Rationale = what we rejected/accepted/why, (5) Confidence = High/Medium/Low.
+- [ ] 4.1.14 Verify there is no blank line between the Decision Log table header and separator, and no blank line between the separator and the first decision row. Markdown tables should be compact.
+
+**Verification:**
+- [ ] 4.1.15 Run: `grep '<project-name>' .omp/memory/project/decisions.md` — expect return code 1.
+- [ ] 4.1.16 Run: `grep -c '^| [1-5] |' .omp/memory/project/decisions.md` — expect exactly 5. This counts decision rows 1-5.
+- [ ] 4.1.17 Run: `grep '<YYYY-MM>' .omp/memory/project/decisions.md` — expect return code 1 (placeholder date removed).
+- [ ] 4.1.18 Run: `grep '<what we decided>' .omp/memory/project/decisions.md` — expect return code 1 (placeholder decision removed).
+- [ ] 4.1.19 Run: `grep '<why — tradeoffs' .omp/memory/project/decisions.md` — expect return code 1 (placeholder rationale removed).
+- [ ] 4.1.20 Run: `grep '<High | Medium | Low>' .omp/memory/project/decisions.md` — expect return code 1 (placeholder confidence removed).
+- [ ] 4.1.21 Run: `grep -c '## Example' .omp/memory/project/decisions.md` — expect exactly 0. The Example heading must be gone.
+- [ ] 4.1.22 Run: `grep -c '## Decision Log' .omp/memory/project/decisions.md` — expect exactly 1. One Decision Log heading.
+- [ ] 4.1.23 Run: `grep -c '## How to Add a Decision' .omp/memory/project/decisions.md` — expect exactly 1. One How to Add heading.
+- [ ] 4.1.24 Run the decision content preservation check (Python):
+```bash
+python3 - <<'PY'
+from pathlib import Path
+text = Path(".omp/memory/project/decisions.md").read_text()
+assert "Use br/bv for task tracking and graph intelligence" in text, "FAIL: decision 1"
+assert "Commands + skills only, no scripts" in text, "FAIL: decision 2"
+assert "Bare command names" in text, "FAIL: decision 3"
+assert ".omp/ as native project root" in text, "FAIL: decision 4"
+assert "Ergonomic tooling lives in separate template repos" in text, "FAIL: decision 5"
+assert "Graph-informed workflow is the template's core differentiator" in text, "FAIL: rationale 1"
+assert "Every gap solvable through better prompts and skill knowledge" in text, "FAIL: rationale 2"
+assert "OMP resolves commands by directory" in text, "FAIL: rationale 3"
+assert "OMP loads from `.omp/`" in text, "FAIL: rationale 4"
+assert "omp-makora-provider" in text, "FAIL: rationale 5"
+print("PASS: all 5 decisions and rationales preserved verbatim")
+PY
+```
+- [ ] 4.1.25 Run: `grep 'updated: 2026-06-18' .omp/memory/project/decisions.md` — expect return code 0.
+- [ ] 4.1.26 Run: `grep -c '^---$' .omp/memory/project/decisions.md` — expect exactly 2.
+- [ ] 4.1.27 If ALL 12 verification checks pass, Task 4.1 is complete. Record PASS and proceed to Task 5.1.
+- [ ] 4.1.28 If ANY check fails: re-read the file, fix only the failing section, re-run the failing check, then re-run all checks.
+
+---
+
+## 5. Restructure gotchas.md
+
+### 5.1 Separate project-specific gotchas from template-universal gotchas, fix header
+
+```yaml
+depends_on: ["1.1", "2.1", "3.1", "4.1"]
+parallel: false
+conflicts_with: []
+files: [".omp/memory/project/gotchas.md"]
+estimated_minutes: 10
+```
+
+**Pre-read:**
+- [ ] 5.1.1 Read `.omp/memory/project/gotchas.md` completely (all ~44 lines). Identify these sections and line ranges:
+  - Frontmatter: lines 1-4
+  - Header: `# Gotchas: <project-name>` (line ~6)
+  - Intro paragraph: "Every entry must include impact and mitigation..." (lines ~8-9)
+  - `## Active Warnings` heading: line ~11
+  - Active Warnings description: "Every entry must include..." (line ~12)
+  - Active Warnings table header: `| Date | Area | Gotcha | Impact | Mitigation |` (line ~13)
+  - Separator: `|------|------|--------|--------|------------|` (line ~14)
+  - Placeholder row: `| <YYYY-MM> | <area> | <what happens> | <why it matters> | <how to avoid or recover> |` (line ~15)
+  - Blank line(s): lines ~16-17
+  - `## Template Bootstrap Gotchas` heading: line ~18
+  - Description paragraph: "These are the gotchas that come with the template itself..." (line ~19)
+  - Table header + separator: lines ~20-21
+  - 12 data rows: lines ~22-33 (the "memory templates waste tokens" row is one of these — identify which line number it is)
+  - Blank line(s): lines ~34-35
+  - `## How to Add a Gotcha` heading: line ~36
+  - 5-step reference + "Remove entries" note: lines ~37-44
+- [ ] 5.1.2 Identify exactly which row is the "memory templates waste tokens" entry. Its text is: `| 2026-06 | memory | Memory templates waste tokens if left as placeholders | ~1KB of template text the agent reads every session | Fill with real project content immediately. Delete placeholder gotchas when real ones exist. |`. Note its line number — this is the row that will move to Active Warnings.
+- [ ] 5.1.3 Verify the other 11 entries are template-universal. Skim each one: if it describes a gotcha that would apply to a fresh project cloning this template (workflow gate behavior, br/bv initialization, model variance, etc.), it's template-universal. The "memory templates waste tokens" entry is the only one that describes THIS repo's specific maintenance problem.
+
+**Edits:**
+- [ ] 5.1.4 Edit line 2: Change `updated: 2026-06-17` to `updated: 2026-06-18`.
+- [ ] 5.1.5 Edit line ~6: Change `# Gotchas: <project-name>` to `# Gotchas: OMP Beads Template`.
+
+**Edits — Active Warnings section:**
+- [ ] 5.1.6 Remove the placeholder row from the Active Warnings table. Keep the table header and separator.
+- [ ] 5.1.7 Insert the project-specific gotcha into Active Warnings. Use the exact text from the Template Bootstrap entry, but update the mitigation:
+  - Date: `2026-06` (unchanged)
+  - Area: `memory` (unchanged)
+  - Gotcha: `Memory templates waste tokens if left as placeholders` (unchanged)
+  - Impact: `~1KB of template text the agent reads every session — compounds across sessions` (unchanged except trailing description)
+  - Mitigation: `Fill with real project content immediately. This bead (br-omp-backbone-skill-l3d) addresses the initial hydration. Audit memory files during /close.` (UPDATED — references this bead, removes "Delete placeholder gotchas when real ones exist" which is now redundant since the Active Warnings entry IS a real gotcha)
+- [ ] 5.1.8 The Active Warnings table should now have: header row, separator row, 1 data row. No placeholder row.
+
+**Edits — Template Bootstrap Gotchas section:**
+- [ ] 5.1.9 After the description paragraph ("These are the gotchas that come with the template itself. Replace with your project's actual gotchas as you discover them."), insert a blockquote note on a new line:
+```
+> These gotchas ship with the OMP Beads Template. They apply to any project using this template. Replace with your project's actual gotchas as you discover them.
+```
+- [ ] 5.1.10 Ensure there is a blank line between the description paragraph and the blockquote, and a blank line between the blockquote and the table header.
+- [ ] 5.1.11 Remove the "memory templates waste tokens" row from the Template Bootstrap table. The table should now have header + separator + 11 data rows.
+- [ ] 5.1.12 Confirm the remaining 11 entries are in their original order. Do not reorder them. The original order is:
+  1. workflow gate only understands active bead
+  2. gate blocks edit/write but shell bypasses
+  3. implementing without bead or plan
+  4. assuming requirements without reading PRD
+  5. commands are prompt templates
+  6. OMP loads from .omp/
+  7. bv requires git history
+  8. bv requires br data
+  9. stale memory is worse than no memory
+  10. lazy/small models skip steps
+  11. loading domain-specific skills in wrong project
+  (Note: entry #9 in the original was "memory templates waste tokens" — it's removed. The original #10 and #11 become #9 and #10 in the new table. The original #12 becomes #11.)
+
+**Edits — How to Add a Gotcha section:**
+- [ ] 5.1.13 Confirm this section is present entirely unchanged. It should have the heading `## How to Add a Gotcha` and 5 numbered steps plus the note "Remove entries once the underlying bug is fixed. Keep entries for ongoing design constraints."
+
+**Verification:**
+- [ ] 5.1.14 Run: `grep '<project-name>' .omp/memory/project/gotchas.md` — expect return code 1.
+- [ ] 5.1.15 Run: `grep '<YYYY-MM>' .omp/memory/project/gotchas.md` — expect return code 1.
+- [ ] 5.1.16 Run: `grep '<area>' .omp/memory/project/gotchas.md` — expect return code 1.
+- [ ] 5.1.17 Run: `grep '<what happens>' .omp/memory/project/gotchas.md` — expect return code 1.
+- [ ] 5.1.18 Run: `grep 'These gotchas ship with the OMP Beads Template' .omp/memory/project/gotchas.md` — expect return code 0.
+- [ ] 5.1.19 Run: `grep 'br-omp-backbone-skill-l3d' .omp/memory/project/gotchas.md` — expect return code 0. This bead ID is referenced in the mitigation.
+- [ ] 5.1.20 Run: `grep -c '## Active Warnings' .omp/memory/project/gotchas.md` — expect exactly 1.
+- [ ] 5.1.21 Run: `grep -c '## Template Bootstrap Gotchas' .omp/memory/project/gotchas.md` — expect exactly 1.
+- [ ] 5.1.22 Run: `grep -c '## How to Add a Gotcha' .omp/memory/project/gotchas.md` — expect exactly 1.
+- [ ] 5.1.23 Run the gotcha content preservation check (Python):
+```bash
+python3 - <<'PY'
+from pathlib import Path
+text = Path(".omp/memory/project/gotchas.md").read_text()
+phrases = [
+    "workflow gate only understands the active bead",
+    "shell-based mutation bypasses",
+    "Implementing without a bead or plan",
+    "Assuming requirements without reading PRD",
+    "Commands are prompt templates",
+    "OMP loads from `.omp/`",
+    "bv requires git history",
+    "bv requires br data",
+    "Stale memory is worse than no memory",
+    "Lazy/small models skip steps",
+    "Loading domain-specific skills",
+    "Memory templates waste tokens",
+]
+for phrase in phrases:
+    assert phrase in text, f"FAIL: missing gotcha '{phrase[:40]}...'"
+print("PASS: all 12 gotcha entries preserved")
+PY
+```
+- [ ] 5.1.24 Run: `grep 'updated: 2026-06-18' .omp/memory/project/gotchas.md` — expect return code 0.
+- [ ] 5.1.25 Run: `grep -c '^---$' .omp/memory/project/gotchas.md` — expect exactly 2.
+- [ ] 5.1.26 Manually verify: The "memory templates waste tokens" entry appears exactly once in the file (in Active Warnings, not duplicated in Template Bootstrap). Skim both tables to confirm.
+- [ ] 5.1.27 If ALL 13 verification checks pass, Task 5.1 is complete. Record PASS and proceed to Wave 6.
+- [ ] 5.1.28 If ANY check fails: re-read the file, fix only the failing section, re-run the failing check, then re-run all checks.
+
+---
+
+## 6. Full Verification
+
+### 6.1 End-to-end verification of all memory files
+
+```yaml
+depends_on: ["1.1", "2.1", "3.1", "4.1", "5.1"]
 parallel: false
 conflicts_with: []
 files: [".omp/memory/project/project.md", ".omp/memory/project/conventions.md", ".omp/memory/project/tech-stack.md", ".omp/memory/project/decisions.md", ".omp/memory/project/gotchas.md"]
-estimated_minutes: 2
-risk: Low
-rollback: "git reset HEAD~1"
+estimated_minutes: 10
 ```
 
-**What this task does:** Sync bead state, stage all 5 edited files plus bead state, and create a single atomic commit.
+This task runs the complete verification suite against all 5 files. It combines all per-wave checks plus cross-file checks. Every acceptance criterion from the PRD is covered.
 
-**Why this order:** Final step — only after all Wave 1 edits are verified and Wave 2 checks pass. Atomic commit means either all 5 files are committed or none are.
+**Cross-file identity check (AC7):**
+- [ ] 6.1.1 Run: `grep -r '<project-name>' .omp/memory/project/` — expect return code 1 (no matches across ALL 5 files). If any match: identify which file still has the placeholder and re-run that file's task verification.
 
-**Steps:**
+**Per-file re-verification (AC1-AC6):**
+- [ ] 6.1.2 Run project.md checks (AC1): `grep '<project-name>\|<!-- TODO\|<Criterion' .omp/memory/project/project.md` — expect return code 1.
+- [ ] 6.1.3 Run conventions.md checks (AC2): `grep '<TypeScript\|<Bash\|<JavaScript>\|<Go' .omp/memory/project/conventions.md` — expect return code 1.
+- [ ] 6.1.4 Run tech-stack.md craft table contiguity check (AC3): Use Python script from 3.1.32.
+- [ ] 6.1.5 Run tech-stack.md verification commands check (AC4): `grep '<tsc\|<eslint\|<vitest\|<tsup\|<npm audit\|<gitleaks' .omp/memory/project/tech-stack.md` — expect return code 1.
+- [ ] 6.1.6 Run decisions.md structure check (AC5): Use Python script from 4.1.24.
+- [ ] 6.1.7 Run gotchas.md structure check (AC6): `grep 'These gotchas ship with the OMP Beads Template' .omp/memory/project/gotchas.md` — expect return code 0. `grep 'br-omp-backbone-skill-l3d' .omp/memory/project/gotchas.md` — expect return code 0.
 
-- [ ] Run `br sync --flush-only` — confirm "Nothing to export" or successful sync
-- [ ] Run `git status --short` — confirm the 5 memory files show as modified, no unexpected changes
-- [ ] Stage changed files: `git add .omp/memory/project/project.md .omp/memory/project/conventions.md .omp/memory/project/tech-stack.md .omp/memory/project/decisions.md .omp/memory/project/gotchas.md .beads/`
-- [ ] Run `git commit -m "chore: hydrate memory files with project identity
-
-- Fill project.md with real goal, success criteria, current phase
-- Fill conventions.md language table (N/A for backend/frontend)
-- Fix tech-stack.md broken craft table, fill verification commands
-- Promote 5 real decisions from Example to Decision Log
-- Separate template-universal from project-specific gotchas
-- Remove all <project-name> and template placeholders"`
-- [ ] Verify: `git log --oneline -1` shows the new commit with the message above
-- [ ] Verify: `git diff HEAD~1 --stat` shows exactly 5 files changed in `.omp/memory/project/` plus `.beads/`
-- [ ] Verify: `git status` shows working tree clean (no unstaged changes in the committed files)
-
-## Task Dependency Graph
-
-```
-1.1 (project.md) ─┐
-1.2 (conventions) ─┤
-1.3 (tech-stack)  ─┼──→ 2.1 (verification) ──→ 3.1 (commit)
-1.4 (decisions)   ─┤
-1.5 (gotchas)     ─┘
+**Markdown validity check (AC8):**
+- [ ] 6.1.8 Run markdown structure check (Python):
+```bash
+python3 - <<'PY'
+from pathlib import Path
+base = Path(".omp/memory/project")
+for fname in ["project.md", "conventions.md", "tech-stack.md", "decisions.md", "gotchas.md"]:
+    text = (base / fname).read_text()
+    assert text.startswith("---"), f"FAIL: {fname} no frontmatter"
+    end = text.find("---", 3)
+    assert end != -1, f"FAIL: {fname} unclosed frontmatter"
+    assert "# " in text, f"FAIL: {fname} no heading"
+print("PASS: all memory files structurally valid")
+PY
 ```
 
-All Wave 1 tasks are parallel. Wave 2 depends on all of Wave 1. Commit depends on Wave 2.
+**Content preservation checks (AC9, AC10):**
+- [ ] 6.1.9 Run decisions content preservation check (AC9): Use Python script from 4.1.24.
+- [ ] 6.1.10 Run gotchas content preservation check (AC10): Use Python script from 5.1.23.
 
-## Parallel Execution Strategy
+**br/bv health:**
+- [ ] 6.1.11 Run: `ACTOR="${BR_ACTOR:-assistant}" br sync --flush-only` — expect no errors (nothing to export or successful sync).
+- [ ] 6.1.12 Run: `br dep cycles --json` — expect empty output or `[]` (no cycles).
 
-All 5 Wave 1 tasks touch different files — no conflicts possible:
+**Git diff scope check:**
+- [ ] 6.1.13 Run: `git diff --stat .omp/memory/project/` — expect exactly 5 files changed, all starting with `.omp/memory/project/`. If more or fewer files: identify what else changed and why.
+- [ ] 6.1.14 Run: `git diff -- .omp/commands/ .omp/templates/ .omp/skills/ .omp/AGENTS.md .omp/RULES.md DESIGN.md design/ README.md .gitignore` — expect empty output (no diff). If any diff: scope bleed detected. Identify the changed file and revert it with `git checkout -- <file>`.
+- [ ] 6.1.15 Run: `wc -l .omp/memory/project/*.md` and compare against expected approximate sizes:
+  - project.md: ~30 lines (was ~29, slight growth from goal text expansion)
+  - conventions.md: ~143 lines (same — placeholder lengths were similar)
+  - tech-stack.md: ~88 lines (same — restructured but same content volume)
+  - decisions.md: ~30 lines (was ~34, slight reduction from removing Example section)
+  - gotchas.md: ~46 lines (was ~44, slight growth from blockquote addition)
+  - If any file is dramatically different (e.g., 10 lines or 200 lines), investigate.
 
-| Task | File | Can parallel with |
-|------|------|-------------------|
-| 1.1 | project.md | 1.2, 1.3, 1.4, 1.5 |
-| 1.2 | conventions.md | 1.1, 1.3, 1.4, 1.5 |
-| 1.3 | tech-stack.md | 1.1, 1.2, 1.4, 1.5 |
-| 1.4 | decisions.md | 1.1, 1.2, 1.3, 1.5 |
-| 1.5 | gotchas.md | 1.1, 1.2, 1.3, 1.4 |
-
-If using subagents: spawn 5 parallel agents, one per task. Each reads its target file, edits it, and verifies its own grep checks. Wave 2 integration runs after all 5 report success.
-
-If executing sequentially: follow the order 1.1 → 1.2 → 1.3 → 1.4 → 1.5 (recommended for sequential execution, per rationale above). Each task is self-contained.
-
-## Verification Summary
-
-| Check # | Command | Expected | Verifies |
-|---------|---------|----------|----------|
-| 1 | `grep -r '<project-name>' .omp/memory/project/` | No output | All files: no placeholder project names |
-| 2 | `grep '<!-- TODO' .omp/memory/project/project.md` | No output | project.md: no TODO markers |
-| 3 | `grep -c '^| [1-5] |' .omp/memory/project/decisions.md` | 5 | decisions.md: 5 promoted decisions |
-| 4 | `grep -c '## Example' .omp/memory/project/decisions.md` | 0 | decisions.md: Example section removed |
-| 5 | `grep -c 'design/craft/' .omp/memory/project/tech-stack.md` | 8 | tech-stack.md: all 8 craft files listed |
-| 6 | `grep -c '## Active Warnings' .omp/memory/project/gotchas.md` | 1 | gotchas.md: Active Warnings section |
-| 7 | `grep -c '^> These gotchas ship' .omp/memory/project/gotchas.md` | 1 | gotchas.md: blockquote note |
-| 8 | `grep -c '^| 2026-06 |' .omp/memory/project/gotchas.md` | 13 | gotchas.md: all 13 gotchas preserved |
-| 9 | `grep '<TypeScript...>' .omp/memory/project/conventions.md` | No output | conventions.md: language table filled |
-| 10 | `grep '<tsc...>' .omp/memory/project/tech-stack.md` | No output | tech-stack.md: verification filled |
-| 11 | `br list --status open --json` | Valid JSON | br: bead database functional |
-| 12 | `bv --robot-triage --format json` | Valid JSON | bv: graph analysis functional |
-| 13 | `grep 'updated: 2026-06-17' .omp/memory/project/*.md` | 5 matches | All files: frontmatter updated |
-| 14 | Manual read of all 5 files | No issues | Visual inspection of markdown structure |
-
-All 14 checks must pass before the commit. If any check fails, fix the corresponding file and re-verify.
-
-## Failure Recovery Matrix
-
-| Scenario | Recovery | Impact |
-|----------|----------|--------|
-| Single file edit produces wrong output | `git checkout -- .omp/memory/project/<file>.md`, then re-edit | Only that task needs redo |
-| Multiple files produce wrong output | `git checkout -- .omp/memory/project/`, then redo all Wave 1 | All Wave 1 tasks need redo |
-| Verification check fails | Read the failing file, fix with edit, re-run all 14 checks | +5 minutes |
-| br/bv broken after edits | This shouldn't happen (markdown files only, no code changes). If it does, full rollback: `git checkout -- .omp/memory/project/` | All Wave 1 needs redo |
-| Commit created with wrong message | `git commit --amend -m "corrected message"` | 1 minute fix |
+**Final PASS/FAIL tally:**
+- [ ] 6.1.16 Count all PASS results from checks 6.1.1 through 6.1.15. Expected: 15-16 PASS, 0 FAIL.
+- [ ] 6.1.17 If ALL checks pass: the bead is ready for `/verify`. Record all PASS results for the completion-evidence.json.
+- [ ] 6.1.18 If ANY check fails: identify the failing file(s), re-read each failing file, apply the fix, re-run the specific failing check, then re-run the full suite from 6.1.1.
+- [ ] 6.1.19 Maximum 3 fix cycles. If a check still fails after 3 attempts, STOP and escalate — don't loop indefinitely.
