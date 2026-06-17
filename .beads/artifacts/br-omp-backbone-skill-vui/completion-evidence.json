@@ -1,0 +1,140 @@
+{
+  "bead_id": "br-omp-backbone-skill-vui",
+  "phase": "ship",
+  "completed_at": "2026-06-18T00:29:00Z",
+  "verification": {
+    "observable_truths": {
+      "1_design_dir_gone": {
+        "status": "PASS",
+        "detail": "design/ does not exist",
+        "command": "ls design/ 2>&1 → No such file or directory"
+      },
+      "2_DESIGN_md_gone": {
+        "status": "PASS",
+        "detail": "DESIGN.md does not exist in root",
+        "command": "ls DESIGN.md 2>&1 → No such file or directory"
+      },
+      "3_design_system_tokens_exists": {
+        "status": "PASS",
+        "detail": ".omp/skills/design-system/tokens.css exists and is tracked",
+        "command": "ls .omp/skills/design-system/tokens.css → exists"
+      },
+      "4_design_system_typography_exists": {
+        "status": "PASS",
+        "detail": ".omp/skills/design-system/craft/typography.md exists and is tracked",
+        "command": "ls .omp/skills/design-system/craft/typography.md → exists"
+      },
+      "5_content_identity": {
+        "status": "PASS",
+        "detail": "All 8 migrated files byte-identical to HEAD",
+        "files": {
+          "DESIGN.md": "IDENTICAL",
+          "design/tokens.css": "IDENTICAL",
+          "design/primitives.css": "IDENTICAL",
+          "design/base.css": "IDENTICAL",
+          "design/craft/animation-discipline.md": "IDENTICAL",
+          "design/craft/anti-ai-slop.md": "IDENTICAL",
+          "design/craft/color.md": "IDENTICAL",
+          "design/craft/typography.md": "IDENTICAL"
+        },
+        "note": "DESIGN.md had minor diff initially; restored from HEAD to ensure byte-identical"
+      },
+      "6_no_500_700_in_commands_templates": {
+        "status": "PASS",
+        "detail": "No 500-700 range references in commands or templates"
+      },
+      "7_no_300_600_in_commands_templates": {
+        "status": "PASS",
+        "detail": "No 300-600 range references in commands or templates"
+      },
+      "8_density_600_count": {
+        "status": "PASS",
+        "detail": "6 references to ≥600 across commands, templates, and extensions"
+      },
+      "9_worktree_in_pr_footer": {
+        "status": "PASS",
+        "detail": "Worktree path present in .omp/commands/pr.md",
+        "command": "grep -c 'Worktree:' .omp/commands/pr.md → 1"
+      },
+      "10_git_clean_tracked": {
+        "status": "PASS",
+        "detail": ".omp/commands/git-clean.md is tracked by git",
+        "command": "git ls-files .omp/commands/git-clean.md → file path"
+      },
+      "11_git_clean_in_agents": {
+        "status": "PASS",
+        "detail": "git-clean referenced in AGENTS.md command table",
+        "command": "grep -c 'git-clean' .omp/AGENTS.md → 1"
+      },
+      "12_no_design_in_tech_stack": {
+        "status": "PASS",
+        "detail": "design/ references removed from tech-stack.md",
+        "command": "grep 'design/' .omp/memory/project/tech-stack.md → 0"
+      },
+      "13_br_dep_cycles_zero": {
+        "status": "PASS",
+        "detail": "No dependency cycles",
+        "command": "br dep cycles --json → count: 0"
+      },
+      "14_bv_triage_clean": {
+        "status": "PASS",
+        "detail": "No blockers to clear, 1 in-progress bead (this one)",
+        "command": "bv --robot-triage --format json → open_count: 1, blocked_count: 0"
+      },
+      "15_expected_files_only": {
+        "status": "PASS",
+        "detail": "22 files changed, 1259 insertions, 35 deletions — all expected",
+        "command": "git diff --stat HEAD~1 HEAD → 22 files"
+      }
+    },
+    "waves": {
+      "wave_1_design_migration": {
+        "status": "PASS",
+        "tasks": {
+          "1_1_content_identity": "PASS — all 8 files byte-identical to HEAD",
+          "1_2_stage_new": "PASS — all design system files staged",
+          "1_3_rm_old": "PASS — old design/ files removed from tracking",
+          "1_4_tech_stack_clean": "PASS — no design/ references, 64 lines"
+        }
+      },
+      "wave_2_density_docs": {
+        "status": "PASS",
+        "tasks": {
+          "2_1_command_density": "PASS — create.md and plan.md have ≥600 references, old ranges gone",
+          "2_2_template_headers": "PASS — all templates mention 600-line minimums",
+          "2_3_workflow_gate": "PASS — MIN_LINES=600, checkDensity function, readFileSync import",
+          "2_4_pr_footer": "PASS — Worktree path present"
+        }
+      },
+      "wave_3_infrastructure": {
+        "status": "PASS",
+        "tasks": {
+          "3_1_git_clean_review": "PASS — valid frontmatter, 5 phases, worktree references",
+          "3_2_agents_md_update": "PASS — git-clean row added to command reference table",
+          "3_3_stage_git_clean": "PASS — .omp/commands/git-clean.md tracked"
+        }
+      },
+      "wave_4_commit": {
+        "status": "PASS",
+        "tasks": {
+          "4_1_commit": "PASS — atomic commit 5253d81 with conventional message",
+          "4_2_full_verify": "PASS — all 15 observable truths verified"
+        }
+      }
+    },
+    "commit": {
+      "hash": "5253d81",
+      "branch": "feat/br-omp-backbone-skill-1da-fix-convention-consistency",
+      "message": "feat: migrate design system to .omp/skills/, sync density gates to >=600, register git-clean (br-omp-backbone-skill-vui)",
+      "files_changed": 22,
+      "insertions": 1259,
+      "deletions": 35
+    },
+    "edge_cases": {
+      "DESIGN.md_modified": "DESIGN.md at new location had minor modifications; restored from HEAD to ensure byte-identical",
+      "files_not_in_HEAD1": "All 8 files existed in HEAD, ran diff verification successfully",
+      "git_clean_content": "File has valid frontmatter with allowed-tools, 5 phases, worktree references — complete"
+    }
+  },
+  "rollback": "git reset HEAD~1; git checkout -- DESIGN.md design/ .omp/memory/project/tech-stack.md; git rm --cached .omp/commands/git-clean.md"
+}
