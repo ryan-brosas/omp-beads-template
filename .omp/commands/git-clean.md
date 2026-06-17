@@ -61,12 +61,12 @@ is_safe_to_clean() {
   local BRANCH="$1"
 
   # Signal 1: locally merged to main
-  if git branch --merged main | grep -q "$BRANCH"; then
+  if git branch --merged main | grep -qFx "$BRANCH"; then
     return 0
   fi
 
   # Signal 2: remote branch was deleted (merged on GitHub)
-  if ! git ls-remote --heads origin "$BRANCH" | grep -q "$BRANCH"; then
+  if ! git ls-remote --heads origin "$BRANCH" | grep -qF "$BRANCH"; then
     return 0
   fi
 
@@ -85,7 +85,7 @@ clean_branch() {
   fi
 
   # Report the reason
-  if git branch --merged main | grep -q "$BRANCH"; then
+  if git branch --merged main | grep -qFx "$BRANCH"; then
     echo "Cleaning '$BRANCH' — merged to main locally."
   else
     echo "Cleaning '$BRANCH' — remote branch deleted (merged on GitHub)."

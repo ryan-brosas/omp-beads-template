@@ -2,7 +2,7 @@
 
 > Neutral product workspace design system. Adapted from Open Design's token architecture.
 > 9-section schema per the `awesome-claude-design` convention.
-> Reference: `design/tokens.css` for the canonical token values.
+> Reference: `.omp/skills/design-system/tokens.css` for the canonical token values.
 
 ## Visual Theme & Atmosphere
 

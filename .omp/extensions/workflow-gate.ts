@@ -52,7 +52,7 @@ const MIN_LINES = 600;
 function checkDensity(filePath: string): { ok: boolean; lines: number } {
   try {
     const content = readFileSync(filePath, "utf-8");
-    const lines = content.split("\n").length;
+    const lines = (content.match(/\n/g) || []).length;
     return { ok: lines >= MIN_LINES, lines };
   } catch {
     return { ok: false, lines: 0 };
