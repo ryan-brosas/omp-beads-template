@@ -3,7 +3,7 @@ purpose: Known pitfalls, warnings, and workarounds — what will bite the next d
 updated: 2026-06-17
 ---
 
-# Gotchas: <project-name>
+# Gotchas: OMP Beads Template
 
 Every entry must include impact and mitigation. A gotcha without a mitigation is just a complaint.
 
@@ -11,11 +11,11 @@ Every entry must include impact and mitigation. A gotcha without a mitigation is
 
 | Date | Area | Gotcha | Impact | Mitigation |
 |------|------|--------|--------|------------|
-| <YYYY-MM> | <area> | <what happens> | <why it matters> | <how to avoid or recover> |
+| 2026-06 | memory | Memory templates waste tokens if left as placeholders | ~1KB of template text the agent reads every session | Fill with real project content immediately. Delete placeholder gotchas when real ones exist. |
 
 ## Template Bootstrap Gotchas
 
-These are the gotchas that come with the template itself. Replace with your project's actual gotchas as you discover them.
+> These gotchas ship with the OMP Beads Template. They apply to any project using this template. Replace with your project's actual gotchas as you discover them.
 
 | Date | Area | Gotcha | Impact | Mitigation |
 |------|------|--------|--------|------------|
@@ -27,7 +27,6 @@ These are the gotchas that come with the template itself. Replace with your proj
 | 2026-06 | omp | OMP loads from `.omp/` — moving files to `.pi/` stops native discovery | Silent breakage, agent loses skills and commands | Never create `.pi/` directory. Everything lives under `.omp/`. |
 | 2026-06 | bv | `bv` requires git history — robot commands return empty until at least one commit exists | Graph queries fail silently | Create at least one commit before relying on bv |
 | 2026-06 | bv | `bv` requires br data — robot commands need `.beads/` database | bv errors if no beads database | Run `br init` before any bv command |
-| 2026-06 | memory | Memory templates waste tokens if left as placeholders | ~1KB of template text the agent reads every session | Fill with real project content immediately. Delete placeholder gotchas when real ones exist. |
 | 2026-06 | memory | Stale memory is worse than no memory | Agents learn wrong conventions, make wrong decisions | Update on every milestone. Audit during `/close`. |
 | 2026-06 | models | Lazy/small models skip steps, assume context, don't follow workflow | Wrong output, missing evidence, skipped verification | Use thinking/reasoning-capable models for workflow phases. Explicit prompts compensate for weaker models. |
 | 2026-06 | skills | Loading domain-specific skills in the wrong project wastes context | Agent reads irrelevant instructions every session | Only load skills that match the project's tech stack and domain |
