@@ -8,19 +8,43 @@ This repository uses br and bv as the backbone of planning, execution, verificat
 @memory/project/decisions.md
 @memory/project/gotchas.md
 
+## Workflow Enforcement
+
+The workflow-gate extension (`.omp/extensions/workflow-gate.ts`) enforces the workflow. It blocks `edit`/`write` tools until required artifacts exist.
+
+**You MUST follow the workflow:**
+1. `/brainstorm` → `/create` → `/plan` → `/ship` → `/verify` → `/review` → `/pr` → `/close`
+2. Each command checks its prerequisites. If it says "run X first," do it.
+3. Do not fight the gate. If blocked, run the prerequisite.
+
+**What gets blocked:**
+| Tool | Condition | Error |
+|------|-----------|-------|
+| edit | No PRD for active bead | "Run /create first" |
+| edit | No plan for active bead | "Run /plan first" |
+| write | Same as edit | Same |
+
+**What always passes:**
+- Reading files (read tool, read-only bash)
+- Writing to `.beads/` and `.omp/` (workflow files)
+- Running `br`, `bv`, `git status`, `git diff`
+
+**Bypass:** `OMP_SKIP_BEADS_WORKFLOW=1` (emergencies only).
+
 ## Preferred workflow
 
-Use the namespaced slash commands to avoid collisions with OMP built-ins:
+Use the slash commands directly — no `beads-` prefix needed in OMP:
 
-- `/beads-init`
-- `/beads-brainstorm`
-- `/beads-create`
-- `/beads-plan`
-- `/beads-ship`
-- `/beads-verify`
-- `/beads-review`
-- `/beads-pr`
-- `/beads-close`
+- `/brainstorm`
+- `/create`
+- `/plan`
+- `/ship`
+- `/verify`
+- `/review`
+- `/pr`
+- `/close`
+
+(A `/init` command bootstraps the workspace.)
 
 ## Process rules
 
@@ -34,13 +58,13 @@ Use the namespaced slash commands to avoid collisions with OMP built-ins:
 
 ## Workflow expectations by phase
 
-1. Brainstorm: understand repo state and candidate work with bv; no implementation edits.
-2. Create: create or select a bead, then write `prd.md`.
-3. Plan: write `plan.md` with blast radius, risks, and verification.
-4. Ship: implement only the active bead.
-5. Verify: run targeted checks and record results in `completion-evidence.json`.
-6. Review: inspect the diff and risks, then write `review-report.md`.
-7. PR/Close: summarize change, suggested follow-ups, and only close once evidence exists.
+1. **Brainstorm**: understand repo state and candidate work with bv; no implementation edits.
+2. **Create**: create or select a bead, then write `prd.md`, `prd.json`, `decisions.md`.
+3. **Plan**: write `plan.md`, `tasks.md`, `context-capsule.md` with blast radius, risks, and verification.
+4. **Ship**: implement only the active bead per the plan's wave structure.
+5. **Verify**: run targeted checks and record results in `completion-evidence.json`.
+6. **Review**: inspect the diff and risks, then write `review-report.md`.
+7. **PR/Close**: summarize change, suggested follow-ups, and only close once evidence exists.
 
 ## Escape hatch
 

@@ -2,7 +2,7 @@
 
 ## Naming
 
-- Commands: `beads-*`
+- Commands: `/brainstorm`, `/create`, `/plan`, `/ship`, `/verify`, `/review`, `/pr`, `/close`, `/init`
 - Skills: short noun names such as `br` and `bv`
 - Artifact files: `kebab-case`
 - Bead slugs: `kebab-case`
@@ -23,10 +23,17 @@
 - Scope changes to the active bead.
 - Prefer OMP built-ins: `task`, `todo`, `read`, `search`, `find`, `lsp`.
 - Use subagents for bounded review or reconnaissance, not for blind delegation.
+- Always `br --json`, always `bv --robot-*`.
+- Resolve actor: `ACTOR="${BR_ACTOR:-assistant}"` on all br mutations.
 
 ## Artifact layout
 
 - `.beads/artifacts/<bead-id>/prd.md`
+- `.beads/artifacts/<bead-id>/prd.json`
+- `.beads/artifacts/<bead-id>/decisions.md`
 - `.beads/artifacts/<bead-id>/plan.md`
+- `.beads/artifacts/<bead-id>/tasks.md`
+- `.beads/artifacts/<bead-id>/context-capsule.md`
+- `.beads/artifacts/<bead-id>/progress.txt`
 - `.beads/artifacts/<bead-id>/completion-evidence.json`
 - `.beads/artifacts/<bead-id>/review-report.md`

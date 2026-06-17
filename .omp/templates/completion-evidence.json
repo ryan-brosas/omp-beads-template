@@ -2,11 +2,22 @@
   "beadId": "",
   "status": "pending",
   "summary": "",
-  "commands": [
+  "passedChecks": [
     {
       "command": "",
+      "expected": "",
       "result": ""
     }
+  ],
+  "failedChecks": [
+    {
+      "command": "",
+      "expected": "",
+      "result": ""
+    }
+  ],
+  "uncheckedRisks": [
+    "{Risk from plan that wasn't verified}"
   ],
   "artifacts": [
     {
