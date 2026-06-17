@@ -20,5 +20,5 @@ Keep to 3-5 criteria. Each must be verifiable — "good UX" is not verifiable. "
 ## Current Phase
 
 - **Status:** stable
-- **Milestone:** Post-review cleanup — fix Codex findings, trim conventions.md (br-omp-backbone-skill-m6y)
-- **Next:** Audit and harden the `/close` command to check memory file staleness on bead completion
+- **Milestone:** Memory audit phase integrated into /close — memory file drift detection, user approval gate, STOP on full rejection (br-omp-backbone-skill-close-memory-audit-tkt)
+- **Next:** Brainstorm new beads — memory maintenance cycle complete

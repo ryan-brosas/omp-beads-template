@@ -17,6 +17,7 @@ Use the table. Dates, rationale, and confidence are required.
 | 3 | 2026-06 | Bare command names (`/create`, `/plan`) | OMP resolves commands by directory. Prefix would be noise. | High |
 | 4 | 2026-06 | `.omp/` as native project root | OMP loads from `.omp/`. Parallel `.pi/` config creates confusion. | High |
 | 5 | 2026-06 | Ergonomic tooling lives in separate template repos | omp-makora-provider and friends are independent packages. The beads template stays pure workflow — install providers separately. | High |
+| 6 | 2026-06 | Memory audit at /close: inserted as Phase 1.5 with per-file user approval, checklist-driven drift detection, and hard STOP on full rejection | Embedded in /close so it can't be skipped. Phase 1.5 preserves Phase 2-6 identity (no renumbering). Per-file approval prevents one bad proposal from rejecting all. Checklist over algorithm because memory files are freeform — agent reasoning handles semantic drift better than regex. Hard STOP on full rejection forces resolution of stale memory before close. | High |
 
 ## How to Add a Decision
 

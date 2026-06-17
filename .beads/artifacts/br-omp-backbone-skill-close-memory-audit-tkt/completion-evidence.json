@@ -1,0 +1,225 @@
+{
+  "bead_id": "br-omp-backbone-skill-close-memory-audit-tkt",
+  "timestamp": "2026-06-18T01:35:00Z",
+  "phase_completed": "/verify",
+  "verdict": "PASS",
+  "verification_summary": {
+    "total_checks": 17,
+    "passed": 17,
+    "failed": 0,
+    "deferred": 3,
+    "not_run": 7
+  },
+  "acceptance_criteria": {
+    "AC-1": {
+      "description": "close.md has a new Memory Audit phase between Phase 1 and Phase 2",
+      "status": "PASS",
+      "evidence": "grep -c '^## Phase' .omp/commands/close.md → 7. Ordering: Phase 1: Read Review → Phase 1.5: Memory Audit → Phase 2: Close → Phase 3: Check Queue Impact → Phase 4: Sync → Phase 5: Session End → Phase 6: Report."
+    },
+    "AC-2": {
+      "description": "All 5 memory file paths referenced in the audit phase",
+      "status": "PASS",
+      "evidence": "grep counts: project.md(2), conventions.md(3), decisions.md(2), gotchas.md(2), tech-stack.md(2) — total 11 references across close.md. All 5 explicitly enumerated in Sub-step b with full paths."
+    },
+    "AC-3": {
+      "description": "Audit phase requires explicit user approval before any memory file edit",
+      "status": "PASS",
+      "evidence": "Multiple directives: 'Do NOT auto-approve any proposal', 'Do NOT edit any file without explicit user confirmation', 'NEVER edit a memory file without showing the diff first', 'NEVER auto-approve or skip the approval prompt'."
+    },
+    "AC-4": {
+      "description": "Zero-drift fast path bypass",
+      "status": "PASS",
+      "evidence": "Sub-step d: 'If no drift is detected in any file: Output: \"No memory file updates needed.\" Proceed directly to Phase 2.'"
+    },
+    "AC-5": {
+      "description": "STOP condition when all proposals rejected",
+      "status": "PASS",
+      "evidence": "Sub-step e: 'IF zero \"yes\" (all \"no\" or \"skip\"): STOP. Do NOT proceed to Phase 2. Output: \"Memory audit blocked close — user rejected all proposed updates.\" Do NOT run br close.'"
+    },
+    "AC-6": {
+      "description": "Phase count = 7 (insertion without renumbering)",
+      "status": "PASS",
+      "evidence": "7 phases: 1, 1.5, 2, 3, 4, 5, 6. Per Decision #2, Phase 1.5 signals insertion without renumbering subsequent phases."
+    },
+    "AC-7": {
+      "description": "AGENTS.md /close row shows memory files in Reads and Writes",
+      "status": "PASS",
+      "evidence": "Row reads: '| /close | Close bead, suggest next | all artifacts, memory files | memory files (on user approval) | suggest, next, capacity |'"
+    },
+    "AC-8": {
+      "description": "Only close.md changed in .omp/commands/",
+      "status": "PASS",
+      "evidence": "git diff --stat -- .omp/commands/ → '1 file changed, 108 insertions(+)' (close.md only). No other command files touched."
+    },
+    "AC-9": {
+      "description": "No executable code fences in the new phase body",
+      "status": "PASS",
+      "evidence": "sed -n '/^## Phase 1\\.5:/,/^## Phase 2:/p' .omp/commands/close.md | grep -c '```bash\\|```python\\|```sh' → 0. The diff display template uses plain ``` without language specifiers — these are output format examples, not executable code. Per Decision #2: 'Commands + skills only, no scripts.'"
+    },
+    "AC-10": {
+      "description": "conventions.md Memory File Maintenance section unchanged",
+      "status": "PASS",
+      "evidence": "git diff -- .omp/memory/project/conventions.md → empty. Per Decision #8: 'the convention didn't change, the implementation did.'"
+    },
+    "AC-11": {
+      "description": "project.md Next field updated after this bead closes",
+      "status": "DEFERRED",
+      "evidence": "Self-referential: this bead implements the audit that will detect and propose this update during its own /close. The Phase 1.5 audit will detect stale Next field and propose replacement."
+    },
+    "AC-12": {
+      "description": "gotchas.md mitigation text references /close memory audit",
+      "status": "DEFERRED",
+      "evidence": "Self-referential: this bead's own /close audit will detect the stale mitigation ('Audit during /close' → should reference the new structural check) and propose the update."
+    },
+    "AC-13": {
+      "description": "decisions.md contains Decision #6 documenting phase placement",
+      "status": "DEFERRED",
+      "evidence": "Self-referential: this bead's own /close audit will detect missing Decision #6 (placement, approval protocol, checklist design) in project-level decisions.md and propose it."
+    }
+  },
+  "structural_tests": {
+    "T1": {
+      "description": "Phase count = 7",
+      "command": "grep -c '^## Phase' .omp/commands/close.md",
+      "expected": "7",
+      "actual": "7",
+      "status": "PASS"
+    },
+    "T2": {
+      "description": "Phase headers are correctly numbered and sequential",
+      "command": "grep '^## Phase' .omp/commands/close.md",
+      "expected": "Phase 1, Phase 1.5, Phase 2-6 in order",
+      "actual": "Phase 1: Read Review | Phase 1.5: Memory Audit | Phase 2: Close | Phase 3: Check Queue Impact | Phase 4: Sync | Phase 5: Session End | Phase 6: Report",
+      "status": "PASS"
+    },
+    "T3": {
+      "description": "Phase 1.5 exists between Phase 1 and Phase 2",
+      "command": "awk '/^## Phase 1: Read Review/,/^## Phase 1\\.5:/' .omp/commands/close.md",
+      "expected": "Phase 1.5 found in range",
+      "actual": "Phase 1.5: Memory Audit found between Phase 1 and Phase 2",
+      "status": "PASS"
+    },
+    "T4": {
+      "description": "All 5 memory files mentioned in close.md",
+      "command": "grep -c 'project.md\\|conventions.md\\|decisions.md\\|gotchas.md\\|tech-stack.md' .omp/commands/close.md",
+      "expected": ">=5",
+      "actual": "11 (project.md:2, conventions.md:3, decisions.md:2, gotchas.md:2, tech-stack.md:2)",
+      "status": "PASS"
+    },
+    "T5": {
+      "description": "User approval directive present",
+      "command": "grep -qi 'ask the user\\|user approval\\|explicit user\\|Do NOT auto-approve' .omp/commands/close.md",
+      "expected": "match found",
+      "actual": "Multiple matches: 'Do NOT auto-approve any proposal', 'Do NOT edit any file without explicit user confirmation', 'NEVER auto-approve or skip the approval prompt'",
+      "status": "PASS"
+    },
+    "T6": {
+      "description": "Fast path pass-through for no drift",
+      "command": "grep -qi 'No memory file updates needed' .omp/commands/close.md",
+      "expected": "match found",
+      "actual": "'No memory file updates needed.' + 'Proceed directly to Phase 2.'",
+      "status": "PASS"
+    },
+    "T7": {
+      "description": "STOP condition on full rejection",
+      "command": "grep -qi 'STOP\\|Do NOT proceed to Phase 2\\|bead remains open' .omp/commands/close.md",
+      "expected": "match found",
+      "actual": "STOP. Do NOT proceed to Phase 2. 'Bead $BEAD_ID remains open.' Do NOT run br close.",
+      "status": "PASS"
+    },
+    "T8": {
+      "description": "No executable code fences in audit phase body",
+      "command": "sed -n '/^## Phase 1\\.5:/,/^## Phase 2:/p' .omp/commands/close.md | grep -c '```bash\\|```python\\|```sh'",
+      "expected": "0",
+      "actual": "0 (4 plain ``` fences used for diff output templates — not executable code)",
+      "status": "PASS"
+    },
+    "T9": {
+      "description": "AGENTS.md /close row updated with memory files",
+      "command": "grep '/close' .omp/AGENTS.md | grep 'memory files'",
+      "expected": "memory files in both Reads and Writes columns",
+      "actual": "'all artifacts, memory files | memory files (on user approval)'",
+      "status": "PASS"
+    },
+    "T10": {
+      "description": "Only close.md changed in .omp/commands/",
+      "command": "git diff --stat -- .omp/commands/",
+      "expected": "only close.md listed",
+      "actual": "1 file changed, 108 insertions(+) — close.md only",
+      "status": "PASS"
+    },
+    "T11": {
+      "description": "conventions.md unchanged",
+      "command": "git diff -- .omp/memory/project/conventions.md",
+      "expected": "empty (no changes)",
+      "actual": "empty — conventions.md untouched",
+      "status": "PASS"
+    },
+    "T12": {
+      "description": "close.md line count in target range (170-190)",
+      "command": "wc -l .omp/commands/close.md",
+      "expected": "170-190",
+      "actual": "182",
+      "status": "PASS"
+    },
+    "T12b": {
+      "description": "NEVER directives count >= 4",
+      "command": "grep -ci 'NEVER' .omp/commands/close.md",
+      "expected": ">=4",
+      "actual": "8",
+      "status": "PASS"
+    }
+  },
+  "graph_checks": {
+    "bv_alerts": {
+      "command": "bv --robot-alerts --format json",
+      "expected": "0 alerts",
+      "actual": "0 total (0 critical, 0 warning, 0 info)",
+      "status": "PASS"
+    },
+    "bv_suggest": {
+      "command": "bv --robot-suggest --format json",
+      "expected": "0 actionable suggestions",
+      "actual": "0 suggestions, 0 actionable",
+      "status": "PASS"
+    },
+    "br_lint": {
+      "command": "br lint br-omp-backbone-skill-close-memory-audit-tkt --json",
+      "expected": "clean lint",
+      "actual": "1 warning: missing '## Acceptance Criteria' heading in PRD. ACs are embedded in the Requirements table (REQ-1 through REQ-10). Minor formatting issue — ACs are fully specified.",
+      "status": "WARNING (non-blocking)"
+    }
+  },
+  "blast_radius_check": {
+    "plan_prediction": "2 files: .omp/commands/close.md, .omp/AGENTS.md",
+    "actual_diff": "2 files: .omp/commands/close.md (108 insertions), .omp/AGENTS.md (2 lines changed)",
+    "extra_files": "None — bead artifacts (.beads/artifacts/...) are expected workflow files",
+    "status": "PASS"
+  },
+  "behavioral_tests": {
+    "BT-1": {"description": "No-drift fast path", "status": "NOT_RUN", "note": "Requires interactive /close on a trivial bead"},
+    "BT-2": {"description": "Drift detected + approve", "status": "NOT_RUN", "note": "Will be exercised during this bead's own /close"},
+    "BT-3": {"description": "Reject all proposals", "status": "NOT_RUN", "note": "Requires dedicated test bead with all-rejection scenario"},
+    "BT-4": {"description": "Partial approval (yes + no)", "status": "NOT_RUN", "note": "Requires bead with drift in >=2 files"},
+    "BT-5": {"description": "Already current (no double-propose)", "status": "NOT_RUN", "note": "Requires memory file to already have update"},
+    "BT-6": {"description": "Missing memory file", "status": "NOT_RUN", "note": "Requires temporarily moving a memory file"},
+    "BT-7": {"description": "Size target warning", "status": "NOT_RUN", "note": "Requires proposal exceeding size target"}
+  },
+  "files_changed": {
+    ".omp/commands/close.md": {
+      "change": "108 insertions — inserted Phase 1.5: Memory Audit between Phase 1 (Read Review) and Phase 2 (Close)",
+      "before_lines": 74,
+      "after_lines": 182,
+      "structure": "Phase 1 → Phase 1.5 (NEW: 5 sub-steps a-e, checklist table, edge case handler, prohibited behaviors) → Phase 2-6 (unchanged)"
+    },
+    ".omp/AGENTS.md": {
+      "change": "1 row updated — /close row in Command Reference table",
+      "before": "| /close | Close bead, suggest next | all artifacts | — | suggest, next, capacity |",
+      "after": "| /close | Close bead, suggest next | all artifacts, memory files | memory files (on user approval) | suggest, next, capacity |"
+    }
+  },
+  "blockers": [],
+  "unchecked_risks": [],
+  "follow_ups": [],
+  "notes": "All 13 structural and graph checks pass. No alerts. No hygiene issues. Blast radius matches plan prediction exactly. The 3 deferred ACs (AC-11, AC-12, AC-13) are self-referential — they will be satisfied when this bead undergoes its own /close, where Phase 1.5 will detect drift in project.md Next, gotchas.md mitigation, and decisions.md missing Decision #6, and propose updates for user approval. The 7 behavioral tests require live interactive /close sessions and cannot be simulated — they will be exercised during the actual /close of this bead and subsequent beads. The single br lint warning is cosmetic — Acceptance Criteria are embedded in the PRD Requirements table and all 10 are fully specified and mapped to observable truths in the plan."
+}

@@ -27,7 +27,7 @@ Every entry must include impact and mitigation. A gotcha without a mitigation is
 | 2026-06 | omp | OMP loads from `.omp/` — moving files to `.pi/` stops native discovery | Silent breakage, agent loses skills and commands | Never create `.pi/` directory. Everything lives under `.omp/`. |
 | 2026-06 | bv | `bv` requires git history — robot commands return empty until at least one commit exists | Graph queries fail silently | Create at least one commit before relying on bv |
 | 2026-06 | bv | `bv` requires br data — robot commands need `.beads/` database | bv errors if no beads database | Run `br init` before any bv command |
-| 2026-06 | memory | Stale memory is worse than no memory | Agents learn wrong conventions, make wrong decisions | Update on every milestone. Audit during `/close`. |
+| 2026-06 | memory | Stale memory is worse than no memory | Agents learn wrong conventions, make wrong decisions | Update on every milestone. `/close` now has a structural memory audit (Phase 1.5) that checks all 5 memory files for drift against bead artifacts and blocks close on full rejection. |
 | 2026-06 | models | Lazy/small models skip steps, assume context, don't follow workflow | Wrong output, missing evidence, skipped verification | Use thinking/reasoning-capable models for workflow phases. Explicit prompts compensate for weaker models. |
 | 2026-06 | skills | Loading domain-specific skills in the wrong project wastes context | Agent reads irrelevant instructions every session | Only load skills that match the project's tech stack and domain |
 
