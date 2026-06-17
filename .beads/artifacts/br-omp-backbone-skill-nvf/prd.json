@@ -1,0 +1,55 @@
+{
+  "beadId": "br-omp-backbone-skill-nvf",
+  "type": "feature",
+  "priority": 1,
+  "estimate_minutes": 60,
+  "requirements": [
+    {
+      "id": 1,
+      "text": "In init.md Phase 2.5 Python block, project_name fallback chain is git_remote_name() → package_json.name → first_heading_from_readme() → root.name → \"Untitled Project\".",
+      "priority": "MUST",
+      "acceptance": "Inspect .omp/commands/init.md Phase 2.5 Python block and confirm project_name uses git_remote_name() before package_json.name, README heading, root.name, and \"Untitled Project\"."
+    },
+    {
+      "id": 2,
+      "text": "In init.md Phase 2.5 Python block, project_desc always resolves to <!-- TODO: fill in your project goal --> with no README auto-fill.",
+      "priority": "MUST",
+      "acceptance": "Inspect .omp/commands/init.md Phase 2.5 Python block and confirm project_desc is the TODO marker and does not read from README prose."
+    },
+    {
+      "id": 3,
+      "text": "In init.md Phase 2.5 Python block, Frontend row only hydrates when frontend framework deps are detected in package.json: react, svelte, vue, next, nuxt, astro, angular, or solid.",
+      "priority": "MUST",
+      "acceptance": "Inspect .omp/commands/init.md Phase 2.5 Python block and confirm Frontend language/notes are populated only from detected frontend framework dependencies."
+    },
+    {
+      "id": 4,
+      "text": "In init.md Phase 2.5 Python block, Scripts language infers TypeScript only when tsx or ts-node is a dependency; otherwise it defaults to Bash.",
+      "priority": "MUST",
+      "acceptance": "Inspect .omp/commands/init.md Phase 2.5 Python block and confirm Scripts uses TypeScript only with tsx or ts-node and Bash otherwise."
+    },
+    {
+      "id": 5,
+      "text": "Conventions rows for Frontend/Scripts leave <!-- TODO: fill in --> when evidence is absent.",
+      "priority": "MUST",
+      "acceptance": "Run or inspect the hydration logic for a repo without frontend framework or script-runner evidence and confirm Frontend/Scripts retain TODO placeholders where evidence is absent."
+    },
+    {
+      "id": 6,
+      "text": "Existing correct hydration for Backend, tech-stack, gotchas, and decisions is unchanged.",
+      "priority": "MUST",
+      "acceptance": "Compare the changed .omp/commands/init.md Phase 2.5 Python block against the prior behavior and confirm Backend, tech-stack, gotchas, and decisions hydration logic is not changed except as required by the listed findings."
+    },
+    {
+      "id": 7,
+      "text": "The script remains idempotent: re-running /init on an already-hydrated repo does not overwrite user edits.",
+      "priority": "MUST",
+      "acceptance": "Run /init or the Phase 2.5 hydration path on already-populated memory files and confirm user-populated fields are not overwritten."
+    }
+  ],
+  "success_criteria": [
+    "Project name derivation uses git-remote-first precedence.",
+    "The goal/description field remains a human-only TODO marker and is never auto-filled from README prose.",
+    "Conventions Frontend/Scripts rows are populated only when concrete evidence exists; otherwise they remain placeholder-marked for human review."
+  ]
+}
