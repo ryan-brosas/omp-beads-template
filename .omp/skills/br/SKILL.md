@@ -3,7 +3,7 @@ name: br
 description: Official skill for beads_rust (`br`), a local-first, dependency-aware issue tracker for AI agents. Use when creating issues, triaging backlogs, managing dependencies, finding ready work, updating status, or syncing to git via JSONL.
 ---
 
-# br — Beads Rust Issue Tracker (Official Skill)
+# br — Beads Rust Issue Tracker
 
 > **Non-invasive:** br NEVER runs git commands. Sync and commit are YOUR responsibility.
 
@@ -13,18 +13,18 @@ Verify the tools are available:
 
 ```bash
 which br      # Must be installed. If missing: cargo install beads_rust or brew install br
-which bv      # Must be installed. If missing: see beads_viewer README for install
 which python3 # Used for JSON parsing in resolution. Available on all modern systems.
 ```
 
 **jq note:** Some commands use `jq` for quick field extraction. If `jq` is not installed, use `python3 -c "import json,sys; ..."` instead. Both work — prefer `jq` when available for readability.
+
 ## Critical Rules for Agents
 
 | Rule | Why |
 |------|-----|
 | **Binary is `br`** | NEVER `bd` (that is the old Go version) |
 | **ALWAYS use `--json`** | Structured output for parsing. `--format toon` for reduced tokens. |
-| **NEVER run bare `bv`** | Blocks session in interactive TUI mode |
+| **NEVER run bare `bv`** | Blocks session in interactive TUI mode. Always `bv --robot-*`. |
 | **Sync is EXPLICIT** | `br sync --flush-only` exports DB to JSONL only |
 | **Git is YOUR job** | br only touches `.beads/` — you must `git add .beads/ && git commit` |
 | **No cycles allowed** | `br dep cycles --json` must return empty |
@@ -54,29 +54,29 @@ fi
 ```
 
 **Never guess.** If resolution is ambiguous, list the candidates and ask the user.
+
 ## Quick Workflow
 
 ```bash
 ACTOR="${BR_ACTOR:-assistant}"
 
 # 1. Find work
-br ready --json
+br scheduler --json          # Evidence-ranked ready work (recommended)
+br ready --json              # Fallback: unblocked, undeferred work
+br show <id> --json          # Full context
 
-# 2. Pick and inspect
-br show <id> --json
-
-# 3. Claim it
+# 2. Claim it
 br update --actor "$ACTOR" <id> --status in_progress --claim
 
-# 4. Do the work...
+# 3. Do the work...
 
-# 5. Close with evidence
+# 4. Close with evidence
 br close --actor "$ACTOR" <id> --reason "Implemented X in commit abc123"
 
-# 6. Check queue impact
+# 5. Check queue impact
 br ready --json && br blocked --json
 
-# 7. Sync to git (EXPLICIT!)
+# 6. Sync to git (EXPLICIT!)
 br sync --flush-only
 git add .beads/ && git commit -m "feat: X (<id>)"
 git push
@@ -119,7 +119,7 @@ br update --actor "$ACTOR" <id> \
   --assignee "new@..." \
   --add-label reliability \
   --parent <parent-id> \
-  --claim                    # Shorthand for claim-and-start: --status in_progress + self-assign
+  --claim                    # Shorthand: --status in_progress + self-assign
 ```
 
 ### Bulk Update
@@ -133,19 +133,22 @@ Use for batch triage — raising/lowering priority across a wave, adding labels 
 ## Querying (always use --json for agents)
 
 ```bash
-br ready --json                              # Actionable work (no blockers) — THE starting query
-br list --json                               # All issues
-br list --status open --sort priority --json # Filter by status + sort
+br scheduler --json                           # Evidence-ranked ready work (RECOMMENDED)
+br ready --json                               # Unblocked, undeferred work (fallback)
+br list --json                                # All issues
+br list --status open --sort priority --json  # Filter by status + sort
 br list --status open --status in_progress --json  # Active work
-br list --priority 0-1 --json                # Priority range filter
-br list --assignee alice --json              # Filter by assignee
-br blocked --json                            # Show blocked issues
-br search "keyword" --json                   # Full-text search across title/description
-br show <id> --json                          # Single issue with dependencies
-br stale --days 30 --json                    # Issues untouched for N days
-br count --by status --json                  # Count with grouping
-br stats --json                              # Project statistics
+br list --priority 0-1 --json                 # Priority range filter
+br list --assignee alice --json               # Filter by assignee
+br blocked --json                             # Show blocked issues
+br search "keyword" --json                    # Full-text search across title/description
+br show <id> --json                           # Single issue with dependencies
+br stale --days 30 --json                     # Issues untouched for N days
+br count --by status --json                   # Count with grouping
+br stats --json                               # Project statistics
 ```
+
+`br scheduler` ranks ready work with explainable scores based on priority, dependencies, staleness, fairness, and domain contention. Prefer it over `br ready` for evidence-based work selection.
 
 ## Priority Scale
 
@@ -169,6 +172,23 @@ br stats --json                              # Project statistics
 | `--format toon` | Token-optimized alternative for context-window-sensitive agents |
 | (no flag) | Human-readable terminal output with colors — do NOT use in agent context |
 
+## Hierarchy
+
+```bash
+# Create epic
+br create "OAuth Integration" --type epic --priority 1 --json
+# Returns: br-a3f8
+
+# Create children with parent
+br create "Setup credentials" --parent br-a3f8 --json
+br create "Implement flow" --parent br-a3f8 --json
+br create "Add UI" --parent br-a3f8 --json
+```
+
+- Up to 3 levels: Epic → Task → Subtask
+- Closing a parent auto-unblocks children
+- Only use dependencies for actual technical blockers, not preferences
+
 ## Dependencies
 
 ```bash
@@ -181,6 +201,27 @@ br dep cycles --json                      # Find circular deps — MUST be empty
 ```
 
 **Critical:** `br dep cycles --json` must return empty. Circular dependencies break the dependency graph and make `br ready` unreliable.
+
+## File Path Claiming (Multi-Agent)
+
+```bash
+# Claim files before editing
+br reserve <bead-id> --files "src/auth/service.ts,src/auth/types.ts"
+
+# Check existing claims
+br list --status in_progress --json | python3 -c "
+import json,sys
+for i in json.load(sys.stdin):
+  if i.get('reserved_files'):
+    print(i['id'], i['reserved_files'])
+"
+
+# Released automatically on close
+```
+
+- **2-10 agents:** Recommended for shared files
+- **10+ agents:** Required — every file must be claimed before editing
+- Always claim BEFORE editing, never after
 
 ## Labels
 
@@ -219,6 +260,21 @@ git pull --rebase
 br sync --import-only
 ```
 
+## Artifact Management
+
+Every bead gets an artifact directory at `.beads/artifacts/<bead-id>/`:
+
+| File | Purpose | Created |
+|------|---------|---------|
+| `prd.md` | Full PRD with requirements, scope, success criteria | `/create` |
+| `prd.json` | Machine-readable task breakdown | `/create` |
+| `plan.md` | Implementation plan with tasks and waves | `/plan` |
+| `tasks.md` | Decomposed task list | `/plan` |
+| `progress.txt` | Append-only progress log | On claim/progress |
+| `context-capsule.md` | Agent spawn instructions | `/create` (if needed) |
+| `completion-evidence.json` | Verification evidence | `/verify` |
+| `review-report.md` | Review findings | `/review` |
+
 ## System and Diagnostics
 
 ```bash
@@ -231,6 +287,18 @@ br where                             # Show workspace location
 br version                           # Show version
 br upgrade                           # Self-update (if enabled)
 br lint --json                       # Lint issues for problems
+```
+
+## Storage Layout
+
+```
+.beads/
+  beads.db        # SQLite database (primary storage)
+  beads.db-shm    # SQLite shared memory (WAL mode)
+  beads.db-wal    # SQLite write-ahead log
+  issues.jsonl    # JSONL export (for git version control)
+  config.yaml     # Project configuration
+  metadata.json   # Workspace metadata
 ```
 
 ## Triage Decision Matrix
@@ -258,23 +326,28 @@ Use bead ID as the coordination anchor for multi-agent work:
 
 | Concept | Value |
 |---------|-------|
-| Mail `thread_id` | `bd-###` (the issue ID) |
-| Mail subject | `[bd-###] ...` |
-| File reservation `reason` | `bd-###` |
-| Commit messages | Include `bd-###` for traceability |
+| Mail `thread_id` | `<bead-id>` |
+| Mail subject | `[<bead-id>] ...` |
+| File reservation `reason` | `<bead-id>` |
+| Commit messages | Include `<bead-id>` for traceability |
 
-```python
-# 1. Reserve files for bead
-file_reservation_paths(..., reason="bd-123")
+## Compaction Survival
 
-# 2. Announce work in thread
-send_message(..., thread_id="bd-123", subject="[bd-123] Starting...")
+After context compaction, conversation history is deleted but beads state persists.
 
-# 3. Do work...
+**Post-compaction recovery:**
 
-# 4. Close bead and release
-br close --actor "$ACTOR" bd-123 --reason "Completed"
-release_file_reservations(...)
+1. `br list --status in_progress --json` — find active work
+2. `br show <id> --json` for each active task — reconstruct context
+3. Read notes from the bead's comments and `progress.txt`
+4. Resume from the last COMPLETED/IN PROGRESS marker
+
+**Write notes that survive:**
+```
+COMPLETED: User auth - JWT tokens with 1hr expiry, refresh endpoint.
+IN PROGRESS: Password reset flow. Email service working.
+NEXT: Add rate limiting to reset endpoint.
+KEY DECISION: Using bcrypt 12 rounds per OWASP.
 ```
 
 ## Session Ending Pattern
@@ -287,50 +360,6 @@ br sync --flush-only
 git add .beads/ && git commit -m "Update issues"
 git push
 git status  # MUST show "up to date with origin"
-```
-
-## Standard Agent Workflow (Full)
-
-```bash
-ACTOR="${BR_ACTOR:-assistant}"
-
-# 1. Verify workspace
-br where
-br ready --json
-br blocked --json
-br list --status open --sort priority --json
-
-# 2. Pick highest-priority ready work
-br show <id> --json
-
-# 3. Claim it
-br update --actor "$ACTOR" <id> --status in_progress --claim
-
-# 4. Do work...
-
-# 5. Close with evidence
-br close --actor "$ACTOR" <id> --reason "Implemented X in commit abc123"
-
-# 6. Check queue impact
-br ready --json
-br blocked --json
-
-# 7. Sync to git
-br sync --flush-only
-git add .beads/ && git commit -m "feat: X (<id>)"
-git push
-```
-
-## Storage Layout
-
-```
-.beads/
-  beads.db        # SQLite database (primary storage)
-  beads.db-shm    # SQLite shared memory (WAL mode)
-  beads.db-wal    # SQLite write-ahead log
-  issues.jsonl    # JSONL export (for git version control)
-  config.yaml     # Project configuration
-  metadata.json   # Workspace metadata
 ```
 
 ## Troubleshooting
@@ -357,6 +386,29 @@ br -vv list                  # Debug
 RUST_LOG=debug br list       # Detailed trace logs
 ```
 
+## Quick Reference
+
+```
+SESSION START:
+  br scheduler --json → br show <id> → br update <id> --claim → begin work
+
+DURING WORK:
+  br create for discovered work (>2 min)
+  br update <id> --notes "COMPLETED: ... NEXT: ..."
+
+SESSION END:
+  br close <id> --reason "..." → br sync --flush-only
+  → git add .beads/ && git commit → git push
+
+QUALITY GATES:
+  br lint             — check for missing acceptance criteria
+  br dep cycles --json — must be empty
+
+MAINTENANCE:
+  br doctor           — weekly health check
+  br cleanup --days 7 — remove old closed issues
+```
+
 ## Anti-Patterns
 
 - Running `br sync` without `--flush-only` or `--import-only`
@@ -367,28 +419,15 @@ RUST_LOG=debug br list       # Detailed trace logs
 - **Inventing evidence for closure** — if unsure, comment instead
 - Modifying unrelated issues during triage
 - Adding speculative dependencies without confirmed blocking relationship
-
-## Process
-
-1. **Inspect before mutating.**
-   - `br ready --json` to find unblocked work.
-   - `br show <id> --json` for full context on a single bead.
-   - `br list --status open --status in_progress --json` to see all active work.
-2. **Mutate state explicitly.**
-   - Claim: `br update --actor "$ACTOR" <id> --status in_progress --claim`
-   - Status/metadata: `br update --actor "$ACTOR" <id> --status in_progress`
-   - Close only after verification evidence exists: `br close --actor "$ACTOR" <id> --reason "..." --json`
-3. **Write artifacts under `.beads/artifacts/<bead-id>/`.**
-4. **Keep one active bead in focus** unless the user asks for triage across many beads.
-5. **Sync after meaningful state changes.**
-   - `br sync --flush-only` → `git add .beads/ && git commit`
+- Claiming files after editing in multi-agent work
+- Vague notes that don't survive compaction
 
 ## Minimum Checks
 
-- Confirm the bead id with `br show <id> --json`.
+- Confirm the bead id with `br show <id> --json`
 - Confirm current status — is it `open`, `in_progress`, or `closed`?
-- Confirm the artifact directory matches the bead id.
-- Confirm `prd.md` exists before planning.
-- Confirm `plan.md` exists before implementation.
-- Confirm `br dep cycles --json` returns empty.
-- Confirm `br sync --status` shows clean state before committing.
+- Confirm the artifact directory matches the bead id
+- Confirm `prd.md` exists before planning
+- Confirm `plan.md` exists before implementation
+- Confirm `br dep cycles --json` returns empty
+- Confirm `br sync --status` shows clean state before committing
