@@ -1,26 +1,62 @@
 ---
-name: brainstorm
-description: Use bv and current bead state to surface the next best work items before formalizing one.
+description: "Ideation. Graph-informed — uses bv triage, suggest, priority, and label analysis to find high-impact work."
+argument-hint: "<topic or problem to brainstorm>"
 ---
 
-## Prerequisites (CHECK FIRST)
+## Prerequisites
 
-None. This is the entry point. If the user provided no input, ask: "What area or problem are we exploring?"
+None. This is the entry point.
 
-Brainstorm candidate work using the beads workflow.
+You are brainstorming work. Use the project graph to inform ideation — don't brainstorm in a vacuum.
 
-User input: $ARGUMENTS
+## Phase 1: Graph Context
 
-## Requirements
+```bash
+bv --robot-triage --format json              # Project state: open, blocked, in progress
+bv --robot-suggest --format json             # Hygiene: duplicates, missing deps, cycle warnings
+bv --robot-priority --format json            # Priority misalignment: graph importance vs assigned
+bv --robot-label-attention --format json     # Labels needing focus (stale, high-impact)
+bv --robot-plan --format json                # Execution tracks — where work fits
+```
 
-1. **Run `bv --robot-triage --format json`**. This is non-negotiable — it returns `quick_ref`, `recommendations`, `quick_wins`, `blockers_to_clear`, and `project_health` in one call.
-2. **Run `br list --status open --status in_progress --json`**. Cross-reference with bv output to avoid duplicates.
-3. **Do not implement code.** This is read-only exploration.
-4. **Produce concrete candidate beads** with a short description and priority for each.
-5. **If one candidate is clearly best**, say why — score, unblock impact, urgency.
-6. **If a bead already exists for the request**, point to it instead of inventing a duplicate.
-7. **End with a recommendation**: which bead to create, or whether to `/create` next.
+From triage, extract:
+- What's blocked and why — unblocking work is high-impact
+- What's on the critical path — delays here delay everything
+- What's mispriorized — graph says P1 but assigned P3
+- What's stale — neglected work that needs attention
+- What's missing — suggest finds gaps (missing deps, duplicates)
 
-## Output
+## Phase 2: Dedup
 
-A concise triage summary: top 3-5 candidates, existing related work, recommended next action. No files written.
+```bash
+br search "$ARGUMENTS" --status open --status in_progress --json
+```
+
+If matching work exists, surface it. Don't brainstorm duplicates.
+
+## Phase 3: Ideation
+
+Generate 3-5 alternatives. For each:
+- What it solves (link to graph data)
+- What it unblocks (check robot-plan tracks)
+- Effort estimate
+- Risk
+
+## Phase 4: Decision Gate
+
+Pick one. Criteria:
+- **Impact** — does it unblock downstream work? (robot-plan)
+- **Alignment** — is priority misaligned? (robot-priority)
+- **Effort** — is it achievable in one session?
+- **Hygiene** — does it fix a suggest warning? (robot-suggest)
+
+## Phase 5: Output
+
+```
+Decision: <chosen alternative>
+Rationale: <why, citing graph data>
+Impact: <what it unblocks>
+Open questions: <what we don't know yet>
+Suggested scope: <in/out boundaries>
+Next: /create "<scoped description>"
+```

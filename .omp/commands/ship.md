@@ -1,36 +1,96 @@
 ---
-name: ship
-description: Implement the active bead only after PRD and plan exist.
+description: "Implement. Graph-informed — checks file history, impact, and related work before coding."
+argument-hint: "<bead-id>"
 ---
+
+## Resolve Bead ID
+
+```bash
+BEAD_ID=$(bash .omp/scripts/resolve-bead.sh "$ARGUMENTS") || exit 1
+```
+
+Use `$BEAD_ID` (not `$ARGUMENTS`) in all commands below.
 
 ## Prerequisites (CHECK FIRST)
 
 Before doing ANYTHING, verify:
+1. `.beads/artifacts/$BEAD_ID/plan.md` exists
+2. `.beads/artifacts/$BEAD_ID/tasks.md` exists
+3. `.beads/artifacts/$BEAD_ID/context-capsule.md` exists
 
-1. `.beads/artifacts/$1/plan.md` exists.
-2. `.beads/artifacts/$1/tasks.md` exists.
-3. `.beads/artifacts/$1/context-capsule.md` exists.
-
-If plan missing: STOP. Tell the user: "Run /plan first — no plan found for $1."
-If tasks missing: STOP. Tell the user: "Run /plan first — no tasks found for $1."
-If no bead id provided: STOP. Ask: "Which bead? Provide the bead id."
+If plan missing: STOP. Tell the user: "Run /plan first — no plan found for $BEAD_ID."
+If tasks missing: STOP. Tell the user: "Run /plan first — no tasks found for $BEAD_ID."
 Do NOT proceed. Do NOT "helpfully" skip ahead.
 
-Ship the active bead.
+You are implementing bead $BEAD_ID. Check the graph before coding.
 
-User input: $ARGUMENTS
+## Phase 1: Graph Check
 
-## Requirements
+```bash
+bv --robot-triage --format json              # Have priorities shifted?
+bv --robot-alerts --format json              # Any new blockers or stale issues?
+br show "$BEAD_ID" --json                    # Bead details
+br dep tree "$BEAD_ID" --json                # Dependencies
+```
 
-1. **Confirm the active bead**: `br show $1 --json`.
-2. **Claim it**: `br update --actor "$ACTOR" $1 --claim`.
-3. **Read the plan and tasks** before editing:
-   - `plan.md` for wave structure and verification gates
-   - `tasks.md` for task order, dependencies, and per-task verification
-   - `context-capsule.md` for constraints and file ownership
-4. **Implement per the wave structure.** Complete each wave's verification gate before starting the next. Parallel tasks within a wave can run concurrently.
-5. **Keep changes limited to the current bead.** If you discover unrelated work, create a new bead — don't scope-creep.
-6. **Update `progress.txt`** as tasks complete. Mark done tasks with `[x]`.
-7. **If the plan changes materially**, update `plan.md` and note the change in `progress.txt`.
-8. **Run the plan's verification commands** as each wave completes.
-9. **End with**: what changed (files + line counts), what remains risky, which verification commands passed/failed, and the next command: `/verify $1`.
+If priorities shifted or new blockers appeared, report before proceeding.
+
+## Phase 2: File Context
+
+Before editing any file, check its history:
+
+```bash
+bv --robot-file-beads <file> --format json   # What tasks touched this file?
+bv --robot-file-relations <file> --format json # What files co-change with this?
+```
+
+**Token efficiency:** For tasks touching >5 files, check only the 3 most critical files (by blast radius) plus any hotspots (`bv --robot-file-hotspots`). Use `--format toon` for large result sets.
+
+This prevents:
+- Reverting someone else's work
+- Missing files that should co-change
+- Breaking changes that depend on patterns in the file
+
+## Phase 3: Claim
+
+```bash
+ACTOR="${BR_ACTOR:-assistant}"
+br update --actor "$ACTOR" "$BEAD_ID" --status in_progress --claim --json
+```
+
+## Phase 4: Implement
+
+Follow the plan in `.beads/artifacts/$BEAD_ID/plan.md`.
+
+For each task:
+1. Read context capsule (`.beads/artifacts/$BEAD_ID/context-capsule.md`)
+2. Check file history (Phase 2)
+3. Implement the change
+4. Update `.beads/artifacts/$BEAD_ID/progress.txt` — mark task done
+5. Run the wave's verification gate before starting next wave
+
+## Phase 5: Verify
+
+```bash
+br lint "$BEAD_ID" --json                    # Lint changed files
+br dep cycles --json                         # Must still be empty
+```
+
+Run project-specific verification (tests, build, typecheck) before proceeding.
+
+## Phase 6: Report
+
+```
+Bead: $BEAD_ID | Status: IMPLEMENTED
+Files changed: <N> (<+additions> <-deletions>)
+Verification gates passed: <N>/<N>
+Next: /verify $BEAD_ID
+```
+
+## Guardrails
+
+- Always check file history before editing (robot-file-beads)
+- Always check co-changing files (robot-file-relations)
+- If graph check reveals priority shift, ask before proceeding
+- Keep edits scoped to the bead
+- For discovered work >2 min, ask before creating a bead
