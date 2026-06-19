@@ -7,4 +7,6 @@ COMPLETED: Re-read AGENTS.md, .omp/commands/init.md, README.md, .gitignore, cont
 COMPLETED: Edited AGENTS.md, README.md, .gitignore, and .omp/commands/init.md for planned scoped changes.
 COMPLETED: Verification gates passed: br lint returned zero issues; bv suggest returned zero suggestions; br dep cycles returned count 0; command inventory script found no README omissions; root AGENTS heading script found all required headings and OMP pointer; init token script found expected root AGENTS hydration variables/helpers; search found no stale "Nine slash commands" or curly template tokens; scratch hydration ran twice and second run was byte-identical; git check-ignore ignored runtime/Python bytecode paths and did not ignore .beads/issues.jsonl; .omp/scripts is absent.
 COMPLETED: Ran br sync --flush-only and committed scoped /ship changes in 2df77aa.
+COMPLETED: /ship fix pass addressed review finding by changing README command inventory to reflect only command files tracked in HEAD and excluding untracked .omp/commands/npm-release.md.
+COMPLETED: Updated completion-evidence.json to record tracked-HEAD command inventory evidence for the fix pass.
 NEXT: /verify br-omp-backbone-skill-0nc.
