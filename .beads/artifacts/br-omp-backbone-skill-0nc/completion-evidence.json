@@ -1,54 +1,128 @@
 {
   "beadId": "br-omp-backbone-skill-0nc",
-  "status": "fix_pass_2_implemented_pending_verify",
-  "summary": "Ship fix pass 2 addressed the failed README command inventory checks by tracking .omp/commands/npm-release.md and documenting nine lifecycle slash commands plus the npm-release release helper. /verify was not run in this pass.",
+  "status": "verified",
+  "summary": "Fresh /verify after fix pass 2 passed all planned checks: bead lint, graph hygiene, dependency cycles, ignore rules, README command inventory, root AGENTS.md headings, init hydration token coverage, scratch hydration idempotence, and bad-token scan.",
   "shipFixPass": 2,
   "passedChecks": [
     {
+      "command": "bv --robot-triage --format json; bv --robot-alerts --format json; br show br-omp-backbone-skill-0nc --json",
+      "expected": "Graph context is available, no active alerts block verification, and the bead is in_progress or otherwise has changes to verify.",
+      "result": "Exit 0; triage data_hash 783810ff94d415c9; recommendation includes br-omp-backbone-skill-0nc with status in_progress; alerts summary total 0; br show reports status in_progress and assignee assistant."
+    },
+    {
+      "command": "git diff --name-only HEAD~1",
+      "expected": "Record actual files changed in the last commit for coverage comparison against the plan blast radius.",
+      "result": "Exit 0; printed .beads/artifacts/br-omp-backbone-skill-0nc/completion-evidence.json, .beads/artifacts/br-omp-backbone-skill-0nc/progress.txt, .beads/issues.jsonl, .omp/commands/npm-release.md, and README.md. Final-state checks below directly verified the planned blast-radius files AGENTS.md, .omp/commands/init.md, README.md, and .gitignore."
+    },
+    {
       "command": "find .omp/commands/*.md",
-      "expected": "Command inventory includes npm-release.md.",
+      "expected": "Command inventory includes exactly the shipped command markdown files, including npm-release.md.",
       "result": "Exit 0; found init.md, create.md, pr.md, plan.md, close.md, npm-release.md, review.md, ship.md, brainstorm.md, and verify.md."
     },
     {
-      "command": "python3 command inventory check",
-      "expected": "README mentions every shipped .omp/commands/*.md command and contains /npm-release exactly once.",
-      "result": "Exit 0; commands ['brainstorm', 'close', 'create', 'init', 'npm-release', 'plan', 'pr', 'review', 'ship', 'verify']; missing []; npm_release_count 1."
+      "command": "read AGENTS.md",
+      "expected": "Root AGENTS.md is no longer only a pointer and contains overview, setup, code style, testing, OMP workflow, and security guidance.",
+      "result": "Read succeeded; AGENTS.md has headings Project Overview, Setup Commands, Code Style, Testing Instructions, OMP Workflow, and Security, and points to .omp/AGENTS.md only as deeper OMP workflow guidance."
     },
     {
-      "command": "search pattern \"Nine slash commands|/npm-release|npm-release\" in README.md",
-      "expected": "README documents npm-release and does not retain the old unqualified 'Nine slash commands' wording.",
-      "result": "Search found line 10 'Nine lifecycle slash commands plus the npm-release release helper' and line 50 '/npm-release' table row."
+      "command": "read .omp/commands/init.md:360-520",
+      "expected": "Phase 2.5 contains root AGENTS.md handling using detected metadata and exact replacement helpers.",
+      "result": "Read succeeded; lines 384-462 define agents_setup_commands, agents_verification_commands, agents_template_content, agents_path = root / \"AGENTS.md\", replacement of the exact stub, metadata markers, and already-populated handling."
     },
     {
-      "command": "br lint \"br-omp-backbone-skill-0nc\" --json",
-      "expected": "No bead lint issues.",
-      "result": "Exit 0; {\"total\":0,\"issues\":0,\"results\":[]}."
+      "command": "read README.md",
+      "expected": "README documents nine lifecycle slash commands plus /npm-release release support, without classifying npm-release as a lifecycle phase.",
+      "result": "Read succeeded; line 10 says 'Nine lifecycle slash commands plus the npm-release release helper' and line 50 has the NPM release /npm-release table row."
+    },
+    {
+      "command": "read .gitignore",
+      "expected": ".gitignore ignores beads runtime SQLite/lock/touch files, Python bytecode, and local environment overrides while not ignoring .beads/issues.jsonl.",
+      "result": "Read succeeded; .beads/beads.db, .beads/beads.db-shm, .beads/beads.db-wal, .beads/.write.lock, .beads/last-touched, __pycache__/, *.pyc, .env, and .worktree/ are listed; .beads/issues.jsonl is not listed."
+    },
+    {
+      "command": "br lint br-omp-backbone-skill-0nc --json",
+      "expected": "JSON result with no blocking lint error for the bead.",
+      "result": "Exit 0; output {\"total\":0,\"issues\":0,\"results\":[]}."
+    },
+    {
+      "command": "bv --robot-suggest --format json",
+      "expected": "JSON suggestions with no cycle-breaking or hygiene requirement blocking this bead.",
+      "result": "Exit 0; data_hash 783810ff94d415c9; suggestions list empty; stats total 0, high_confidence_count 0, actionable_count 0."
     },
     {
       "command": "br dep cycles --json",
       "expected": "No dependency cycles.",
-      "result": "Exit 0; {\"cycles\":[],\"count\":0,\"active_count\":0,\"archived_closed_count\":0,\"total_count\":0,\"blocking_only\":false,\"include_closed\":false,\"scope\":\"active\"}."
+      "result": "Exit 0; output {\"cycles\":[],\"count\":0,\"active_count\":0,\"archived_closed_count\":0,\"total_count\":0,\"blocking_only\":false,\"include_closed\":false,\"scope\":\"active\"}."
+    },
+    {
+      "command": "git check-ignore .beads/beads.db .beads/beads.db-wal .beads/.write.lock .beads/last-touched __pycache__/x.pyc foo.pyc",
+      "expected": "Exit 0 and print all runtime and Python bytecode paths as ignored.",
+      "result": "Exit 0; printed .beads/beads.db, .beads/beads.db-wal, .beads/.write.lock, .beads/last-touched, __pycache__/x.pyc, and foo.pyc."
+    },
+    {
+      "command": "git check-ignore .beads/issues.jsonl",
+      "expected": "Exit 1 because the versioned sync file is not ignored.",
+      "result": "Exit 1; no output, confirming .beads/issues.jsonl is not ignored."
+    },
+    {
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\ncommands=sorted(p.stem for p in Path('.omp/commands').glob('*.md'))\nreadme=Path('README.md').read_text()\nmissing=[c for c in commands if '/' + c not in readme]\nprint(commands)\nprint('missing', missing)\nraise SystemExit(1 if missing else 0)\nPY",
+      "expected": "Command list includes npm-release and README is missing no shipped command rows.",
+      "result": "Exit 0; printed ['brainstorm', 'close', 'create', 'init', 'npm-release', 'plan', 'pr', 'review', 'ship', 'verify'] and missing []."
+    },
+    {
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\ntext=Path('AGENTS.md').read_text()\nneed=['Project', 'Setup', 'Code', 'Testing', 'OMP', 'Security']\nmissing=[h for h in need if h.lower() not in text.lower()]\nprint('missing', missing)\nraise SystemExit(1 if missing else 0)\nPY",
+      "expected": "Root AGENTS.md contains all required heading concepts.",
+      "result": "Exit 0; printed missing []."
+    },
+    {
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\ntext=Path('.omp/commands/init.md').read_text()\nneed=['AGENTS.md', 'project_name', 'verification_typecheck', 'verification_lint', 'verification_test', 'replace_exact']\nmissing=[n for n in need if n not in text]\nprint('missing', missing)\nraise SystemExit(1 if missing else 0)\nPY",
+      "expected": "Init hydration contains AGENTS.md handling and required detected metadata/helper tokens.",
+      "result": "Exit 0; printed missing []."
+    },
+    {
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\nfor path in ['AGENTS.md', '.omp/commands/init.md', 'README.md', '.gitignore']:\n    text=Path(path).read_text()\n    bad=[token for token in ['OPEN_BRACE bead-id CLOSE_BRACE', 'OPEN_BRACE placeholder CLOSE_BRACE', 'PROJECT_NAME_MARKER'] if token in text]\n    print(path, bad)\n    if bad: raise SystemExit(1)\nPY",
+      "expected": "Each changed file prints an empty bad-token list.",
+      "result": "Exit 0; printed AGENTS.md [], .omp/commands/init.md [], README.md [], and .gitignore []."
+    },
+    {
+      "command": "python3 scratch extraction of .omp/commands/init.md Phase 2.5 hydration block in a temporary directory, run twice and compare AGENTS.md bytes",
+      "expected": "First run creates or hydrates AGENTS.md; second run exits 0 and leaves AGENTS.md byte-identical.",
+      "result": "Exit 0; first run printed '✓ AGENTS.md: created' with first_exit 0; second run printed '- AGENTS.md: already populated' with second_exit 0; agents_exists True; second_byte_identical True."
+    },
+    {
+      "command": "find .omp/scripts .omp/extensions/*",
+      "expected": "No .omp/scripts directory exists and no extension files beyond existing workflow-gate.ts are introduced or touched for this bead.",
+      "result": "Find skipped missing .omp/scripts and listed only .omp/extensions/workflow-gate.ts."
+    },
+    {
+      "command": "br sync --flush-only",
+      "expected": "Sync completes; dirty bead state is exported if present.",
+      "result": "Exit 0; output 'Nothing to export (no dirty issues)'."
     }
   ],
   "failedChecks": [],
-  "uncheckedRisks": [
-    "Full /verify rerun intentionally not executed per user instruction."
-  ],
+  "uncheckedRisks": [],
   "artifacts": [
     {
+      "path": "AGENTS.md",
+      "purpose": "Root agent instructions for generic agents and OMP workflow pointer."
+    },
+    {
+      "path": ".omp/commands/init.md",
+      "purpose": "Phase 2.5 hydration logic for root AGENTS.md."
+    },
+    {
       "path": "README.md",
-      "purpose": "Documents nine lifecycle commands plus the npm-release release helper."
+      "purpose": "Human-facing command inventory including npm-release as release helper."
     },
     {
-      "path": ".omp/commands/npm-release.md",
-      "purpose": "Tracked release helper command included in command inventory."
+      "path": ".gitignore",
+      "purpose": "Beads runtime, Python bytecode, and environment ignore rules with .beads/issues.jsonl left versioned."
     },
     {
-      "path": ".beads/artifacts/br-omp-backbone-skill-0nc/progress.txt",
-      "purpose": "Records /ship fix pass 2 scope and next phase."
+      "path": ".beads/artifacts/br-omp-backbone-skill-0nc/completion-evidence.json",
+      "purpose": "Fresh verification evidence from /verify after fix pass 2."
     }
   ],
-  "followUps": [
-    "Run /verify br-omp-backbone-skill-0nc."
-  ]
+  "followUps": []
 }

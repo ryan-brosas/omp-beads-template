@@ -2,38 +2,31 @@
 
 ## Verdict
 
-`changes-requested` — README documents `/npm-release`, but the command file is untracked and absent from `HEAD`, so the reviewed commit would ship stale command inventory docs.
+`approved` — the prior tracked-command mismatch is fixed: `.omp/commands/npm-release.md` is now in the reviewed diff and `README.md` documents it as a release helper, not a lifecycle phase.
 
-**Ready for close:** false
+**Ready for close:** true
 
 ## Review Summary
 
-- Agents run: 1 (`Review0nc`, consolidated spec/plan/bug/comment review)
-- Total raw findings: 1
-- High-confidence (≥80): 1
+- Agents run: 1 (`Review0nc`, consolidated spec/plan/bug/history/comment review per headless distribution request)
+- Total raw findings: 0
+- High-confidence (≥80): 0
 - False positives filtered: 0
 
 ## Findings
 
-### #1: Ship the documented npm-release command (confidence: 95)
-
-- **Agent:** Review0nc
-- **Severity:** high
-- **File:** `README.md`#50
-- **Issue:** `README.md` now advertises `/npm-release`, but `.omp/commands/npm-release.md` is present only as an untracked working-tree file and is absent from the reviewed commit. Observed evidence: `git status --short .omp/commands/npm-release.md` reports `?? .omp/commands/npm-release.md`, and `git show HEAD:.omp/commands/npm-release.md` fails with `path '.omp/commands/npm-release.md' exists on disk, but not in 'HEAD'`.
-- **Recommendation:** Either commit `.omp/commands/npm-release.md` as part of this bead or remove the `/npm-release` README inventory row/count wording. Do not close until README command inventory matches tracked shipped command files.
+No high-confidence findings.
 
 ## Spec ↔ Code Adherence
 
-- PRD requirement coverage: 6/7 requirements implemented for the tracked commit set. R1, R2, R3, R5, R6, and the create-phase R7 are satisfied by observed files/evidence; R4 is not satisfied because `/npm-release` is documented but not tracked in `HEAD`.
-- Plan task coverage: 5/6 tasks completed for the tracked commit set. Tasks 1.1, 2.1, 2.3, 3.1, and 4.1 are satisfied; task 2.2 is incomplete until the command inventory references only tracked shipped command files or the command file is added.
-- Drift from plan: README inventory verification used the working tree, not the committed artifact set. That let an untracked `.omp/commands/npm-release.md` satisfy the evidence check without being part of the reviewed diff.
+- PRD requirement coverage: 7/7 satisfied or phase-scoped. R1-R3 and R5-R6 are covered by the final verification evidence for root `AGENTS.md`, `/init` hydration, `.gitignore`, and idempotence. R4 is now satisfied because `README.md` and the tracked `.omp/commands/npm-release.md` agree. R7 was a `/create`-phase constraint and was satisfied before later explicitly requested phases ran.
+- Plan task coverage: 6/6 tasks completed. The fix-pass diff specifically completes task 2.2 by shipping `.omp/commands/npm-release.md` and keeping `README.md` wording at “Nine lifecycle slash commands plus the npm-release release helper.”
+- Drift from plan: none requiring changes. The latest diff contains only the missing release command, README inventory alignment, and verification/bead artifacts.
 
 ## Residual Risks
 
-- Hydration behavior was verified by the existing `completion-evidence.json` scratch run, but this review did not rerun full `/verify`; user requested `/review` only.
-- `.omp/commands/npm-release.md` content was not reviewed as a shipped command because it is untracked and outside the committed diff.
+- `.omp/AGENTS.md` may still describe `.omp/commands/` as nine slash commands; this was below the high-confidence threshold for this review because it is outside the changed production diff and the PRD scoped command inventory acceptance to `README.md`.
 
 ## Summary
 
-The root `AGENTS.md`, `/init` hydration block, and `.gitignore` changes match the PRD and plan at review depth. The README command inventory is not safe to merge because it documents a command file absent from `HEAD`. Fix the tracked command inventory mismatch, rerun `/verify`, then rerun `/review`.
+The reviewed `HEAD~1` diff resolves the earlier blocker by tracking the documented `/npm-release` command. The reviewer found no large logic, error-handling, resource, race, history, or comment-compliance issues in `README.md` or `.omp/commands/npm-release.md`. Safe to proceed to the next workflow phase; `/pr` and `/close` were not run.
