@@ -1,0 +1,50 @@
+{
+  "beadId": "br-omp-backbone-skill-3co",
+  "type": "chore",
+  "priority": 2,
+  "estimate_minutes": 45,
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "The `.omp/AGENTS.md` Command Reference table includes every tracked shipped lifecycle command and the tracked `/npm-release` command exactly once.",
+      "priority": "MUST",
+      "acceptance": "`git ls-files .omp/commands/*.md` returns ten tracked command files and `python3` parsing of `.omp/AGENTS.md` finds the same ten slash command names in the Command Reference table, with no missing or extra entries."
+    },
+    {
+      "id": "R2",
+      "text": "The `.omp/AGENTS.md` workflow narrative distinguishes the eight bead lifecycle execution loop from bootstrap and release helper commands.",
+      "priority": "MUST",
+      "acceptance": "Reading lines 8-31 of `.omp/AGENTS.md` shows `/brainstorm` through `/close` as the lifecycle loop, `/init` as bootstrap, and `/npm-release` as release helper, without implying npm release is part of every bead loop."
+    },
+    {
+      "id": "R3",
+      "text": "The `.omp/AGENTS.md` repository tree comment and command file listing match the tracked command inventory.",
+      "priority": "MUST",
+      "acceptance": "The tree block under `.omp/commands/` says ten command files and lists `npm-release.md` alongside the existing command files, matching `git ls-files .omp/commands/*.md`."
+    },
+    {
+      "id": "R4",
+      "text": "README and `.omp/AGENTS.md` agree on the shipped command count and names.",
+      "priority": "SHOULD",
+      "acceptance": "A comparison script extracts slash commands from README workflow rows and `.omp/AGENTS.md` Command Reference rows and confirms both document the same ten commands."
+    },
+    {
+      "id": "R5",
+      "text": "No untracked `.omp/commands/*.md` file is used as evidence for the inventory.",
+      "priority": "MUST",
+      "acceptance": "`git status --short .omp/commands` is empty, or any untracked command file is explicitly excluded from the verification evidence; inventory is derived from `git ls-files`, not filesystem globbing."
+    },
+    {
+      "id": "R6",
+      "text": "No unrelated command semantics, workflow gates, or command implementations change.",
+      "priority": "MUST",
+      "acceptance": "`git diff --name-only` for `/ship` includes `.omp/AGENTS.md` and bead artifacts only unless the plan explicitly expands scope; no `.omp/commands/*.md`, `.omp/extensions/*.ts`, or README behavior changes are required for this bead."
+    }
+  ],
+  "success_criteria": [
+    "`.omp/AGENTS.md` Command Reference command set equals tracked `.omp/commands/*.md` basenames.",
+    "`.omp/AGENTS.md` repository tree says ten command files and lists `npm-release.md`.",
+    "README and `.omp/AGENTS.md` both document `/npm-release` without making it part of the ordinary bead lifecycle.",
+    "Implementation diff leaves `.omp/commands/*.md` behavior untouched."
+  ]
+}
