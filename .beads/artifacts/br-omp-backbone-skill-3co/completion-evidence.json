@@ -1,0 +1,50 @@
+{
+  "beadId": "br-omp-backbone-skill-3co",
+  "status": "verified",
+  "summary": "The production change is correct: .omp/AGENTS.md now reports 10 command files and lists git-clean.md in the tree block. Prior npm-release evidence was stale and has been replaced with branch-accurate verification. README.md still mentions /npm-release, but that mismatch predates this PR and is outside the production diff for this bead.",
+  "passedChecks": [
+    {
+      "command": "git ls-files '.omp/commands/*.md'",
+      "expected": "10 tracked command files including git-clean.md",
+      "result": "brainstorm.md, close.md, create.md, git-clean.md, init.md, plan.md, pr.md, review.md, ship.md, verify.md"
+    },
+    {
+      "command": "git status --short .omp/commands",
+      "expected": "No modified or untracked command files",
+      "result": "No output"
+    },
+    {
+      "command": "read .omp/AGENTS.md Command Reference",
+      "expected": "Command Reference already includes /git-clean exactly once",
+      "result": "Observed `/git-clean` row in the Command Reference table; no production edit needed there"
+    },
+    {
+      "command": "read .omp/AGENTS.md tree block",
+      "expected": "Tree block says 10 command files and lists git-clean.md",
+      "result": "Observed `Slash commands (10)` and final wrapped listing `init.md, git-clean.md`"
+    },
+    {
+      "command": "git diff main...HEAD -- .omp/AGENTS.md",
+      "expected": "Minimal doc-only tree fix",
+      "result": "Diff changes only the tree count 9→10 and the wrapped listing init.md→init.md, git-clean.md"
+    },
+    {
+      "command": "br lint br-omp-backbone-skill-3co --json",
+      "expected": "Zero lint issues",
+      "result": "{\"total\":0,\"issues\":0,\"results\":[]}"
+    },
+    {
+      "command": "br dep cycles --json",
+      "expected": "No active dependency cycles",
+      "result": "{\"cycles\":[],\"count\":0,\"active_count\":0,\"archived_closed_count\":0,\"total_count\":0,\"blocking_only\":false,\"include_closed\":false,\"scope\":\"active\"}"
+    }
+  ],
+  "failedChecks": [],
+  "uncheckedRisks": [
+    "README.md still documents /npm-release instead of /git-clean. This drift predates the current production diff and was not introduced by this PR."
+  ],
+  "followUps": [
+    "Open a separate bead to reconcile README.md with the tracked command inventory and .omp/AGENTS.md Command Reference.",
+    "Treat any prior npm-release-specific evidence in this bead as superseded by this file."
+  ]
+}
