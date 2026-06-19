@@ -1,0 +1,191 @@
+{
+  "bead_id": "br-omp-backbone-skill-9tl",
+  "command": "/verify",
+  "verified_at": "2026-06-17T23:09:51+08:00",
+  "repo": "/home/ryan/repos/omp-template",
+  "artifact": ".omp/commands/init.md",
+  "overall_verdict": "changes_requested",
+  "summary": "Phase 2.5 hydration exists, runs successfully, replaces placeholders across the five memory files, and is idempotent. However, the implementation does not fully match the PRD: project name detection prefers README/package.json over git remote, and project goal is auto-filled from README instead of left as a TODO marker.",
+  "phase_structure": {
+    "status": "pass",
+    "evidence": [
+      "init.md phase headings found at lines 12, 20, 28, 451, 510, 516, 528",
+      "Phase 2.5 heading is present as '## Phase 2.5: Hydrate Memory Files'"
+    ]
+  },
+  "requirements": [
+    {
+      "id": 1,
+      "requirement": "/init detects project name from git remote or directory name",
+      "status": "partial",
+      "evidence": [
+        "Remote-only temp repo hydrated to '# Project: remote-only-name'",
+        "But in a temp repo with origin remote + package.json and no README, hydration produced '# Project: pkg-name-ignored' because init.md lines 169-173 prefer first_heading_from_readme() -> package_name -> git_remote_name() -> root.name"
+      ]
+    },
+    {
+      "id": 2,
+      "requirement": "/init detects language(s) from package manager config files",
+      "status": "pass",
+      "evidence": [
+        "Temp repo with package.json + tsconfig.json hydrated tech-stack row to '| Language | TypeScript | ^5.4.2 | strict mode if configured; capture tsconfig constraints |'"
+      ]
+    },
+    {
+      "id": 3,
+      "requirement": "/init detects package manager from lockfiles",
+      "status": "pass",
+      "evidence": [
+        "Temp repo with pnpm-lock.yaml hydrated package-manager row to '| Package manager | pnpm | <unknown> | |'"
+      ]
+    },
+    {
+      "id": 4,
+      "requirement": "/init replaces all <project-name> placeholders across 5 memory files",
+      "status": "pass",
+      "evidence": [
+        "After hydration in the TS/pnpm scenario, remaining '<project-name>' count across the five memory files was 0"
+      ]
+    },
+    {
+      "id": 5,
+      "requirement": "/init replaces language/tooling placeholders in conventions.md",
+      "status": "pass_with_deviation",
+      "evidence": [
+        "Backend row became '| Backend | TypeScript | strict mode if configured; capture tsconfig constraints |'",
+        "Frontend row became '| Frontend | TypeScript | reuse existing frontend framework conventions |'",
+        "Scripts row became '| Scripts | TypeScript | package scripts and repo automation |'",
+        "Placeholders were removed, but this diverges from the PRD example, which expected undetected rows to stay TODO and Scripts to default to Bash"
+      ]
+    },
+    {
+      "id": 6,
+      "requirement": "/init replaces language/tooling/version placeholders in tech-stack.md",
+      "status": "pass",
+      "evidence": [
+        "Language/runtime/package-manager placeholder rows were replaced in the TS/pnpm scenario",
+        "Undetected versions became '<unknown>' rather than remaining template choice placeholders"
+      ]
+    },
+    {
+      "id": 7,
+      "requirement": "Hydration is idempotent and preserves filled-in fields on re-run",
+      "status": "pass",
+      "evidence": [
+        "First run output: 'Counts: hydrated=5 already_populated=0 missing=0'",
+        "After manually changing project.md goal to 'Custom user goal', second run output: 'Counts: hydrated=0 already_populated=5 missing=0'",
+        "Custom goal remained present after the second run"
+      ]
+    },
+    {
+      "id": 8,
+      "requirement": "Undetected fields are explicitly marked, not left as template placeholders",
+      "status": "pass",
+      "evidence": [
+        "Docs-only temp repo hydrated Backend/Frontend rows to '<!-- TODO: fill in -->' markers",
+        "Docs-only temp repo hydrated runtime/package-manager rows to '<unknown>'"
+      ]
+    },
+    {
+      "id": 9,
+      "requirement": "Human-only fields are left with TODO markers",
+      "status": "fail",
+      "evidence": [
+        "init.md line 176 sets project_desc = first_paragraph_from_readme() or '<!-- TODO: fill in your project goal -->'",
+        "In a temp repo with README '# Sample Name' and body 'This paragraph became the goal.', project.md line 12 became 'This paragraph became the goal.' instead of a TODO marker"
+      ]
+    },
+    {
+      "id": 10,
+      "requirement": "Template bootstrap gotchas are preserved",
+      "status": "pass",
+      "evidence": [
+        "Template gotcha row count was 12 before hydration and 12 after hydration"
+      ]
+    },
+    {
+      "id": 11,
+      "requirement": "Template architecture decisions are preserved",
+      "status": "pass",
+      "evidence": [
+        "Template decision example row count was 5 before hydration and 5 after hydration"
+      ]
+    },
+    {
+      "id": 12,
+      "requirement": "The hydration phase in init.md is clearly separated and documented",
+      "status": "pass",
+      "evidence": [
+        "Distinct Phase 2.5 section exists between Phase 2 and Phase 3",
+        "Section includes explanatory prose plus a bash fenced Python block"
+      ]
+    }
+  ],
+  "executed_checks": [
+    {
+      "name": "extract-and-run-phase-2_5-script",
+      "status": "pass",
+      "details": "Extracted the embedded Python block from init.md and executed it in isolated temp repos to verify actual hydration behavior."
+    },
+    {
+      "name": "scenario_remote_ts_pnpm",
+      "status": "pass_with_findings",
+      "stdout": "Memory hydration summary:\n  ✓ project.md: hydrated\n  ✓ conventions.md: hydrated\n  ✓ tech-stack.md: hydrated\n  ✓ gotchas.md: hydrated\n  ✓ decisions.md: hydrated\nCounts: hydrated=5 already_populated=0 missing=0\n",
+      "findings": [
+        "project heading: # Project: pkg-name-ignored",
+        "tech language row: | Language | TypeScript | ^5.4.2 | strict mode if configured; capture tsconfig constraints |",
+        "tech runtime row: | Runtime | Node.js | 20 | repo-managed runtime |",
+        "tech package manager row: | Package manager | pnpm | <unknown> | |"
+      ]
+    },
+    {
+      "name": "scenario_idempotency_rerun",
+      "status": "pass",
+      "stdout": "Memory hydration summary:\n  - project.md: already populated\n  - conventions.md: already populated\n  - tech-stack.md: already populated\n  - gotchas.md: already populated\n  - decisions.md: already populated\nCounts: hydrated=0 already_populated=5 missing=0\n",
+      "findings": [
+        "Manual project goal edit survived rerun"
+      ]
+    },
+    {
+      "name": "scenario_docs_only",
+      "status": "pass",
+      "stdout": "Memory hydration summary:\n  ✓ project.md: hydrated\n  ✓ conventions.md: hydrated\n  ✓ tech-stack.md: hydrated\n  ✓ gotchas.md: hydrated\n  ✓ decisions.md: hydrated\nCounts: hydrated=5 already_populated=0 missing=0\n",
+      "findings": [
+        "project heading: # Project: Docs Repo",
+        "backend row: | Backend | <!-- TODO: fill in --> | <!-- TODO: fill in --> |",
+        "runtime row: | Runtime | <unknown> | <unknown> | <unknown> |"
+      ]
+    },
+    {
+      "name": "scenario_remote_only_name_fallback",
+      "status": "pass",
+      "stdout": "Memory hydration summary:\n  ✓ project.md: hydrated\n  ✓ conventions.md: hydrated\n  ✓ tech-stack.md: hydrated\n  ✓ gotchas.md: hydrated\n  ✓ decisions.md: hydrated\nCounts: hydrated=5 already_populated=0 missing=0\n",
+      "findings": [
+        "project heading: # Project: remote-only-name"
+      ]
+    },
+    {
+      "name": "scenario_readme_goal_autofill",
+      "status": "fail",
+      "stdout": "Memory hydration summary:\n  ✓ project.md: hydrated\n  ✓ conventions.md: hydrated\n  ✓ tech-stack.md: hydrated\n  ✓ gotchas.md: hydrated\n  ✓ decisions.md: hydrated\nCounts: hydrated=5 already_populated=0 missing=0\n",
+      "findings": [
+        "project.md goal body was auto-filled from README paragraph instead of being left as a TODO marker"
+      ]
+    }
+  ],
+  "implementation_mismatches": [
+    {
+      "area": "project name precedence",
+      "details": "PRD specifies detection from git remote URL with directory-name fallback. The implementation adds README heading and package.json name ahead of git remote, which changes observed behavior."
+    },
+    {
+      "area": "human-only project goal",
+      "details": "PRD says goal/success criteria/milestones are human judgment and should remain explicit TODO markers. The implementation auto-fills the goal from the first README paragraph."
+    },
+    {
+      "area": "conventions row inference",
+      "details": "PRD example expects undetected frontend rows to remain TODO and scripts to default to Bash. The implementation infers Frontend=TypeScript and Scripts=TypeScript for TS repos."
+    }
+  ],
+  "recommendation": "Request follow-up changes before considering the bead fully verified against the PRD. The hydration mechanism itself works and is safe to rerun, but it should be brought into alignment with the required detection precedence and TODO behavior for human-only fields."
+}

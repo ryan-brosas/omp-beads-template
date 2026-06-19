@@ -11,7 +11,7 @@ An OMP-native project template that provides br/bv-powered workflow infrastructu
 
 ## Success Criteria
 
-1. **Zero `<project-name>` or template placeholders in any `.omp/memory/project/` file** — `grep -r '<project-name>' .omp/memory/project/` returns no matches
+1. **No unresolved project-name placeholders remain in the memory files** — run a placeholder audit against `.omp/memory/project/` and confirm `project.md` still starts with `# Project: OMP Beads Template`
 2. **Every memory file is valid markdown with filled tables** — read each file; no orphan rows, consistent column counts
 3. **An agent loading this context can answer "what is this project" within 3 seconds** — `project.md` heading + goal is self-contained and understandable
 

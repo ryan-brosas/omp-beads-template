@@ -27,16 +27,16 @@ Keep to the dependencies that shape architecture decisions. Don't list every tra
 
 ```bash
 # Typecheck
-N/A — template repo, no application code
+printf '%s\n' 'N/A — template repo, no application code'
 
 # Lint
-N/A — template repo, no application code
+printf '%s\n' 'N/A — template repo, no application code'
 
 # Test
-N/A — template repo, no application code
+printf '%s\n' 'N/A — template repo, no application code'
 
 # Build
-N/A — template repo, no application code
+printf '%s\n' 'N/A — template repo, no application code'
 
 # Graph state (always available)
 bv --robot-triage
@@ -49,10 +49,10 @@ Replace placeholders with your project's actual commands. These are what `/verif
 
 ```bash
 # Dependency audit
-N/A — template repo, no dependencies
+printf '%s\n' 'N/A — template repo, no dependencies'
 
 # Secrets scan (if configured)
-N/A — no secrets scan configured
+printf '%s\n' 'N/A — no secrets scan configured'
 ```
 
 ## Constraints
@@ -66,24 +66,20 @@ N/A — no secrets scan configured
 
 | Asset | Path | Purpose |
 |-------|------|---------|
-| Brand contract | `.omp/skills/design-system/DESIGN.md` | 9-section visual language spec |
-| Design tokens | `.omp/design/tokens.css` | CSS custom properties (light + dark + system) |
-| CSS base | `.omp/design/base.css` | Minimal reset + body defaults |
-| CSS primitives | `.omp/design/primitives.css` | Base element styles (buttons, inputs, selects, tooltips) |
+| Brand contract | `DESIGN.md` | 9-section visual language spec |
+| Design tokens | `design/tokens.css` | CSS custom properties (light + dark + system) |
+| CSS base | `design/base.css` | Minimal reset + body defaults |
+| CSS primitives | `design/primitives.css` | Base element styles (buttons, inputs, selects, tooltips) |
 
 ## Craft References
 
-Brand-agnostic universal design rules that apply on top of any `.omp/skills/design-system/DESIGN.md`:
+Brand-agnostic universal design rules that apply on top of `DESIGN.md`:
 
 | File | Purpose |
 |------|---------|
-| `.omp/design/craft/typography.md` | Type scale, line-height, letter-spacing, font pairing, line length, weight discipline |
-| `.omp/design/craft/color.md` | Palette structure, accent discipline, contrast minimums, dark themes, semantic naming |
-| `.omp/design/craft/anti-ai-slop.md` | Seven cardinal sins, soft tells, polish tells, soul-injection rules |
-| `.omp/design/craft/animation-discipline.md` | When motion earns its place, duration thresholds, curve vs spring, reduced motion, flashing limits |
-| `.omp/design/craft/state-coverage.md` | Loading, empty, error, edge-case states; which states must exist and what they must contain |
-| `.omp/design/craft/accessibility-baseline.md` | WCAG 2.2 AA floor, contrast, touch targets, focus, labels, keyboard, ARIA discipline |
-| `.omp/design/craft/form-validation.md` | Input state machine, validation timing, Constraint Validation API, error wiring, submit hygiene |
-| `.omp/design/craft/typography-hierarchy.md` | Entry points, hierarchy vectors, rhythm failure modes, controlled violations |
+| `design/craft/typography.md` | Type scale, line-height, letter-spacing, font pairing, line length, weight discipline |
+| `design/craft/color.md` | Palette structure, accent discipline, contrast minimums, dark themes, semantic naming |
+| `design/craft/anti-ai-slop.md` | Seven cardinal sins, soft tells, polish tells, soul-injection rules |
+| `design/craft/animation-discipline.md` | When motion earns its place, duration thresholds, curve vs spring, reduced motion, flashing limits |
 
 Adapted from Open Design's `craft/` directory (Apache 2.0) and [refero_skill](https://github.com/referodesign/refero_skill) (MIT).
