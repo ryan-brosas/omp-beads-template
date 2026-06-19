@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { normalize } from "node:path";
 
 type ExecResult = {
   stdout?: string;
@@ -13,6 +14,18 @@ type ToolCallEvent = {
 };
 
 type ActiveBeadResult = { id: string } | { error: true } | { error: false };
+
+function normalizeRepoPath(path: string): string | null {
+  const normalized = normalize(path).replace(/\\/g, "/").replace(/^\.\//, "");
+  if (
+    normalized === ".." ||
+    normalized.startsWith("../") ||
+    normalized.includes("/../")
+  ) {
+    return null;
+  }
+  return normalized;
+}
 
 async function getActiveBead(
   pi: { exec: (cmd: string, args: string[]) => Promise<ExecResult> },
@@ -90,9 +103,24 @@ export default function workflowGate(pi: {
       return;
     }
 
-    const path = typeof event.input?.path === "string" ? event.input.path : null;
-    if (!path) {
+    const rawPath = typeof event.input?.path === "string" ? event.input.path : null;
+    if (!rawPath) {
       return;
+    }
+
+    const path = normalizeRepoPath(rawPath);
+    if (!path) {
+      return {
+        block: true,
+        reason: `Workflow gate: ${rawPath} escapes the repository root. Use a normalized in-repo path.`,
+      };
+    }
+
+    if (rawPath.replace(/\\/g, "/").startsWith(".beads/artifacts/") && !path.startsWith(".beads/artifacts/")) {
+      return {
+        block: true,
+        reason: `Workflow gate: ${rawPath} escapes bead artifacts after normalization. Use a direct artifact path.`,
+      };
     }
 
     // Always allow .omp/ files (workflow infrastructure)
@@ -128,7 +156,8 @@ export default function workflowGate(pi: {
 
     // Writing to any bead's artifacts — allow
     if (path.startsWith(".beads/artifacts/")) {
-      if (!path.includes(`/artifacts/${activeBead}/`)) {
+      const activeArtifactPrefix = `.beads/artifacts/${activeBead}/`;
+      if (!path.startsWith(activeArtifactPrefix)) {
         return {
           block: true,
           reason: `Workflow gate: ${path} is outside the active bead ${activeBead}. Scope artifact writes to the active bead.`,

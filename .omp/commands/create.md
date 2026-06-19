@@ -261,10 +261,11 @@ Create a scoped commit for the `/create` output before reporting success. This p
 ```bash
 br sync --flush-only
 git status --short
-git add .beads/
+git add .beads/issues.jsonl
 git add .beads/artifacts/"$BEAD_ID"/prd.md \
         .beads/artifacts/"$BEAD_ID"/prd.json \
         .beads/artifacts/"$BEAD_ID"/decisions.md
+[ "$WORKTREE" = "true" ] && git add .beads/artifacts/"$BEAD_ID"/worktree.txt
 git commit -m "docs: create PRD for $BEAD_ID"
 ```
 

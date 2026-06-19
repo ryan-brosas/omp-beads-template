@@ -155,7 +155,7 @@ project_name = (
     or root.name
     or "Untitled Project"
 )
-project_desc = "<!-- TODO: fill in your project goal -->"
+project_desc = first_paragraph_from_readme() or "<!-- TODO: fill in your project goal -->"
 
 has_package = (root / "package.json").exists()
 has_tsconfig = (root / "tsconfig.json").exists()

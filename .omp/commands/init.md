@@ -15,7 +15,7 @@ Initialize the repository for the beads workflow.
 br where 2>/dev/null && echo "INITIALIZED" || echo "NEEDS_INIT"
 ```
 
-If already initialized, report current state and skip to Phase 4.
+If already initialized, report current state, skip `br init`, and continue with Phase 2.5 so hydration and optional Honcho config can refresh safely.
 
 ## Phase 2: Initialize br
 
