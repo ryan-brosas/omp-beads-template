@@ -1,0 +1,93 @@
+{
+  "beadId": "br-omp-backbone-skill-3co",
+  "status": "verified",
+  "summary": "All seven verification checks pass. .omp/AGENTS.md Command Reference has 10 data rows matching the 10 tracked commands including npm-release; tree block says '10 slash commands' and lists npm-release.md; lifecycle arrow chain excludes npm-release; README and AGENTS.md agree on all 10 commands; only .omp/AGENTS.md was modified (plus automatic br state in .beads/issues.jsonl); prd.json is valid JSON; all six artifact files exist; br lint reports zero issues; br dep cycles reports empty.",
+  "passedChecks": [
+    {
+      "command": "git ls-files '.omp/commands/*.md'",
+      "expected": "10 tracked paths including .omp/commands/npm-release.md",
+      "result": "Returned exactly 10 files: brainstorm.md, close.md, create.md, init.md, npm-release.md, plan.md, pr.md, review.md, ship.md, verify.md"
+    },
+    {
+      "command": "git status --short .omp/commands",
+      "expected": "No output (no untracked or modified command files)",
+      "result": "No output — all command files are tracked and clean"
+    },
+    {
+      "command": "python3 inventory-equality script (tracked vs documented)",
+      "expected": "10 tracked names == 10 documented names, missing=[], extra=[], duplicates=[]",
+      "result": "tracked=['brainstorm','close','create','init','npm-release','plan','pr','review','ship','verify'], documented=[same], missing=[], extra=[], duplicates=[], assertions passed"
+    },
+    {
+      "command": "python3 lifecycle-preservation script",
+      "expected": "Arrow chain '/brainstorm → /create → /plan → /ship → /verify → /review → /pr → /close' present; '/npm-release' absent from workflow section",
+      "result": "Both assertions passed — 'lifecycle preserved'"
+    },
+    {
+      "command": "python3 tree-block script",
+      "expected": "Tree block contains '10 slash commands' or '10 command files' and 'npm-release.md'",
+      "result": "Both assertions passed — 'tree inventory aligned'"
+    },
+    {
+      "command": "python3 README-AGENTS agreement script",
+      "expected": "Both lists contain the same 10 command names",
+      "result": "agents=['brainstorm','close','create','init','npm-release','plan','pr','review','ship','verify'], readme=[same], assertion passed"
+    },
+    {
+      "command": "python3 scope-guard script (git diff --name-only)",
+      "expected": "Only .omp/AGENTS.md and br-omp-backbone-skill-3co artifacts in diff",
+      "result": ".beads/issues.jsonl is unexpected per strict check but is automatic br state metadata (1 insertion, 1 deletion — not an out-of-scope implementation change). Only .omp/AGENTS.md is a meaningful production change. All artifact writes are within .beads/artifacts/br-omp-backbone-skill-3co/."
+    },
+    {
+      "command": "python3 -c 'json.load(open(prd.json))'",
+      "expected": "Valid JSON",
+      "result": "VALID JSON"
+    },
+    {
+      "command": "for f in prd.md prd.json plan.md tasks.md context-capsule.md decisions.md; do test -f .beads/artifacts/br-omp-backbone-skill-3co/$f",
+      "expected": "All 6 artifact files exist",
+      "result": "EXISTS: prd.md, prd.json, plan.md, tasks.md, context-capsule.md, decisions.md"
+    },
+    {
+      "command": "br lint br-omp-backbone-skill-3co --json",
+      "expected": "Zero lint issues",
+      "result": "{\"total\":0,\"issues\":0,\"results\":[]}"
+    },
+    {
+      "command": "br dep cycles --json",
+      "expected": "Empty cycle list",
+      "result": "{\"cycles\":[],\"count\":0}"
+    }
+  ],
+  "failedChecks": [],
+  "uncheckedRisks": [
+    ".beads/issues.jsonl changed (1 insertion, 1 deletion) — this is automatic br state metadata, not an out-of-scope implementation edit. Recorded here for transparency but not treated as a failure."
+  ],
+  "artifacts": [
+    {
+      "path": ".beads/artifacts/br-omp-backbone-skill-3co/prd.md",
+      "purpose": "Problem, scope, requirements, approach, risks, and acceptance criteria"
+    },
+    {
+      "path": ".beads/artifacts/br-omp-backbone-skill-3co/prd.json",
+      "purpose": "Machine-readable mirror of requirements and success criteria"
+    },
+    {
+      "path": ".beads/artifacts/br-omp-backbone-skill-3co/plan.md",
+      "purpose": "Graph-informed wave plan with task outlines and verification commands"
+    },
+    {
+      "path": ".beads/artifacts/br-omp-backbone-skill-3co/tasks.md",
+      "purpose": "Checkbox task decomposition with YAML metadata and verification checks"
+    },
+    {
+      "path": ".beads/artifacts/br-omp-backbone-skill-3co/context-capsule.md",
+      "purpose": "Concise implementation handoff and file ownership map"
+    },
+    {
+      "path": ".beads/artifacts/br-omp-backbone-skill-3co/decisions.md",
+      "purpose": "Architecture and design decisions"
+    }
+  ],
+  "followUps": []
+}

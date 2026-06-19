@@ -207,7 +207,7 @@ omp-template/
 │           └── review-report.md       # Parallel review findings and verdict
 ├── .omp/                              # OMP harness configuration
 │   ├── AGENTS.md                      # Canonical project context (loaded by OMP)
-│   ├── commands/                      # Slash commands (9)
+│   ├── commands/                      # Slash commands (10)
 │   │   ├── brainstorm.md
 │   │   ├── create.md
 │   │   ├── plan.md
@@ -216,7 +216,7 @@ omp-template/
 │   │   ├── review.md
 │   │   ├── pr.md
 │   │   ├── close.md
-│   │   └── init.md
+│   │   └── init.md, git-clean.md
 │   ├── skills/                        # Agent skills (17)
 │   │   ├── br/SKILL.md
 │   │   ├── bv/SKILL.md
