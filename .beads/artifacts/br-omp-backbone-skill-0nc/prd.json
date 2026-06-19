@@ -1,0 +1,60 @@
+{
+  "beadId": "br-omp-backbone-skill-0nc",
+  "type": "chore",
+  "priority": 2,
+  "estimate_minutes": 90,
+  "requirements": [
+    {
+      "id": 1,
+      "text": "Root AGENTS.md follows the agents.md open format instead of only pointing to .omp/AGENTS.md",
+      "priority": "MUST",
+      "acceptance": "Read AGENTS.md and verify it contains project overview, setup commands, code style, testing instructions, and OMP workflow guidance."
+    },
+    {
+      "id": 2,
+      "text": "/init hydrates root AGENTS.md from detected repo metadata using the existing Phase 2.5 detection path",
+      "priority": "MUST",
+      "acceptance": "Read .omp/commands/init.md and verify Phase 2.5 writes root AGENTS.md or replaces exact AGENTS.md template placeholders using project_name, project_desc, package_manager, verification commands, and language data."
+    },
+    {
+      "id": 3,
+      "text": "/init hydration remains idempotent and does not overwrite user-maintained AGENTS.md content",
+      "priority": "MUST",
+      "acceptance": "Run /init or its hydration block twice in a scratch clone and verify the second run reports already-populated or leaves root AGENTS.md unchanged."
+    },
+    {
+      "id": 4,
+      "text": "README command inventory matches the actual lifecycle command set and explicitly includes npm-release when present",
+      "priority": "MUST",
+      "acceptance": "Compare .omp/commands/*.md against README.md and verify the command count and table rows agree, including /npm-release if shipped."
+    },
+    {
+      "id": 5,
+      "text": ".gitignore keeps br runtime databases and local lock/state files ignored while preserving versioned bead sync data",
+      "priority": "MUST",
+      "acceptance": "Read .gitignore and verify beads.db, beads.db-shm, beads.db-wal, .write.lock, and last-touched are ignored, while .beads/issues.jsonl is not ignored."
+    },
+    {
+      "id": 6,
+      "text": "Python bytecode ignores remain present for command hydration helpers and local execution artifacts",
+      "priority": "SHOULD",
+      "acceptance": "Read .gitignore and verify __pycache__/ and *.pyc are ignored under a clear Python bytecode section."
+    },
+    {
+      "id": 7,
+      "text": "No workflow phase beyond /create is executed for this bead during this session",
+      "priority": "MUST",
+      "acceptance": "Verify the artifact directory contains prd.md, prd.json, and decisions.md only for /create outputs; no plan.md, tasks.md, completion-evidence.json, review-report.md, PR, or closure exists."
+    }
+  ],
+  "success_criteria": [
+    "Root AGENTS.md contains agents.md-compatible sections",
+    "/init root AGENTS.md hydration exists in Phase 2.5",
+    "/init hydration is idempotent",
+    "README command inventory matches command files",
+    "beads runtime ignores preserve versioned sync data",
+    "Python bytecode ignores exist",
+    "No out-of-scope workflow artifacts were created during /create",
+    "PRD and JSON requirements stay synchronized"
+  ]
+}
