@@ -7,7 +7,7 @@ An OMP-native project template with br as the task tracking backbone and bv for 
 
 ## The Workflow
 
-Every piece of work flows through br beads. bv's robot commands drive decisions at every phase. Commands + skills only — no scripts, no machinery.
+Every piece of work flows through br beads. bv's robot commands drive decisions at every phase. Prefer commands + skills; add the smallest supporting script only when a workflow cannot stay reliable without it.
 
 ```
 /brainstorm → /create → /plan → /ship → /verify → /review → /pr → /close
@@ -204,13 +204,14 @@ omp-template/
 │       └── tech-stack.md              # Versions, verification commands, constraints
 ├── .gitignore
 └── README.md
+```
 
 ## Philosophy
 
 - **YAGNI** — if it doesn't solve a real problem today, it doesn't exist. No speculative abstractions.
 - **Prune over pad** — more context is not better. Fill the window with just the right information.
 - **Graph-informed** — every phase queries bv before acting. The graph knows more than you do about the codebase.
-- **Commands + skills only** — no scripts, no machinery. Every gap solvable through better prompts and skill knowledge.
+- **Commands + skills first** — prefer prompts and skills, and only add narrowly scoped support scripts when they remove brittle manual steps.
 - **Cognitive tools** — skills are decision trees that tell the agent *what to do next*, not reference manuals that describe *everything about a topic*.
 - **Progressive disclosure** — lean core + references for deep content. AGENTS.md is the map; skills are the territory.
 - **br is the backbone** — all work is tracked, all state is in beads, all evidence is in artifacts.

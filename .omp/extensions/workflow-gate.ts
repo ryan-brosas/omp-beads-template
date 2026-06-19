@@ -12,9 +12,11 @@ type ToolCallEvent = {
   };
 };
 
+type ActiveBeadResult = { id: string } | { error: true } | { error: false };
+
 async function getActiveBead(
   pi: { exec: (cmd: string, args: string[]) => Promise<ExecResult> },
-): Promise<{ id: string } | { error: true }> {
+): Promise<ActiveBeadResult> {
   try {
     const result = await pi.exec("br", [
       "list",
@@ -59,7 +61,7 @@ export default function workflowGate(pi: {
   ) => void;
   exec: (cmd: string, args: string[]) => Promise<ExecResult>;
 }) {
-  let cachedBead: { id: string } | { error: false } | null = null;
+  let cachedBead: { id: string } | null = null;
   let cachedAt = 0;
   const cacheTtlMs = 30_000;
 
@@ -68,9 +70,15 @@ export default function workflowGate(pi: {
     if (cachedBead && now - cachedAt < cacheTtlMs) {
       return cachedBead;
     }
-    cachedBead = await getActiveBead(pi);
-    cachedAt = now;
-    return cachedBead;
+    const bead = await getActiveBead(pi);
+    if ("id" in bead) {
+      cachedBead = bead;
+      cachedAt = now;
+    } else {
+      cachedBead = null;
+      cachedAt = 0;
+    }
+    return bead;
   }
 
   pi.on("tool_call", async (event) => {
@@ -120,6 +128,13 @@ export default function workflowGate(pi: {
 
     // Writing to any bead's artifacts — allow
     if (path.startsWith(".beads/artifacts/")) {
+      if (!path.includes(`/artifacts/${activeBead}/`)) {
+        return {
+          block: true,
+          reason: `Workflow gate: ${path} is outside the active bead ${activeBead}. Scope artifact writes to the active bead.`,
+        };
+      }
+
       // But block review-report.md if no completion evidence exists
       if (
         path.endsWith("/review-report.md") &&
