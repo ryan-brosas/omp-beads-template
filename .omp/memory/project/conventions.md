@@ -21,7 +21,7 @@ updated: 2026-06-17
 | Configuration | JSON / YAML | settings, manifests |
 | Backend | N/A | Template repo — no backend runtime |
 | Frontend | N/A | Template repo — provides design system assets only |
-| Scripts | Python | `/init` hydration script |
+| Scripts | Python | `/init` embeds the hydration helper inline; no standalone script file is shipped |
 
 Fill in the actual languages for your project. Agents use this to pick the right tool for the job.
 
