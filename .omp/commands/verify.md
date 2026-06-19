@@ -51,6 +51,21 @@ Run only the checks that prove the changed behavior:
 - Bugfix: reproduce the original symptom — it should now pass
 - Task/chore: build succeeds, lint clean
 
+### Inventory Source of Truth
+
+When verifying documentation or command inventories, use the same source of truth that `/review` will inspect:
+
+```bash
+git ls-files '.omp/commands/*.md'             # tracked shipped commands
+git status --short .omp/commands              # untracked command files are separate review items
+```
+
+Rules:
+- README and release-facing docs must match **tracked shipped commands** from `git ls-files`, not every file lying in the working tree.
+- If an untracked `.omp/commands/*.md` file exists and the bead intends to ship it, require it to be staged/committed as part of `/ship` before marking inventory checks passed.
+- If an untracked command file is unrelated scratch work, do not require README to document it; record it as untracked/out-of-scope evidence.
+- Never let `/verify` pass using a working-tree file that `/review` would reject as absent from `HEAD`.
+
 Run the actual commands. Do not claim pass without output.
 
 ```bash

@@ -64,6 +64,20 @@ git log --oneline -5 -- <file>               # Recent history
 
 Read the full file changes via `git diff`. Focus on the diff, not the whole file.
 
+### Inventory Source of Truth
+
+For command inventories and docs that claim what the template ships, review the tracked artifact set, not incidental working-tree files:
+
+```bash
+git ls-files '.omp/commands/*.md'             # shipped command files under review
+git status --short .omp/commands              # untracked command files that are not in HEAD yet
+```
+
+Rules:
+- If README or `.omp/AGENTS.md` documents a command, that command must either be present in `git ls-files` or be included in the reviewed diff as a newly tracked file.
+- If an untracked command file exists but is not part of the bead, do not require docs to mention it; flag only that it is untracked/out-of-scope.
+- Verify that `/verify` evidence used the same tracked-command source of truth. If evidence used a working-tree glob that includes untracked files, treat that as a review finding and request a verify rerun.
+
 ## Phase 4: Launch 5 Parallel Review Agents
 
 Launch each via `task` subagents. All run in parallel. Each returns a list of findings with preliminary confidence scores.
