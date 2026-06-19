@@ -370,6 +370,97 @@ security_audit = {
     "go mod": "govulncheck ./...",
 }.get(package_manager, "<!-- TODO: fill in -->")
 
+TODO_MARKER = "<!-- TODO: fill in -->"
+
+
+def is_known(value: str) -> bool:
+    return bool(value) and value not in {"<unknown>", TODO_MARKER} and "<!-- TODO:" not in value
+
+
+def markdown_list(items: list[str]) -> str:
+    return "\n".join(f"- {item}" for item in items)
+
+
+def agents_setup_commands() -> str:
+    lines = ["Start OMP in the project root: `omp`.", "Initialize the beads workflow: `/init`."]
+    if is_known(package_manager):
+        lines.append(f"Package manager detected: `{package_manager}`.")
+    return markdown_list(lines)
+
+
+def agents_verification_commands() -> str:
+    commands = [verification_typecheck, verification_lint, verification_test, verification_build]
+    known = [command for command in commands if is_known(command)]
+    if not known:
+        return "- <!-- TODO: fill in verification commands -->"
+    return "\n".join(f"- `{command}`" for command in known)
+
+
+agents_project_desc = first_paragraph_from_readme() or project_desc
+
+def agents_template_content() -> str:
+    language_line = language if is_known(language) else "<!-- TODO: fill in language -->"
+    runtime_line = runtime if is_known(runtime) else "<!-- TODO: fill in runtime -->"
+    return f"""# {project_name} Agent Instructions
+
+## Project Overview
+
+{agents_project_desc}
+
+## Setup Commands
+
+{agents_setup_commands()}
+
+## Code Style
+
+- Primary language: {language_line}.
+- Runtime: {runtime_line}.
+- Keep repository instructions in Markdown and configuration in JSON/YAML.
+- Keep automation in existing command files; do not add standalone scripts unless the project plan requires them.
+
+## Testing Instructions
+
+{agents_verification_commands()}
+- Run targeted checks for the files you change before yielding.
+- Record observed evidence for any verification claim.
+
+## OMP Workflow
+
+- Read `.omp/AGENTS.md` for the full OMP-specific bead workflow.
+- Use `br --json` for bead state and `bv --robot-* --format json` for graph-aware planning.
+- Work one bead per session and keep edits scoped to the active bead.
+
+## Security
+
+- Never commit secrets, credentials, tokens, or private keys.
+- Keep local environment files such as `.env` ignored.
+"""
+
+
+agents_path = root / "AGENTS.md"
+agents_content = agents_template_content()
+agents_before = read_text(agents_path)
+if not agents_path.exists():
+    agents_path.write_text(agents_content)
+    summary["hydrated"] += 1
+    summary["files"].append("✓ AGENTS.md: created")
+else:
+    agents_after = agents_before
+    agents_after = replace_exact(agents_after, "# Project Agent Instructions\n\nSee @.omp/AGENTS.md.\n", agents_content)
+    agents_after = replace_exact(agents_after, "<project-name>", project_name)
+    agents_after = replace_exact(agents_after, "<project-description>", agents_project_desc)
+    agents_after = replace_exact(agents_after, "<setup-commands>", agents_setup_commands())
+    agents_after = replace_exact(agents_after, "<verification-commands>", agents_verification_commands())
+    agents_after = replace_exact(agents_after, "<language>", language if is_known(language) else TODO_MARKER)
+    agents_after = replace_exact(agents_after, "<runtime>", runtime if is_known(runtime) else TODO_MARKER)
+    if agents_after != agents_before:
+        agents_path.write_text(agents_after)
+        summary["hydrated"] += 1
+        summary["files"].append("✓ AGENTS.md: hydrated")
+    else:
+        summary["already_populated"] += 1
+        summary["files"].append("- AGENTS.md: already populated")
+
 # project.md
 project_path = memory_dir / "project.md"
 project_before = read_text(project_path)

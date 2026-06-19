@@ -1,0 +1,10 @@
+COMPLETED: /ship implementation for br-omp-backbone-skill-0nc.
+COMPLETED: Resolved bead ID to br-omp-backbone-skill-0nc and verified PRD, plan, tasks artifacts exist.
+COMPLETED: Ran graph checks: bv triage found this bead as top actionable item, bv alerts returned zero alerts, br dep tree showed depth-0 root only.
+COMPLETED: Checked file graph for AGENTS.md, .omp/commands/init.md, README.md, and .gitignore; bv reported zero file beads and no related files.
+COMPLETED: Claimed bead with br update --status in_progress --claim.
+COMPLETED: Re-read AGENTS.md, .omp/commands/init.md, README.md, .gitignore, context-capsule.md, and command inventory before edits.
+COMPLETED: Edited AGENTS.md, README.md, .gitignore, and .omp/commands/init.md for planned scoped changes.
+COMPLETED: Verification gates passed: br lint returned zero issues; bv suggest returned zero suggestions; br dep cycles returned count 0; command inventory script found no README omissions; root AGENTS heading script found all required headings and OMP pointer; init token script found expected root AGENTS hydration variables/helpers; search found no stale "Nine slash commands" or curly template tokens; scratch hydration ran twice and second run was byte-identical; git check-ignore ignored runtime/Python bytecode paths and did not ignore .beads/issues.jsonl; .omp/scripts is absent.
+COMPLETED: Ran br sync --flush-only and committed scoped /ship changes in 2df77aa.
+NEXT: /verify br-omp-backbone-skill-0nc.
